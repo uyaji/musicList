@@ -104,20 +104,44 @@ class TrackView {
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
     val tracks:List[Track] = Track.findAll(By(Track.albumid, getAlbumId().toLong), OrderBy(Track.seq, Ascending))
     bind("track", html, "albumid" -> <input type="text" name="albumid" class="column span-10"/>)
-    tracks.flatMap(trk =>
-      bind("track", html, AttrBindParam("id", trk.id.toString, "id"),
-                          "seq" -> <span>{link("track?albumid=" + getAlbumId() + "&seq=" +trk.seq.get, () => (), Text(trk.seq.toString))}</span>,
-                          "tracktitle" -> <span>{trk.tracktitle.toString}</span>,
-//                          "filename" -> <span>{link("track?albumid=" + getAlbumId(), () => download(trk.id.get), Text(trk.filename.toString))}</span>,
-                          "filename" -> <span>{link("lob/" + trk.id.get.toString, () => (), Text(
-              trk.attaches.size match {
-                case 0 => " "
-                case _ => trk.attaches(0).filename.toString 
-              }
-            ))}</span>,
-                          "delete" -> <span>{link("track?albumid=" + getAlbumId(), () => delete(trk.id.get), Text("delete"))}</span>
-      )
-    )
+    tracks.flatMap(trk => {
+      var i = 0;
+      trk.attaches.flatMap(atc => {
+        i = i + 1;
+        bind("track", html, AttrBindParam("id", trk.id.toString, "id"),
+             "seq" -> <span>{
+               i match {
+                 case 1 =>
+                   link("track?albumid=" + getAlbumId() + "&seq=" +trk.seq.get, () => (), Text(trk.seq.toString))
+                 case _ =>
+                   Text("")
+               }
+             }</span>,
+             "tracktitle" -> <span>{
+               i match {
+                 case 1 =>
+                   trk.tracktitle.toString
+                 case _ =>
+                   Text("")
+               }
+             }</span>,
+             "filename" -> <span>{
+               trk.attaches.size match {
+                 case 0 => link("lob/" + trk.id.get.toString, () => (), Text(" "))
+                 case _ => link("lob/" + trk.id.get.toString, () => (), Text(atc.filename.toString))
+               }
+             }</span>,
+             "delete" -> <span>{
+               i match {
+                 case 1 =>
+                   link("track?albumid=" + getAlbumId(), () => delete(trk.id.get), Text("delete"))
+                 case _ =>
+                   Text("")
+               }
+             }</span>
+        );
+      })
+    })
   }          
   
   private def getAlbumId(): String = {
