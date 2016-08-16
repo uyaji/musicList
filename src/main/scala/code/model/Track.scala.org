@@ -8,7 +8,17 @@ object Track extends Track with LongKeyedMetaMapper[Track] {
   override def dbTableName = "tracks"
 }
 
-class Track extends LongKeyedMapper[Track] with IdPK with OneToMany[Long, Track]{
+class Track extends LongKeyedMapper[Track] with IdPK {
+  def this(albumid: Long, seq: Long, tracktitle: String, filename: String, mimetype: String, lob:Array[Byte]) = {
+    this()
+    this.albumid(albumid)
+    this.seq(seq)
+    this.tracktitle(tracktitle)
+    this.filename(filename)
+    this.mimetype(mimetype)
+    this.trackatach(lob)
+  }
+ 
   def this(albumid: Long, seq: Long, tracktitle: String) = {
     this()
     this.albumid(albumid)
@@ -29,6 +39,8 @@ class Track extends LongKeyedMapper[Track] with IdPK with OneToMany[Long, Track]
       super.validations
   }
 
-  object attaches extends MappedOneToMany(Attach, Attach.track, OrderBy(Attach.id, Ascending))
+  object filename extends MappedString(this, 100)
+  object mimetype extends MappedString(this, 40)
 
+  object trackatach extends MappedBinary(this)
 }

@@ -6,7 +6,7 @@ import net.liftweb.util._
 import net.liftweb.common._
 import Helpers._
 
-import code.model._
+import code.model.Track
 import net.liftweb.mapper._
 import net.liftweb.http._
 import S._
@@ -61,13 +61,7 @@ class TrackView {
   def addProcess() {
     try {
       val track: Track = isAtachFileExist(upload) match {
-        case true => {
-          val attach: Attach = new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
-          val track: Track = Track.create.albumid(albumid.toLong).seq(seq.toLong).tracktitle(tracktitle)
-          track.attaches += attach
-          track.save
-          track
-        }
+        case true => new Track(albumid.toLong, seq.toLong, tracktitle, getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
         case false => new Track(albumid.toLong, seq.toLong, tracktitle)
       }
       track.validate match{
@@ -93,8 +87,9 @@ class TrackView {
     val track = Track.findAll(By(Track.albumid, albumid.toLong),  By(Track.seq, seq.toLong)).head
     track.tracktitle(tracktitle)
     if(isAtachFileExist(upload)) {
-      val attach = new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
-      track.attaches += attach
+      track.filename(getFileParamHolder(upload).fileName)
+      track.mimetype(getFileParamHolder(upload).mimeType)
+      track.trackatach(getFileParamHolder(upload).file)
     }
     track.save()
     S.notice("Updateed " + track.tracktitle)
@@ -109,12 +104,7 @@ class TrackView {
                           "seq" -> <span>{link("track?albumid=" + getAlbumId() + "&seq=" +trk.seq.get, () => (), Text(trk.seq.toString))}</span>,
                           "tracktitle" -> <span>{trk.tracktitle.toString}</span>,
 //                          "filename" -> <span>{link("track?albumid=" + getAlbumId(), () => download(trk.id.get), Text(trk.filename.toString))}</span>,
-                          "filename" -> <span>{link("lob/" + trk.id.get.toString, () => (), Text(
-              trk.attaches.size match {
-                case 0 => " "
-                case _ => trk.attaches(0).filename.toString 
-              }
-            ))}</span>,
+                          "filename" -> <span>{link("lob/" + trk.id.get.toString, () => (), Text(trk.filename.toString))}</span>,
                           "delete" -> <span>{link("track?albumid=" + getAlbumId(), () => delete(trk.id.get), Text("delete"))}</span>
       )
     )
@@ -136,8 +126,6 @@ class TrackView {
   }
 
   def delete(id: Long): Unit ={
-     val attaches: List[Attach] = Attach.findAll(By(Attach.track, id))
-     attaches.map{ at => at.delete_! }
      val tracks: List[Track] = Track.findAll(By(Track.id, id))
      tracks.head.delete_!
      S.notice("Deleted " + tracks.head.tracktitle)
