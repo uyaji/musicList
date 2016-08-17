@@ -105,9 +105,9 @@ class TrackView {
     val tracks:List[Track] = Track.findAll(By(Track.albumid, getAlbumId().toLong), OrderBy(Track.seq, Ascending))
     bind("track", html, "albumid" -> <input type="text" name="albumid" class="column span-10"/>)
     tracks.flatMap(trk => {
-      var i = 0;
+      var i = 0
       trk.attaches.flatMap(atc => {
-        i = i + 1;
+        i = i + 1
         bind("track", html, AttrBindParam("id", trk.id.toString, "id"),
              "seq" -> <span>{
                i match {
@@ -127,8 +127,8 @@ class TrackView {
              }</span>,
              "filename" -> <span>{
                trk.attaches.size match {
-                 case 0 => link("lob/" + trk.id.get.toString, () => (), Text(" "))
-                 case _ => link("lob/" + trk.id.get.toString, () => (), Text(atc.filename.toString))
+                 case 0 => Text(" ")
+                 case _ => link("lob/" + atc.id.get.toString, () => (), Text(atc.filename.toString))
                }
              }</span>,
              "delete" -> <span>{
