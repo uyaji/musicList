@@ -5,6 +5,7 @@ import net.liftweb.util._
 import Helpers._
 
 import code.model.Album
+import code.model.Band
 import net.liftweb.mapper._
 import net.liftweb.http._
 import S._
@@ -26,10 +27,16 @@ class AlbumView {
     var artistname = ""
 
     def addAlbum() = {
-      var album = new Album(albumtitle, artistname)
+      val bands = Band.findAll(By(Band.bandname,artistname)) 
+      val band = bands match {
+        case Nil => new Band(artistname)
+        case _ => bands.head
+      }
+      var album = new Album(albumtitle)
       album.validate match{
         case Nil => {
-          album.save(); S.notice("Added " + album.albumtitle);
+          band.albums += album
+          band.save(); S.notice("Added " + album.albumtitle);
         }
         case x => S.error(x); S.mapSnippet("AlbumView.add", doBind)
       }
@@ -52,7 +59,7 @@ class AlbumView {
     albums.flatMap(alb =>
       bind("album", html, AttrBindParam("id", alb.id.toString, "id"),
                           "albumtitle" -> <span>{link("track?albumid=" + alb.id.toString, () => (), Text(alb.albumtitle.get))}</span>,
-                          "artistname" -> <span>{alb.artistname.get}</span>
+                          "artistname" -> <span>{alb.getBand().bandname}</span>
       )
     )
   }          

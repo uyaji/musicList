@@ -8,11 +8,10 @@ object Album extends Album with LongKeyedMetaMapper[Album] {
   override def dbTableName = "albums"
 }
 
-class Album extends LongKeyedMapper[Album] with IdPK {
-  def this(albumtitle: String, artistname: String) = {
+class Album extends LongKeyedMapper[Album] with IdPK with OneToMany[Long, Album]{
+  def this(albumtitle: String) = {
     this()
     this.albumtitle(albumtitle)
-    this.artistname(artistname)
   }
  
   def getSingleton = Album
@@ -23,11 +22,12 @@ class Album extends LongKeyedMapper[Album] with IdPK {
       valMinLen(1, "you have to input") _ ::
       super.validations
   }
+  object band extends LongMappedMapper(this, Band)
 
-  object artistname extends MappedString(this, 100) {
-    override def validations =
-      valMaxLen(100, "name length must be under 100 characters long ") _  ::
-      valMinLen(1, "you have to input") _ ::
-      super.validations
-  }
+  def getBand(): Band = {
+    Band.findAll(By(Band.id, band.get)).head
+  } 
+
+  object tracks extends MappedOneToMany(Track, Track.album, OrderBy(Track.id, Ascending))
+
 }

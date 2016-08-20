@@ -9,16 +9,16 @@ object Track extends Track with LongKeyedMetaMapper[Track] {
 }
 
 class Track extends LongKeyedMapper[Track] with IdPK with OneToMany[Long, Track]{
-  def this(albumid: Long, seq: Long, tracktitle: String) = {
+  def this(album: Long, seq: Long, tracktitle: String) = {
     this()
-    this.albumid(albumid)
+    this.album(album)
     this.seq(seq)
     this.tracktitle(tracktitle)
   }
 
   def getSingleton = Track
 
-  object albumid extends MappedLong(this)
+  object album extends LongMappedMapper(this, Album)
    
   object seq extends MappedLong(this)
 

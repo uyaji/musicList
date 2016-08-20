@@ -15,13 +15,14 @@ import net.liftweb.http.js.{JsCmd, JsCmds}
 
 class TrackView {
   val albumid = getAlbumId()
+  val album = Album.findAll(By(Album.id, albumid.toLong)).head
   var seq = getSeq() match {
-              case "0" =>(Track.count(By(Track.albumid, albumid.toLong)) + 1).toString
+              case "0" =>(album.tracks.size + 1).toString
               case _ => getSeq()
             }
   var tracktitle = getSeq() match {
                      case "0" => ""
-                     case _   => Track.findAll(By(Track.albumid, albumid.toLong), By(Track.seq, getSeq().toLong)).head.tracktitle.get
+                     case _   => Track.findAll(By(Track.album, albumid.toLong), By(Track.seq, getSeq().toLong)).head.tracktitle.get
                    }
   var upload: Box[FileParamHolder] = Empty
   val id = 0
@@ -43,7 +44,7 @@ class TrackView {
   }
 
   def process() {
-    Track.findAll(By(Track.albumid, albumid.toLong), By(Track.seq, seq.toLong)).size match {
+    Track.findAll(By(Track.album, albumid.toLong), By(Track.seq, seq.toLong)).size match {
       case 0 => addProcess()
       case _ => updateProcess()
     }
@@ -62,8 +63,12 @@ class TrackView {
     try {
       val track: Track = isAtachFileExist(upload) match {
         case true => {
-          val attach: Attach = new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
-          val track: Track = Track.create.albumid(albumid.toLong).seq(seq.toLong).tracktitle(tracktitle)
+          val attaches = Attach.findAll(By(Attach.filename, getFileParamHolder(upload).fileName))
+          val attach: Attach = attaches match {
+            case Nil => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
+            case _ => attaches.head
+          }
+          val track: Track = Track.create.album(albumid.toLong).seq(seq.toLong).tracktitle(tracktitle)
           track.attaches += attach
           track.save
           track
@@ -90,7 +95,7 @@ class TrackView {
   }
 
   def updateProcess() {
-    val track = Track.findAll(By(Track.albumid, albumid.toLong),  By(Track.seq, seq.toLong)).head
+    val track = Track.findAll(By(Track.album, albumid.toLong),  By(Track.seq, seq.toLong)).head
     track.tracktitle(tracktitle)
     if(isAtachFileExist(upload)) {
       val attach = new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
@@ -102,13 +107,32 @@ class TrackView {
   }
 
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
-    val tracks:List[Track] = Track.findAll(By(Track.albumid, getAlbumId().toLong), OrderBy(Track.seq, Ascending))
+//    val tracks:List[Track] = Track.findAll(By(Track.album, getAlbumId().toLong), OrderBy(Track.seq, Ascending))
     bind("track", html, "albumid" -> <input type="text" name="albumid" class="column span-10"/>)
-    tracks.flatMap(trk => {
-      var i = 0
-      trk.attaches.flatMap(atc => {
-        i = i + 1
-        bind("track", html, AttrBindParam("id", trk.id.toString, "id"),
+//    tracks.flatMap(trk => {
+    album.tracks.flatMap(trk => {
+      trk.attaches.size match {
+        case 0 => {
+          bind("track", html, AttrBindParam("id", trk.id.toString, "id"),
+             "seq" -> <span>{
+                   link("track?albumid=" + getAlbumId() + "&seq=" +trk.seq.get, () => (), Text(trk.seq.toString))
+             }</span>,
+             "tracktitle" -> <span>{
+                   trk.tracktitle.toString
+             }</span>,
+             "filename" -> <span>{
+                 Text(" ")
+             }</span>,
+             "delete" -> <span>{
+                   link("track?albumid=" + getAlbumId(), () => delete(trk.id.get), Text("delete"))
+             }</span>
+          );
+        }
+        case _ => {
+          var i = 0
+          trk.attaches.flatMap(atc => {
+            i = i + 1
+            bind("track", html, AttrBindParam("id", trk.id.toString, "id"),
              "seq" -> <span>{
                i match {
                  case 1 =>
@@ -139,8 +163,10 @@ class TrackView {
                    Text("")
                }
              }</span>
-        );
-      })
+            );
+          })
+        }
+      }
     })
   }          
   
