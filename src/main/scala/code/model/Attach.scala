@@ -20,4 +20,7 @@ class Attach extends LongKeyedMapper[Attach] with IdPK {
   object mimetype extends MappedString(this, 40)
   object trackattach extends MappedBinary(this)
   object track extends LongMappedMapper(this, Track)
+  def getTrack(): Track = {
+    Track.findAll(By(Track.id, track.get)).head
+  }
 }

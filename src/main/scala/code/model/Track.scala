@@ -8,19 +8,13 @@ object Track extends Track with LongKeyedMetaMapper[Track] {
   override def dbTableName = "tracks"
 }
 
-class Track extends LongKeyedMapper[Track] with IdPK with OneToMany[Long, Track]{
-  def this(album: Long, seq: Long, tracktitle: String) = {
+class Track extends LongKeyedMapper[Track] with IdPK with ManyToMany with OneToMany[Long, Track] {
+  def this(seq: Long, tracktitle: String) = {
     this()
-    this.album(album)
-    this.seq(seq)
     this.tracktitle(tracktitle)
   }
 
   def getSingleton = Track
-
-  object album extends LongMappedMapper(this, Album)
-   
-  object seq extends MappedLong(this)
 
   object tracktitle extends MappedString(this, 100) {
     override def validations =
@@ -29,6 +23,9 @@ class Track extends LongKeyedMapper[Track] with IdPK with OneToMany[Long, Track]
       super.validations
   }
 
+  object albums extends MappedManyToMany(AlbumTracks, AlbumTracks.track, AlbumTracks.album, Album)
+
   object attaches extends MappedOneToMany(Attach, Attach.track, OrderBy(Attach.id, Ascending))
+  object albumTracks extends MappedOneToMany(AlbumTracks, AlbumTracks.track, OrderBy(AlbumTracks.album, Ascending))
 
 }

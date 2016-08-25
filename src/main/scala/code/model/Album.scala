@@ -8,7 +8,7 @@ object Album extends Album with LongKeyedMetaMapper[Album] {
   override def dbTableName = "albums"
 }
 
-class Album extends LongKeyedMapper[Album] with IdPK with OneToMany[Long, Album]{
+class Album extends LongKeyedMapper[Album] with IdPK with ManyToMany with OneToMany[Long, Album] {
   def this(albumtitle: String) = {
     this()
     this.albumtitle(albumtitle)
@@ -28,6 +28,7 @@ class Album extends LongKeyedMapper[Album] with IdPK with OneToMany[Long, Album]
     Band.findAll(By(Band.id, band.get)).head
   } 
 
-  object tracks extends MappedOneToMany(Track, Track.album, OrderBy(Track.id, Ascending))
+  object tracks extends MappedManyToMany(AlbumTracks, AlbumTracks.album, AlbumTracks.track, Track)
+  object albumTracks extends MappedOneToMany(AlbumTracks, AlbumTracks.album, OrderBy(AlbumTracks.seq, Ascending))
 
 }

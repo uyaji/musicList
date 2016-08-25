@@ -20,9 +20,10 @@ class TrackView {
               case "0" =>(album.tracks.size + 1).toString
               case _ => getSeq()
             }
-  var tracktitle = getSeq() match {
+  var tracktitle: String = getSeq() match {
                      case "0" => ""
-                     case _   => Track.findAll(By(Track.album, albumid.toLong), By(Track.seq, getSeq().toLong)).head.tracktitle.get
+//                     case _   => Album.findAll(By(Album.id, albumid.toLong)).head.tracks.filter{ tr => tr.seq == getSeq().toLong}.head.tracktitle.get
+                     case _   => Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.seq == getSeq().toLong}.head.getTrack.tracktitle.get
                    }
   var upload: Box[FileParamHolder] = Empty
   val id = 0
@@ -44,7 +45,7 @@ class TrackView {
   }
 
   def process() {
-    Track.findAll(By(Track.album, albumid.toLong), By(Track.seq, seq.toLong)).size match {
+    Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.seq == seq.toLong }.size match {
       case 0 => addProcess()
       case _ => updateProcess()
     }
@@ -68,16 +69,46 @@ class TrackView {
             case Nil => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
             case _ => attaches.head
           }
-          val track: Track = Track.create.album(albumid.toLong).seq(seq.toLong).tracktitle(tracktitle)
+          val tracks: List[Track] = Track.findAll(By(Track.tracktitle, tracktitle))
+          val track: Track = tracks match {
+            case Nil => {
+              val track = Track.create.tracktitle(tracktitle)
+              track.attaches += attach
+              track.save
+              track
+            }
+            case _ => tracks.head
+          }
           track.attaches += attach
           track.save
+/*          val album: Album = Album.findAll(By(Album.id, albumid.toLong)).head
+          album.tracks += track
+          album.save
+          val saveAlbum = Album.findAll(By(Album.id, albumid.toLong)).head
+          saveAlbum.albumTracks.filter{atr => atr.track == track.id}.head.setSeq(seq.toLong)
+          saveAlbum.save*/
+          val albumTrack: AlbumTracks = AlbumTracks.create.album(albumid.toLong).track(track.id.get).seq(seq.toLong)
+          albumTrack.save
           track
         }
-        case false => new Track(albumid.toLong, seq.toLong, tracktitle)
+        case false => {
+          val tracks: List[Track] = Track.findAll(By(Track.tracktitle, tracktitle))
+          val track: Track = tracks match {
+            case Nil => Track.create.tracktitle(tracktitle)
+            case _ => tracks.head
+          }
+          track.save
+/*          val album: Album = Album.findAll(By(Album.id, albumid.toLong)).head
+          album.tracks += track
+          album.save*/
+          val albumTrack: AlbumTracks = AlbumTracks.create.album(albumid.toLong).track(track.id.get).seq(seq.toLong)
+          albumTrack.save
+          track
+        }
       }
       track.validate match{
         case Nil => {
-          track.save()
+          track.save
           S.notice("Added " + track.tracktitle)
           S.redirectTo("/track?albumid=" + albumid)
         }
@@ -95,27 +126,26 @@ class TrackView {
   }
 
   def updateProcess() {
-    val track = Track.findAll(By(Track.album, albumid.toLong),  By(Track.seq, seq.toLong)).head
+    val track = Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.seq == seq.toLong}.head.getTrack
     track.tracktitle(tracktitle)
     if(isAtachFileExist(upload)) {
       val attach = new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
       track.attaches += attach
     }
-    track.save()
+    track.save
     S.notice("Updateed " + track.tracktitle)
     S.redirectTo("track?albumid=" + albumid)
   }
 
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
-//    val tracks:List[Track] = Track.findAll(By(Track.album, getAlbumId().toLong), OrderBy(Track.seq, Ascending))
     bind("track", html, "albumid" -> <input type="text" name="albumid" class="column span-10"/>)
-//    tracks.flatMap(trk => {
     album.tracks.flatMap(trk => {
+      val trkSeq: String = trk.albumTracks.filter{atr => atr.album == getAlbumId().toLong }.head.seq.get.toString
       trk.attaches.size match {
         case 0 => {
           bind("track", html, AttrBindParam("id", trk.id.toString, "id"),
              "seq" -> <span>{
-                   link("track?albumid=" + getAlbumId() + "&seq=" +trk.seq.get, () => (), Text(trk.seq.toString))
+                   link("track?albumid=" + getAlbumId() + "&seq=" + trkSeq , () => (), Text(trkSeq))
              }</span>,
              "tracktitle" -> <span>{
                    trk.tracktitle.toString
@@ -136,7 +166,7 @@ class TrackView {
              "seq" -> <span>{
                i match {
                  case 1 =>
-                   link("track?albumid=" + getAlbumId() + "&seq=" +trk.seq.get, () => (), Text(trk.seq.toString))
+                   link("track?albumid=" + getAlbumId() + "&seq=" +trkSeq, () => (), Text(trkSeq))
                  case _ =>
                    Text("")
                }
@@ -186,9 +216,10 @@ class TrackView {
   }
 
   def delete(id: Long): Unit ={
-     val attaches: List[Attach] = Attach.findAll(By(Attach.track, id))
-     attaches.map{ at => at.delete_! }
+//     val attaches: List[Attach] = Attach.findAll(By(Attach.tracks, id))
+//     attaches.map{ at => at.delete_! }
      val tracks: List[Track] = Track.findAll(By(Track.id, id))
+     tracks.head.attaches.map{ at => at.delete_! }
      tracks.head.delete_!
      S.notice("Deleted " + tracks.head.tracktitle)
   }
