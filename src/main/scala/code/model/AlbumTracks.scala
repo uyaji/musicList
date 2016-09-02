@@ -4,9 +4,9 @@ import net.liftweb.mapper._
 import net.liftweb.util._
 import net.liftweb.common._
 
-object AlbumTracks extends AlbumTracks with MetaMapper[AlbumTracks]
+object AlbumTracks extends AlbumTracks with LongKeyedMetaMapper[AlbumTracks]
 
-class AlbumTracks extends Mapper[AlbumTracks] {
+class AlbumTracks extends LongKeyedMapper[AlbumTracks] with IdPK {
   def this(album: Long, track: Long, seq: Long) = {
     this()
     this.seq(seq)

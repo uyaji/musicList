@@ -28,7 +28,7 @@ class Album extends LongKeyedMapper[Album] with IdPK with ManyToMany with OneToM
     Band.findAll(By(Band.id, band.get)).head
   } 
 
-  object tracks extends MappedManyToMany(AlbumTracks, AlbumTracks.album, AlbumTracks.track, Track)
+  object tracks extends MappedManyToMany(AlbumTracks, AlbumTracks.album, AlbumTracks.track, Track, OrderBy(AlbumTracks.seq, Ascending))
   object albumTracks extends MappedOneToMany(AlbumTracks, AlbumTracks.album, OrderBy(AlbumTracks.seq, Ascending))
 
 }
