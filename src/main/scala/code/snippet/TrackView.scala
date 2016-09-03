@@ -50,14 +50,17 @@ class TrackView {
   }
 
   def process() {
-    albumtrcid match {
-      case "0" => {
-        Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.seq == seq.toLong }.size match {
-          case 0 => addProcess()
+    duplicateSeqCheck match {
+      case 0 => {
+        albumtrcid match {
+          case "0" => addProcess()
           case _ => updateProcess()
         }
       }
-      case _ => updateProcess()
+      case _ => {
+        S.error("Can not register.Already exsist track. Please update")
+        S.redirectTo("/track?albumid=" + albumid)
+      }
     }
   }
 
@@ -111,11 +114,20 @@ class TrackView {
       }
       track.validate match{
         case Nil => {
-          track.save
-          val albumTrack: AlbumTracks = AlbumTracks.create.album(albumid.toLong).track(track.id.get).seq(seq.toLong)
-          albumTrack.save
-          S.notice("Added " + track.tracktitle)
-          S.redirectTo("/track?albumid=" + albumid)
+          // 登録時にtrackの重複がないかチェック
+          album.tracks.toList.contains(track) match {
+            case true => {
+              S.error("Duplicate track!")
+              S.redirectTo("/track?albumid=" + albumid)
+            }
+            case false => {
+              track.save
+              val albumTrack: AlbumTracks = AlbumTracks.create.album(albumid.toLong).track(track.id.get).seq(seq.toLong)
+              albumTrack.save
+              S.notice("Added " + track.tracktitle)
+              S.redirectTo("/track?albumid=" + albumid)
+            }
+          }
         }
         case x => {
           S.error("Validation Error!")
@@ -132,13 +144,52 @@ class TrackView {
 
   def updateProcess() {
     val track = Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.id == albumtrcid.toLong}.head.getTrack
-    track.tracktitle(tracktitle)
+    val albumTrack = AlbumTracks.findAll(By(AlbumTracks.id, albumtrcid.toLong)).head
+    // 指定されたTrackが既存かどうかチェック。
+    //   既存: AlbumTracksのアソシエーションの変更
+    //   未存：Trackのtracktitleの更新
+    // trackの重複チェック用フラグ:exist
+    var exist = false
+    // 入力されたtracktitleで,trackオブジェクトをインスタンス化
+    val existTracks = Track.findAll(By(Track.tracktitle, tracktitle))
+    // tracktitleの変更を確認
+    track.tracktitle.equals(tracktitle) match {
+      // 変更がなければ、重複問題なし 
+      case true => exist = true
+      // 変更の場合、重複の可能性あり 
+      case _ => {
+        // 入力trackオブジェクトの有無確認
+        existTracks.size match {
+          case 0 => exist = true
+          case _ => exist = false
+        }
+      }
+    }
+    exist match {
+      // 重複の問題がないので、tracktitleの変更、attachの追加。
+      case true => {
+        track.tracktitle(tracktitle)
+      }
+      // 重複の恐れあり。Album内のtrackをチェック
+      case _ => {
+        val album = Album.findAll(By(Album.id, albumid.toLong)).head
+        album.tracks.toList.contains(existTracks.head) match {
+          // 重複あり
+          case true => {
+            S.error("Duplicate track!")
+            S.redirectTo("/track?albumid=" + albumid)
+          }
+          // 重複がないので、アソシエーションの変更。
+          case false =>
+            albumTrack.track(existTracks.head.id.get)
+        }
+      }
+    }
     if(isAtachFileExist(upload)) {
       val attach = new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
       track.attaches += attach
     }
     track.save
-    val albumTrack = AlbumTracks.findAll(By(AlbumTracks.album, albumid.toLong), By(AlbumTracks.track, track.id.get)).head
     albumTrack.seq(seq.toLong)
     albumTrack.save
     S.notice("Updateed " + track.tracktitle)
@@ -251,4 +302,7 @@ class TrackView {
      }
      S.notice("Deleted " + track.tracktitle)
   }
+
+  def duplicateSeqCheck(): Long =
+        Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.seq == seq.toLong }.size
 }
