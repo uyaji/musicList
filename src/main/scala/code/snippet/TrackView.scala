@@ -17,7 +17,11 @@ class TrackView {
   val albumid = getAlbumId()
   val album = Album.findAll(By(Album.id, albumid.toLong)).head
   var seq = getSeq() match {
-              case "0" =>(album.albumTracks.reduceLeft((at1, at2) => if(at1.seq.get > at2.seq.get) at1 else at2).seq.get + 1).toString
+              case "0" => album.albumTracks.size match {
+                case 0 => "1"
+                case _ =>
+                  (album.albumTracks.reduceLeft((at1, at2) => if(at1.seq.get > at2.seq.get) at1 else at2).seq.get + 1).toString
+              }
               case _ => getSeq()
             }
   val albumtrcid = getAlbumTrcId()
@@ -58,8 +62,14 @@ class TrackView {
         }
       }
       case _ => {
-        S.error("Can not register.Already exsist track. Please update")
-        S.redirectTo("/track?albumid=" + albumid)
+        // seqの変更が無ければ、更新。
+        AlbumTracks.findAll(By(AlbumTracks.id, albumtrcid.toLong)).head.seq.equals(seq.toLong) match {
+          case true => updateProcess()
+          case _ => {
+            S.error("Can not register.Already exsist track. Please update")
+            S.redirectTo("/track?albumid=" + albumid)
+          }
+        }
       }
     }
   }
