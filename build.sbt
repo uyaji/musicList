@@ -1,6 +1,6 @@
-name := "Lift 2.6 starter template"
+name := "musicList"
 
-version := "0.0.4"
+version := "1.0"
 
 organization := "net.liftweb"
 

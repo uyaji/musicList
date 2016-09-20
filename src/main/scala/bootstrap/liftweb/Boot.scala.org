@@ -24,16 +24,10 @@ class Boot {
   def boot {
     if (!DB.jndiJdbcConnAvailable_?) {
       sys.props.put("h2.implicitRelativePath", "true")
-      val url_prefix = Props.get("db.url_prefix").get
-      val host       = System.getenv(Props.get("db.host").get)
-      val port       = System.getenv(Props.get("db.port").get)
-      val database   = Props.get("db.database").get
-      val url = url_prefix + host + ":" + port + "/" + database + "?useUnicode=true&characterEncoding=utf8"
       val vendor = 
-	new StandardDBVendor(Props.get("db.driver") openOr "com.mysql.jdbc.Driver",
-/*			     Props.get("db.url") openOr 
-			     "jdbc:mysql://localhost:3306/musiclist",*/
-                             url,
+	new StandardDBVendor(Props.get("db.driver") openOr "org.h2.Driver",
+			     Props.get("db.url") openOr 
+			     "jdbc:h2:lift_proto.db;AUTO_SERVER=TRUE",
 			     Props.get("db.user"), Props.get("db.password"))
 
       LiftRules.unloadHooks.append(vendor.closeAllConnections_! _)
