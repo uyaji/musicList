@@ -1,4 +1,0 @@
-db.driver   =com.mysql.jdbc.Driver
-db.url      =jdbc:mysql://127.2.212.2:3306/musiclist
-db.user     =adminahuZ4Wv
-db.password =E_7dXBP8t2yx

@@ -24,11 +24,16 @@ class Boot {
   def boot {
     if (!DB.jndiJdbcConnAvailable_?) {
       sys.props.put("h2.implicitRelativePath", "true")
-      val url_prefix = Props.get("db.url_prefix").get
-      val host       = System.getenv(Props.get("db.host").get)
-      val port       = System.getenv(Props.get("db.port").get)
-      val database   = Props.get("db.database").get
-      val url = url_prefix + host + ":" + port + "/" + database + "?useUnicode=true&characterEncoding=utf8"
+      val url = (Props.get("db.url"): Option[String]) match {
+        case Some(url) => url
+        case _ => { 
+          val url_prefix = Props.get("db.url_prefix").getOrElse("")
+          val host       = System.getenv(Props.get("db.host").getOrElse(""))
+          val port       = System.getenv(Props.get("db.port").getOrElse(""))
+          val database   = Props.get("db.database").getOrElse("")
+          url_prefix + host + ":" + port + "/" + database + "?useUnicode=true&characterEncoding=utf8"
+        }
+      }
       val vendor = 
 	new StandardDBVendor(Props.get("db.driver") openOr "com.mysql.jdbc.Driver",
 /*			     Props.get("db.url") openOr 
@@ -48,7 +53,8 @@ class Boot {
 
     // Download url
     import code.lib._
-    LiftRules.statelessDispatchTable.append{
+//    LiftRules.statelessDispatchTable.append{
+    LiftRules.statelessDispatch.append{
       case Req( "lob" :: id :: Nil, _, _ ) =>
         () => TrackDownload.download(id.toLong)
     }

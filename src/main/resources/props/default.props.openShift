@@ -1,0 +1,7 @@
+db.driver     =com.mysql.jdbc.Driver
+db.user       =adminR96wxHw
+db.password   =K2jtZ3DaTT7f
+db.url_prefix =jdbc:mysql://
+db.host       =OPENSHIFT_MYSQL_DB_HOST
+db.port       =OPENSHIFT_MYSQL_DB_PORT
+db.database   =musiclist
