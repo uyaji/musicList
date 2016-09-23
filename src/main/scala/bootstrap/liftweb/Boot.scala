@@ -25,12 +25,15 @@ class Boot {
     if (!DB.jndiJdbcConnAvailable_?) {
       sys.props.put("h2.implicitRelativePath", "true")
       val url = (Props.get("db.url"): Option[String]) match {
+        // default.propsにdb.urlのキーがあれば、それを採用。
         case Some(url) => url
+        // 無ければ、各々から組み立てる。その際に環境変数から値を取得。
         case _ => { 
           val url_prefix = Props.get("db.url_prefix").getOrElse("")
           val host       = System.getenv(Props.get("db.host").getOrElse(""))
           val port       = System.getenv(Props.get("db.port").getOrElse(""))
           val database   = Props.get("db.database").getOrElse("")
+          // 2バイト文字を使用出来るように、urlにパラメータを追加。
           url_prefix + host + ":" + port + "/" + database + "?useUnicode=true&characterEncoding=utf8"
         }
       }
