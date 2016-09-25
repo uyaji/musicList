@@ -59,7 +59,7 @@ class AlbumView {
     albums.flatMap(alb =>
       bind("album", html, AttrBindParam("id", alb.id.toString, "id"),
                           "albumtitle" -> <span>{link("track?albumid=" + alb.id.toString, () => (), Text(alb.albumtitle.get))}</span>,
-                          "artistname" -> <span>{alb.getBand().bandname}</span>
+                          "artistname" -> <span>{link("band?bandid="+ alb.getBand().id.toString, () => (), Text(alb.getBand().bandname.get))}</span>
       )
     )
   }          
