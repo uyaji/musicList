@@ -10,6 +10,31 @@
       <div class="lift:BandView.bandName">
         <h3>Band name : <band:name></band:name></h3>
       </div>
+      <form class="lift:BandView.add?form=post">
+        <label for="seq" class="column span-10">seq</label><br />
+        <input type="text" name="seq" class="column span-10"/><br />
+        <label for="startat" class="column span-10">start at</label><br />
+        <input type="text" name="startat" class="column span-10"/><br />
+        <label for="endat" class="column span-10">end at</label><br />
+        <input type="text" name="endat" class="column span-10"/><br />
+        <input type="submit" value="Add Seq!" style="margin-top:5px;"/>
+      </form>
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th>SEQ</th>
+              <th>DURING</th>
+            </tr>
+          </thead>
+          <tbody id="band_history" class="lift:BandView.list">
+            <tr band>
+              <td><band:seq></band:seq></td>
+              <td><band:startat></band:startat> - <band:endat></band:endat></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </body>
 </html>

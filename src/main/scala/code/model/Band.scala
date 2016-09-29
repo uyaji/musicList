@@ -8,7 +8,7 @@ object Band extends Band with LongKeyedMetaMapper[Band] {
   override def dbTableName = "bands"
 }
 
-class Band extends LongKeyedMapper[Band] with IdPK with ManyToMany with OneToMany[Long, Band] {
+class Band extends LongKeyedMapper[Band] with IdPK with OneToMany[Long, Band] {
   def this(bandname: String) = {
     this()
     this.bandname(bandname)
@@ -23,6 +23,6 @@ class Band extends LongKeyedMapper[Band] with IdPK with ManyToMany with OneToMan
       super.validations
   }
 
-  object members extends MappedManyToMany(BandMembers, BandMembers.band, BandMembers.member, Member)
+  object bandSeqs extends MappedOneToMany(BandSeq, BandSeq.band, OrderBy(BandSeq.seq, Ascending))
   object albums extends MappedOneToMany(Album, Album.band, OrderBy(Album.id, Ascending))
 }

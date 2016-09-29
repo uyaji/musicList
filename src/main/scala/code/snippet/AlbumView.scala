@@ -6,6 +6,7 @@ import Helpers._
 
 import code.model.Album
 import code.model.Band
+import code.model.BandSeq
 import net.liftweb.mapper._
 import net.liftweb.http._
 import S._
@@ -29,7 +30,11 @@ class AlbumView {
     def addAlbum() = {
       val bands = Band.findAll(By(Band.bandname,artistname)) 
       val band = bands match {
-        case Nil => new Band(artistname)
+        case Nil => {
+          val band = new Band(artistname)
+          band.bandSeqs += new BandSeq(null, null)
+          band
+        }
         case _ => bands.head
       }
       var album = new Album(albumtitle)

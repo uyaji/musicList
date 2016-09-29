@@ -23,5 +23,5 @@ class Member extends LongKeyedMapper[Member] with IdPK with ManyToMany {
       super.validations
   }
 
-  object bands extends MappedManyToMany(BandMembers, BandMembers.member, BandMembers.band, Band)
+  object bandseqs extends MappedManyToMany(BandSeqMembers, BandSeqMembers.member, BandSeqMembers.bandseq, BandSeq)
 }
