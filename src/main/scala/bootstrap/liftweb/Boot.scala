@@ -75,6 +75,8 @@ class Boot {
       Menu(Loc("track", Link(List("track"), true, "/track"), 
 	       "")),
       Menu(Loc("band", Link(List("band"), true, "/band"), 
+	       "")),
+      Menu(Loc("member", Link(List("member"), true, "/member"), 
 	       "")))
 
     def sitemapMutators = User.sitemapMutator

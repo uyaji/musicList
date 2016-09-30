@@ -14,20 +14,20 @@ import SHtml._
 import net.liftweb.http.js.{JsCmd, JsCmds}
 
 class TrackView {
-  val albumid = getAlbumId()
+  val albumid = getParam("albumid")
   val album = Album.findAll(By(Album.id, albumid.toLong)).head
-  var seq = getSeq() match {
+  var seq = getParam("seq") match {
               case "0" => album.albumTracks.size match {
                 case 0 => "1"
                 case _ =>
                   (album.albumTracks.reduceLeft((at1, at2) => if(at1.seq.get > at2.seq.get) at1 else at2).seq.get + 1).toString
               }
-              case _ => getSeq()
+              case _ => getParam("seq")
             }
-  val albumtrcid = getAlbumTrcId()
-  var tracktitle: String = getSeq() match {
+  val albumtrcid = getParam("albumtrcid")
+  var tracktitle: String = getParam("seq") match {
                      case "0" => ""
-                     case _   => Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.seq == getSeq().toLong}.head.getTrack.tracktitle.get
+                     case _   => Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.seq == getParam("seq").toLong}.head.getTrack.tracktitle.get
                    }
   var upload: Box[FileParamHolder] = Empty
   val id = 0
@@ -63,11 +63,19 @@ class TrackView {
       }
       case _ => {
         // seqの変更が無ければ、更新。
-        AlbumTracks.findAll(By(AlbumTracks.id, albumtrcid.toLong)).head.seq.equals(seq.toLong) match {
-          case true => updateProcess()
-          case _ => {
+        albumtrcid match {
+          case "0" => {
             S.error("Can not register.Already exsist track. Please update")
             S.redirectTo("/track?albumid=" + albumid)
+          }
+          case _ => {
+            AlbumTracks.findAll(By(AlbumTracks.id, albumtrcid.toLong)).head.seq.equals(seq.toLong) match {
+              case true => updateProcess()
+              case _ => {
+                S.error("Can not register.Already exsist track. Please update")
+                S.redirectTo("/track?albumid=" + albumid)
+              }
+            }
           }
         }
       }
@@ -209,13 +217,13 @@ class TrackView {
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
     bind("track", html, "albumid" -> <input type="text" name="albumid" class="column span-10"/>)
     album.tracks.flatMap(trk => {
-      val trkSeq: String = trk.albumTracks.filter{atr => atr.album == getAlbumId().toLong }.head.seq.get.toString
-      val albumtrcid: String = trk.albumTracks.filter{atr => atr.album == getAlbumId().toLong }.head.id.get.toString
+      val trkSeq: String = trk.albumTracks.filter{atr => atr.album == getParam("albumid").toLong }.head.seq.get.toString
+      val albumtrcid: String = trk.albumTracks.filter{atr => atr.album == getParam("albumid").toLong }.head.id.get.toString
       trk.attaches.size match {
         case 0 => {
           bind("track", html, AttrBindParam("id", trk.id.toString, "id"),
              "seq" -> <span>{
-                   link("track?albumid=" + getAlbumId() + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid, () => (), Text(trkSeq))
+                   link("track?albumid=" + getParam("albumid") + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid, () => (), Text(trkSeq))
              }</span>,
              "tracktitle" -> <span>{
                    trk.tracktitle.toString
@@ -224,7 +232,7 @@ class TrackView {
                  Text(" ")
              }</span>,
              "delete" -> <span>{
-                   link("track?albumid=" + getAlbumId(), () => delete(trk.id.get,0), Text("delete"))
+                   link("track?albumid=" + getParam("albumid"), () => delete(trk.id.get,0), Text("delete"))
              }</span>
           );
         }
@@ -236,7 +244,7 @@ class TrackView {
              "seq" -> <span>{
                i match {
                  case 1 =>
-                   link("track?albumid=" + getAlbumId() + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid, () => (), Text(trkSeq))
+                   link("track?albumid=" + getParam("albumid") + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid, () => (), Text(trkSeq))
                  case _ =>
                    Text("")
                }
@@ -256,7 +264,7 @@ class TrackView {
                }
              }</span>,
              "delete" -> <span>{
-               link("track?albumid=" + getAlbumId(), () => delete(trk.id.get, atc.id.get), Text("delete"))
+               link("track?albumid=" + getParam("albumid"), () => delete(trk.id.get, atc.id.get), Text("delete"))
              }</span>
             );
           })
@@ -265,54 +273,40 @@ class TrackView {
     })
   }          
   
-  private def getAlbumId(): String = {
-    val albumId = S.param("albumid") match {
-                    case Full(id) => id
-                    case _ => "1"
-                  }
-    albumId
-  }
-
-  private def getSeq(): String = {
-    S.param("seq") match {
-       case Full(id) => id
-       case _ => "0"
+  private 
+    def getParam(key: String): String = {
+      S.param(key) match {
+        case Full(value) => value
+        case _ => "0"
+      }
     }
-  }
 
-  private def getAlbumTrcId(): String = {
-    S.param("albumtrcid") match {
-       case Full(id) => id
-       case _ => "0"
+    def delete(trackid: Long, attachid: Long): Unit ={
+      // attchを削除した結果、attach recordが存在しなければ、trackを削除
+      val attaches: List[Attach] = Attach.findAll(By(Attach.id, attachid))
+      attaches.size match {
+        case 0 =>
+        case _ => val result = attaches.head.delete_!
+      }
+      val comAttaches: List[Attach] = Attach.findAll(By(Attach.track, trackid))
+      val track: Track = Track.findAll(By(Track.id, trackid)).head
+      comAttaches.size match {
+        case 0 => {
+          track.albums.size match {
+            case 1 => {
+              track.delete_!
+            }
+            case _ => ()
+            val album = Album.findAll(By(Album.id, getParam("albumid").toLong)).head
+            album.tracks -= track
+            album.save
+          }
+        }
+        case _ =>
+      }
+      S.notice("Deleted " + track.tracktitle)
     }
-  }
 
-  def delete(trackid: Long, attachid: Long): Unit ={
-     // attchを削除した結果、attach recordが存在しなければ、trackを削除
-     val attaches: List[Attach] = Attach.findAll(By(Attach.id, attachid))
-     attaches.size match {
-       case 0 =>
-       case _ => val result = attaches.head.delete_!
-     }
-     val comAttaches: List[Attach] = Attach.findAll(By(Attach.track, trackid))
-     val track: Track = Track.findAll(By(Track.id, trackid)).head
-     comAttaches.size match {
-       case 0 => {
-         track.albums.size match {
-           case 1 => {
-             track.delete_!
-           }
-           case _ => ()
-           val album = Album.findAll(By(Album.id, getAlbumId().toLong)).head
-           album.tracks -= track
-           album.save
-         }
-       }
-       case _ =>
-     }
-     S.notice("Deleted " + track.tracktitle)
-  }
-
-  def duplicateSeqCheck(): Long =
-        Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.seq == seq.toLong }.size
+    def duplicateSeqCheck(): Long =
+          Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.seq == seq.toLong }.size
 }

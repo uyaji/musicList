@@ -72,7 +72,7 @@ class BandView {
       bandseqs.flatMap(bds =>
         bind("band", html,
                         "seq" -> <span>{bds.seq.get}</span>,
-                        "startat" -> <span>{bds.bandSeqStartAt.get.toString.substring(0,4)}</span>,
+                        "startat" -> <span>{link("member?bandid=" + bds.band.toString + "&seq=" + bds.seq.toString, () => (), Text(bds.bandSeqStartAt.get.toString.substring(0,4)))}</span>,
                         "endat" -> <span>{bds.bandSeqEndAt.get.toString.substring(0, 4)}</span>
         )
       )
