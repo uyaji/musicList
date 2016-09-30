@@ -12,6 +12,7 @@ import net.liftweb.http._
 import S._
 import SHtml._
 import net.liftweb.http.js.{JsCmd, JsCmds}
+import java.util.Date
 
 class AlbumView {
   def list(html: NodeSeq): NodeSeq = {
@@ -32,7 +33,7 @@ class AlbumView {
       val band = bands match {
         case Nil => {
           val band = new Band(artistname)
-          band.bandSeqs += new BandSeq(null, null)
+          band.bandSeqs += new BandSeq(new Date(0), new Date(0))
           band
         }
         case _ => bands.head
