@@ -54,31 +54,9 @@ class TrackView {
   }
 
   def process() {
-    duplicateSeqCheck match {
-      case 0 => {
-        albumtrcid match {
-          case "0" => addProcess()
-          case _ => updateProcess()
-        }
-      }
-      case _ => {
-        // seqの変更が無ければ、更新。
-        albumtrcid match {
-          case "0" => {
-            S.error("Can not register.Already exsist track. Please update")
-            S.redirectTo("/track?albumid=" + albumid)
-          }
-          case _ => {
-            AlbumTracks.findAll(By(AlbumTracks.id, albumtrcid.toLong)).head.seq.equals(seq.toLong) match {
-              case true => updateProcess()
-              case _ => {
-                S.error("Can not register.Already exsist track. Please update")
-                S.redirectTo("/track?albumid=" + albumid)
-              }
-            }
-          }
-        }
-      }
+    Process.select(duplicateSeqCheck, changeSeqCheck)(albumid.toLong, seq.toLong, albumtrcid.toLong) match {
+      case "add" => addProcess()
+      case "update" => updateProcess()
     }
   }
 
@@ -109,13 +87,6 @@ class TrackView {
             case _ => tracks.head
           }
           track.attaches += attach
-/*          val album: Album = Album.findAll(By(Album.id, albumid.toLong)).head
-          album.tracks += track
-          album.save
-          val saveAlbum = Album.findAll(By(Album.id, albumid.toLong)).head
-          saveAlbum.albumTracks.filter{atr => atr.track == track.id}.head.setSeq(seq.toLong)
-          album.albumTracks.filter{atr => atr.track == track.id}.head.setSeq(seq.toLong)
-          saveAlbum.save*/
           track
         }
         case false => {
@@ -124,9 +95,6 @@ class TrackView {
             case Nil => Track.create.tracktitle(tracktitle)
             case _ => tracks.head
           }
-/*          val album: Album = Album.findAll(By(Album.id, albumid.toLong)).head
-          album.tracks += track
-          album.save*/
           track
         }
       }
@@ -307,6 +275,47 @@ class TrackView {
       S.notice("Deleted " + track.tracktitle)
     }
 
-    def duplicateSeqCheck(): Long =
-          Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.seq == seq.toLong }.size
+    def duplicateSeqCheck(albumid: Long, seq: Long): Boolean =
+          Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.seq == seq }.size.equals(0)
+    def changeSeqCheck(albumTrackId: Long, seq: Long): Boolean =
+          AlbumTracks.findAll(By(AlbumTracks.id, albumTrackId)).head.seq.equals(seq)
+
+}
+
+object Process {
+  def select(duplicateCheck: (Long, Long) => Boolean, changeKeyCheck: (Long, Long) => Boolean)(target: Long, key: Long, relationKey: Long): String = {
+    duplicateCheck(target, key) match {
+      // seqの重複なし。
+      case true => {
+        relationKey match {
+          // 新規登録
+          case 0 => "add"
+          // 既存データ表示からの変更登録。
+          case _ => "update"
+        }
+      }
+      // seqの重複あり。
+      case _ => {
+        // seqの変更が無ければ、更新。
+        relationKey match {
+          // 新規登録からの既存SEQへの変更。
+          case 0 => {
+            S.error("Can not register.Already exsist track. Please update")
+            S.redirectTo("/track?albumid=" + target.toString)
+          }
+          // 既存データ表示からの変更登録。
+          case _ => {
+            changeKeyCheck(relationKey, key) match {
+              // seqの変更が無ければ、更新。
+              case true => "update"
+              case _ => {
+                S.error("Can not register.Already exsist track. Please update")
+                S.redirectTo("/track?albumid=" + target.toString)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
