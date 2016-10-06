@@ -15,9 +15,19 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 class BandView {
-  val bandid = getBandId()
+  val bandid = Param.get("bandid")
   val band = Band.findAll(By(Band.id, bandid.toLong)).head
-
+  var seq = Param.get("seq") match {
+              case "0" => band.bandSeqs.size match {
+                  case 0 => "1"
+                  case _ => (band.bandSeqs.reduceLeft((bs1, bs2) => if(bs1.seq.get > bs2.seq.get) bs1 else bs2).seq.get + 1).toString
+              }
+              case _  => Param.get("seq")
+            }
+  val bandSeq = Param.get("seq") match {
+                  case "0" => new BandSeq(new Date(0), new Date(0), seq.toInt)
+                  case _   => band.bandSeqs.filter{ bs => bs.seq == seq.toInt }.head
+                }
   def list(html: NodeSeq): NodeSeq = {
     def renderRow(): NodeSeq = {
       def reDraw() = JsCmds.Replace("bad_history", renderRow())
@@ -32,9 +42,8 @@ class BandView {
   }
   
   def add(form: NodeSeq): NodeSeq = {
-    var seq = ""
-    var startat = ""
-    var endat = ""
+    var startat = dateToString(bandSeq.bandSeqStartAt.get)
+    var endat = dateToString(bandSeq.bandSeqEndAt.get)
 
     def addSeq() = {
       band.bandSeqs += new BandSeq(stringToDate(startat), stringToDate(endat), seq.toInt)
@@ -45,9 +54,9 @@ class BandView {
 
     def doBind(form: NodeSeq): NodeSeq = {
       var sel =
-        "name=seq" #> SHtml.onSubmit(seq = _) &
-        "name=startat" #> SHtml.onSubmit(startat = _) &
-        "name=endat" #> SHtml.onSubmit(endat = _) &
+        "name=seq" #> SHtml.text( seq, seq = _, "readonly" -> "readonly") &
+        "name=startat" #> SHtml.text( startat, startat = _) &
+        "name=endat" #> SHtml.text( endat, endat = _) &
         "type=submit" #> SHtml.onSubmitUnit(addSeq);
       return sel(form)
     }
@@ -55,26 +64,32 @@ class BandView {
   }
 
   private 
-    def getBandId(): String = {
-      S.param("bandid") match {
-        case Full(id) => id
-        case _ => "0"
-      }
-    }
-
     def stringToDate(strDate: String): Date = {
       val sdf = new SimpleDateFormat("yyyy");
       sdf.parse(strDate.substring(0,4)) 
+    }
+
+    def dateToString(date: Date): String = {
+      val sdf = new SimpleDateFormat("yyyy");
+      sdf.format(date) 
     }
 
     def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
       var bandseqs: List[BandSeq] = BandSeq.findAll(By(BandSeq.band, bandid.toLong), OrderBy(BandSeq.seq, Ascending))
       bandseqs.flatMap(bds =>
         bind("band", html,
-                        "seq" -> <span>{bds.seq.get}</span>,
+                        "seq" -> <span>{
+                           link("band?bandid=" + Param.get("bandid") + "&seq=" + bds.seq.toString , () => (), Text(bds.seq.get.toString))
+                        }</span>,
                         "startat" -> <span>{link("member?bandid=" + bds.band.toString + "&seq=" + bds.seq.toString, () => (), Text(bds.bandSeqStartAt.get.toString.substring(0,4)))}</span>,
-                        "endat" -> <span>{bds.bandSeqEndAt.get.toString.substring(0, 4)}</span>
+                        "endat" -> <span>{bds.bandSeqEndAt.get.toString.substring(0, 4)}</span>,
+                        "delete" -> <span>{link("band?bandid=" + bandid, () => delete(bandid.toLong, bds.seq.get), Text("delete"))}</span>
         )
       )
     }
+    
+    def delete(bandid: Long, seq: Long): Unit = {
+      val bandSeq = BandSeq.findAll(By(BandSeq.band, bandid), By(BandSeq.seq, seq.toInt)).head
+      bandSeq.delete_!
+   }
 }

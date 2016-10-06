@@ -10,4 +10,5 @@ class BandSeqMembers extends Mapper[BandSeqMembers] {
   def getSingleton = BandSeqMembers
   object bandseq extends LongMappedMapper(this, BandSeq)
   object member extends LongMappedMapper(this, Member)
+  object seq extends MappedLong(this)
 }
