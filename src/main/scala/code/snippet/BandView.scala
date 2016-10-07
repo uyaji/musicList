@@ -1,3 +1,4 @@
+//ToDo 最終行のみdelete action表示すること 2016/10/07
 package code.snippet
 
 import scala.xml.{NodeSeq, Text}
@@ -17,6 +18,7 @@ import java.util.Date
 class BandView {
   val bandid = Param.get("bandid")
   val band = Band.findAll(By(Band.id, bandid.toLong)).head
+  var initSeq = Param.get("seq")
   var seq = Param.get("seq") match {
               case "0" => band.bandSeqs.size match {
                   case 0 => "1"
@@ -28,6 +30,9 @@ class BandView {
                   case "0" => new BandSeq(new Date(0), new Date(0), seq.toInt)
                   case _   => band.bandSeqs.filter{ bs => bs.seq == seq.toInt }.head
                 }
+  var startat = dateToString(bandSeq.bandSeqStartAt.get)
+  var endat = dateToString(bandSeq.bandSeqEndAt.get)
+
   def list(html: NodeSeq): NodeSeq = {
     def renderRow(): NodeSeq = {
       def reDraw() = JsCmds.Replace("bad_history", renderRow())
@@ -42,7 +47,7 @@ class BandView {
   }
   
   def add(form: NodeSeq): NodeSeq = {
-    var startat = dateToString(bandSeq.bandSeqStartAt.get)
+/*    var startat = dateToString(bandSeq.bandSeqStartAt.get)
     var endat = dateToString(bandSeq.bandSeqEndAt.get)
 
     def addSeq() = {
@@ -50,17 +55,40 @@ class BandView {
       band.save
       S.notice("Added Seq " + seq)
       S.redirectTo("/band?bandid=" + bandid)
-    }
+    }*/
 
     def doBind(form: NodeSeq): NodeSeq = {
       var sel =
         "name=seq" #> SHtml.text( seq, seq = _, "readonly" -> "readonly") &
         "name=startat" #> SHtml.text( startat, startat = _) &
         "name=endat" #> SHtml.text( endat, endat = _) &
-        "type=submit" #> SHtml.onSubmitUnit(addSeq);
+        "type=submit" #> SHtml.onSubmitUnit(registerSeq);
       return sel(form)
     }
     doBind(form)
+  }
+
+  def registerSeq() {
+    Process.select(duplicateSeqCheck, _==_ )(bandid.toLong, initSeq.toLong, initSeq.toLong) match {
+      case "add" => addSeq
+      case "update" => updateSeq
+    }
+  }
+
+  def addSeq() {
+    band.bandSeqs += new BandSeq(stringToDate(startat), stringToDate(endat), seq.toInt)
+    band.save
+    S.notice("Added Seq " + seq)
+    S.redirectTo("/band?bandid=" + bandid)
+  }
+
+  def updateSeq() {
+    var bandSeq = band.bandSeqs.filter{ bs => bs.seq == seq.toInt }.head
+    bandSeq.bandSeqStartAt(stringToDate(startat))
+    bandSeq.bandSeqEndAt(stringToDate(endat))
+    bandSeq.save
+    S.notice("Updated Seq " + seq)
+    S.redirectTo("/band?bandid=" + bandid)
   }
 
   private 
@@ -92,4 +120,8 @@ class BandView {
       val bandSeq = BandSeq.findAll(By(BandSeq.band, bandid), By(BandSeq.seq, seq.toInt)).head
       bandSeq.delete_!
    }
+
+   def duplicateSeqCheck(bandid: Long, seq: Long): Boolean =
+         Band.findAll(By(Band.id, bandid)).head.bandSeqs.filter{ bs => bs.seq == seq }.size.equals(0)
+
 }
