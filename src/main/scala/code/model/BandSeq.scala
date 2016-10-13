@@ -31,6 +31,6 @@ class BandSeq extends LongKeyedMapper[BandSeq] with IdPK with ManyToMany {
     override def defaultValue = 1
   }
 
-  object members extends MappedManyToMany(BandSeqMembers, BandSeqMembers.bandseq, BandSeqMembers.member, Member)
+  object players extends MappedManyToMany(BandSeqPlayers, BandSeqPlayers.bandseq, BandSeqPlayers.player, Player)
   object band extends LongMappedMapper(this, Band)
 }

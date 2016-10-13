@@ -1,7 +1,8 @@
 db.driver     =com.mysql.jdbc.Driver
-db.user       =adminR96wxHw
+db.url        =jdbc:mysql://localhost:3306/music_list
+db.user       =root
 db.password   =password
-db.url_prefix =jdbc:mysql://
-db.host       =OPENSHIFT_MYSQL_DB_HOST
-db.port       =OPENSHIFT_MYSQL_DB_PORT
-db.database   =musiclist
+db.url_prefix =
+db.host       =
+db.port       =
+db.database   =

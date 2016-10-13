@@ -47,16 +47,6 @@ class BandView {
   }
   
   def add(form: NodeSeq): NodeSeq = {
-/*    var startat = dateToString(bandSeq.bandSeqStartAt.get)
-    var endat = dateToString(bandSeq.bandSeqEndAt.get)
-
-    def addSeq() = {
-      band.bandSeqs += new BandSeq(stringToDate(startat), stringToDate(endat), seq.toInt)
-      band.save
-      S.notice("Added Seq " + seq)
-      S.redirectTo("/band?bandid=" + bandid)
-    }*/
-
     def doBind(form: NodeSeq): NodeSeq = {
       var sel =
         "name=seq" #> SHtml.text( seq, seq = _, "readonly" -> "readonly") &
@@ -104,15 +94,28 @@ class BandView {
 
     def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
       var bandseqs: List[BandSeq] = BandSeq.findAll(By(BandSeq.band, bandid.toLong), OrderBy(BandSeq.seq, Ascending))
+      val seqSize = bandseqs.size
       bandseqs.flatMap(bds =>
-        bind("band", html,
-                        "seq" -> <span>{
-                           link("band?bandid=" + Param.get("bandid") + "&seq=" + bds.seq.toString , () => (), Text(bds.seq.get.toString))
-                        }</span>,
-                        "startat" -> <span>{link("member?bandid=" + bds.band.toString + "&seq=" + bds.seq.toString, () => (), Text(bds.bandSeqStartAt.get.toString.substring(0,4)))}</span>,
-                        "endat" -> <span>{bds.bandSeqEndAt.get.toString.substring(0, 4)}</span>,
-                        "delete" -> <span>{link("band?bandid=" + bandid, () => delete(bandid.toLong, bds.seq.get), Text("delete"))}</span>
-        )
+        bds.seq.equals(seqSize) match {
+          case true =>
+                          bind("band", html,
+                          "seq" -> <span>{
+                             link("band?bandid=" + Param.get("bandid") + "&seq=" + bds.seq.toString , () => (), Text(bds.seq.get.toString))
+                          }</span>,
+                          "startat" -> <span>{link("member?bandid=" + bds.band.toString + "&seq=" + bds.seq.toString, () => (), Text(bds.bandSeqStartAt.get.toString.substring(0,4)))}</span>,
+                          "endat" -> <span>{bds.bandSeqEndAt.get.toString.substring(0, 4)}</span>,
+                          "delete" -> <span>{link("band?bandid=" + bandid, () => delete(bandid.toLong, bds.seq.get), Text("delete"))}</span>
+                          )
+          case _ => 
+                          bind("band", html,
+                          "seq" -> <span>{
+                             link("band?bandid=" + Param.get("bandid") + "&seq=" + bds.seq.toString , () => (), Text(bds.seq.get.toString))
+                          }</span>,
+                          "startat" -> <span>{link("member?bandid=" + bds.band.toString + "&seq=" + bds.seq.toString, () => (), Text(bds.bandSeqStartAt.get.toString.substring(0,4)))}</span>,
+                          "endat" -> <span>{bds.bandSeqEndAt.get.toString.substring(0, 4)}</span>,
+                          "delete" -> <span></span>
+                          )
+        }
       )
     }
     
