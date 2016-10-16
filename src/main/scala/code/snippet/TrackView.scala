@@ -16,14 +16,9 @@ import net.liftweb.http.js.{JsCmd, JsCmds}
 class TrackView {
   val albumid = Param.get("albumid")
   val album = Album.findAll(By(Album.id, albumid.toLong)).head
-  var seq = Param.get("seq") match {
-              case "0" => album.albumTracks.size match {
-                case 0 => "1"
-                case _ =>
-                  (album.albumTracks.reduceLeft((at1, at2) => if(at1.seq.get > at2.seq.get) at1 else at2).seq.get + 1).toString
-              }
-              case _ => Param.get("seq")
-            }
+  var seq = Generater.generateSeq(album.albumTracks.size, 
+              getMaxSeq,
+              Param.get("seq"))
   val albumtrcid = Param.get("albumtrcid")
   var tracktitle: String = Param.get("seq") match {
                      case "0" => ""
@@ -279,6 +274,7 @@ class TrackView {
           Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.seq == seq }.size.equals(0)
     def changeSeqCheck(albumTrackId: Long, seq: Long): Boolean =
           AlbumTracks.findAll(By(AlbumTracks.id, albumTrackId)).head.seq.equals(seq)
+    def getMaxSeq(): Long = album.albumTracks.reduceLeft((at1, at2) => if(at1.seq.get > at2.seq.get) at1 else at2).seq.get + 1
 
 }
 
@@ -316,6 +312,18 @@ object Process {
           }
         }
       }
+    }
+  }
+}
+
+object Generater {
+  def generateSeq(rowCount: Long, getMaxSeq: () => Long, paramSeq: String): String = {
+    paramSeq match {
+      case "0" => rowCount match {
+        case 0 => "1"
+        case _ => getMaxSeq().toString
+      }
+      case _ => paramSeq
     }
   }
 }
