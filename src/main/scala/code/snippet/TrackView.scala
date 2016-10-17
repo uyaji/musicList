@@ -17,7 +17,7 @@ class TrackView {
   val albumid = Param.get("albumid")
   val album = Album.findAll(By(Album.id, albumid.toLong)).head
   var seq = Generater.generateSeq(album.albumTracks.size, 
-              getMaxSeq,
+              () => album.albumTracks.reduceLeft((at1, at2) => if(at1.seq.get > at2.seq.get) at1 else at2).seq.get + 1,
               Param.get("seq"))
   val albumtrcid = Param.get("albumtrcid")
   var tracktitle: String = Param.get("seq") match {
@@ -237,13 +237,6 @@ class TrackView {
   }          
   
   private 
-/*    def getParam(key: String): String = {
-      S.param(key) match {
-        case Full(value) => value
-        case _ => "0"
-      }
-    }*/
-
     def delete(trackid: Long, attachid: Long): Unit ={
       // attchを削除した結果、attach recordが存在しなければ、trackを削除
       val attaches: List[Attach] = Attach.findAll(By(Attach.id, attachid))
@@ -274,8 +267,6 @@ class TrackView {
           Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.seq == seq }.size.equals(0)
     def changeSeqCheck(albumTrackId: Long, seq: Long): Boolean =
           AlbumTracks.findAll(By(AlbumTracks.id, albumTrackId)).head.seq.equals(seq)
-    def getMaxSeq(): Long = album.albumTracks.reduceLeft((at1, at2) => if(at1.seq.get > at2.seq.get) at1 else at2).seq.get + 1
-
 }
 
 object Process {

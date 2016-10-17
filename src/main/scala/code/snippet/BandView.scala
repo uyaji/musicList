@@ -20,7 +20,7 @@ class BandView {
   val band = Band.findAll(By(Band.id, bandid.toLong)).head
   var initSeq = Param.get("seq")
   var seq = Generater.generateSeq(band.bandSeqs.size,
-              getMaxSeq,
+              () => band.bandSeqs.reduceLeft((bs1, bs2) => if(bs1.seq.get > bs2.seq.get) bs1 else bs2).seq.get + 1,
               Param.get("seq"))
   val bandSeq = Param.get("seq") match {
                   case "0" => new BandSeq(new Date(0), new Date(0), seq.toInt)
@@ -122,7 +122,4 @@ class BandView {
 
    def duplicateSeqCheck(bandid: Long, seq: Long): Boolean =
          Band.findAll(By(Band.id, bandid)).head.bandSeqs.filter{ bs => bs.seq == seq }.size.equals(0)
-
-   def getMaxSeq(): Long = 
-                  band.bandSeqs.reduceLeft((bs1, bs2) => if(bs1.seq.get > bs2.seq.get) bs1 else bs2).seq.get + 1
 }

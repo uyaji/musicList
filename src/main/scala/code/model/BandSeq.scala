@@ -9,7 +9,7 @@ object BandSeq extends BandSeq with LongKeyedMetaMapper[BandSeq] {
   override def dbTableName = "bandseqs"
 }
 
-class BandSeq extends LongKeyedMapper[BandSeq] with IdPK with ManyToMany {
+class BandSeq extends LongKeyedMapper[BandSeq] with IdPK with ManyToMany with OneToMany[Long, BandSeq] {
   def this(bandSeqStartAt: Date, bandSeqEndAt: Date, seq: Int) = {
     this()
     this.bandSeqStartAt(bandSeqStartAt)
@@ -33,4 +33,5 @@ class BandSeq extends LongKeyedMapper[BandSeq] with IdPK with ManyToMany {
 
   object players extends MappedManyToMany(BandSeqPlayers, BandSeqPlayers.bandseq, BandSeqPlayers.player, Player)
   object band extends LongMappedMapper(this, Band)
+  object bandseqPlayers extends MappedOneToMany(BandSeqPlayers, BandSeqPlayers.bandseq, OrderBy(BandSeqPlayers.seq, Ascending))
 }

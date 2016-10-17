@@ -11,12 +11,15 @@ import code.model.Player
 import code.model.BandSeqPlayers
 
 class MemberView {
-  val bandid = getParam("bandid")
-  val bandseq = getParam("seq")
+  val bandid = Param.get("bandid")
+  val bandseq = Param.get("seq")
+  val memberseq = Param.get("memberseq")
   val band = Band.findAll(By(Band.id, bandid.toLong)).head
+  val bandSeq = band.bandSeqs.filter{ bs => bs.seq == bandseq.toLong }.head
   var name = ""
-  var seq = ""
-
+  var seq = Generater.generateSeq(bandSeq.bandseqPlayers.size,
+              () => bandSeq.bandseqPlayers.reduceLeft((bp1, bp2) => if(bp1.seq.get > bp2.seq.get) bp1 else bp2).seq.get +1,
+              memberseq)
   def bandNameSeq(html: NodeSeq): NodeSeq = {
     bind("band", html, "nameseq" -> (band.bandname + " : " + bandseq ))
   }
@@ -40,18 +43,10 @@ class MemberView {
                    case pl: List[Player] => pl.head
     }
     player.save
-    val bandSeq = band.bandSeqs.filter{ bs => bs.seq == bandseq.toLong }.head
+//    val bandSeq = band.bandSeqs.filter{ bs => bs.seq == bandseq.toLong }.head
     val bandSeqPlayer: BandSeqPlayers = BandSeqPlayers.create.bandseq(bandSeq.id.get).player(player.id.get).seq(seq.toLong)
     bandSeqPlayer.save
     S.notice("Added member " + player.name)
     S.redirectTo("/member?bandid=" + bandid + "&seq=" +bandseq)
   }
-
-  private
-    def getParam(key: String): String = {
-      S.param(key) match {
-        case Full(value) => value
-        case _ => "none"
-      }
-    }
 }
