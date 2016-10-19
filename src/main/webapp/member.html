@@ -17,6 +17,24 @@
         <input type="text" name="name" class="column span-10"/><br />
         <input type="submit" value="Add member!" style="margin-top:5px;"/>
       </form>
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th>SEQ</th>
+              <th>Name</th>
+              <th>action</th>
+            </tr>
+          </thead>
+          <tbody id="members" class="lift:MemberView.list">
+            <tr member>
+              <td><member:seq></member:seq></td>
+              <td><member:name></member:name></td>
+              <td><member:delete></member:delete></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </body>
 </html>

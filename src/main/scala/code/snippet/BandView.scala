@@ -89,9 +89,9 @@ class BandView {
     }
 
     def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
-      var bandseqs: List[BandSeq] = BandSeq.findAll(By(BandSeq.band, bandid.toLong), OrderBy(BandSeq.seq, Ascending))
-      val seqSize = bandseqs.size
-      bandseqs.flatMap(bds =>
+//      var bandseqs: List[BandSeq] = BandSeq.findAll(By(BandSeq.band, bandid.toLong), OrderBy(BandSeq.seq, Ascending))
+      val seqSize = band.bandSeqs.size
+      band.bandSeqs.flatMap(bds =>
         bds.seq.equals(seqSize) match {
           case true =>
                           bind("band", html,

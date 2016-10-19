@@ -8,7 +8,7 @@ object Player extends Player with LongKeyedMetaMapper[Player] {
   override def dbTableName = "players"
 }
 
-class Player extends LongKeyedMapper[Player] with IdPK with ManyToMany {
+class Player extends LongKeyedMapper[Player] with IdPK with ManyToMany with OneToMany[Long, Player] {
   def this(name: String) = {
     this()
     this.name(name)
@@ -24,4 +24,5 @@ class Player extends LongKeyedMapper[Player] with IdPK with ManyToMany {
   }
 
   object bandseqs extends MappedManyToMany(BandSeqPlayers, BandSeqPlayers.player, BandSeqPlayers.bandseq, BandSeq) 
+  object bandSeqPlayers extends MappedOneToMany(BandSeqPlayers, BandSeqPlayers.player, OrderBy(BandSeqPlayers.bandseq, Ascending))
 }
