@@ -1,4 +1,3 @@
-//ToDo 最終行のみdelete action表示すること 2016/10/07
 package code.snippet
 
 import scala.xml.{NodeSeq, Text}
@@ -12,6 +11,7 @@ import SHtml._
 import net.liftweb.http.js.{JsCmd, JsCmds}
 import code.model.Band
 import code.model.BandSeq
+import code.model.BandSeqPlayers
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -117,6 +117,9 @@ class BandView {
     
     def delete(bandid: Long, seq: Long): Unit = {
       val bandSeq = BandSeq.findAll(By(BandSeq.band, bandid), By(BandSeq.seq, seq.toInt)).head
+      bandSeq.players --= bandSeq.players
+//      bandSeq.players.map{ p => bandSeq.players -= p }
+      bandSeq.save
       bandSeq.delete_!
    }
 
