@@ -1,5 +1,5 @@
 package code.snippet
-import scala.xml.NodeSeq
+import scala.xml.{NodeSeq, Text}
 import net.liftweb.common._
 import net.liftweb.util._
 import net.liftweb.http.js.{JsCmd, JsCmds}
@@ -7,6 +7,7 @@ import Helpers._
 import net.liftweb.mapper._
 import net.liftweb.http._
 import S._
+import SHtml._
 import code.model.Band
 import code.model.BandSeq
 import code.model.Player
@@ -64,10 +65,24 @@ class MemberView {
     def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
       bandSeq.players.flatMap(pl =>
         bind("member", html,
-          "seq" -> <span>{pl.bandSeqPlayers.filter{bsp => bsp.bandseq.get.equals(bandSeq.id.get)}.head.seq}</span>,
+          "seq" -> <span>{
+            val bsp = pl.bandSeqPlayers.filter{bsp => bsp.bandseq.get.equals(bandSeq.id.get)}
+            bsp.isEmpty match {
+              case true => "0"
+              case false => bsp.head.seq
+            }
+          }</span>,
           "name" -> <span>{pl.name}</span>,
-          "delete" -> <span>delete</span>
+          "delete" -> <span>{link("member?bandid=" + bandid + "&seq=" + bandseq, () => delete(bandSeq.id.get, pl.id.get), Text("delete"))}</span>
         )
       )
+    }
+
+    def delete(bandseqid: Long, playerid: Long): Unit = {
+      val bandSeqPlayers: List[BandSeqPlayers] = BandSeqPlayers.findAll(By(BandSeqPlayers.bandseq, bandseqid), By(BandSeqPlayers.player, playerid))
+      bandSeqPlayers match {
+        case Nil => ()
+        case _ => bandSeqPlayers.head.delete_!
+      }
     }
 }
