@@ -55,7 +55,9 @@ class BandView {
   }
 
   def registerSeq() {
-    Process.select(duplicateSeqCheck, _==_ )(bandid.toLong, initSeq.toLong, initSeq.toLong) match {
+    val msg = "Can not register.Already exsist Band Seq. Please update"
+    val path = "/band?bandid=" + bandid
+    Process.select(duplicateSeqCheck, _==_ )(bandid.toLong, initSeq.toLong, initSeq.toLong, msg, path) match {
       case "add" => addSeq
       case "update" => updateSeq
     }

@@ -17,9 +17,13 @@ class MemberView {
   val bandid = Param.get("bandid")
   val bandseq = Param.get("seq")
   val memberseq = Param.get("memberseq")
+  val bandseqplayerid = Param.get("banseqplayerid")
   val band = Band.findAll(By(Band.id, bandid.toLong)).head
   val bandSeq = band.bandSeqs.filter{ bs => bs.seq == bandseq.toLong }.head
-  var name = ""
+  var name: String = memberseq match {
+               case "0" => ""
+               case _   => bandSeq.bandseqPlayers.filter{bsp => bsp.seq == memberseq.toLong}.head.getPlayer.name.get
+             }
   var seq = Generater.generateSeq(bandSeq.bandseqPlayers.size,
               () => bandSeq.bandseqPlayers.reduceLeft((bp1, bp2) => if(bp1.seq.get > bp2.seq.get) bp1 else bp2).seq.get +1,
               memberseq)
@@ -39,12 +43,29 @@ class MemberView {
   def add(form: NodeSeq): NodeSeq = {
     def doBind(form: NodeSeq): NodeSeq = {
       var sel =
+        "name=memberseq" #> SHtml.hidden( () => memberseq) &
         "name=seq" #> SHtml.text( seq, seq = _) &
         "name=name" #> SHtml.text( name, name = _) &
-        "type=submit" #> SHtml.onSubmitUnit(registerMember);
+        "type=submit" #> SHtml.onSubmitUnit(process);
       return sel(form)
     }
     doBind(form)
+  }
+
+  def process() {
+    try {
+      val msg = "Can not register.Already exsist member. Please update"
+      val path = "/member?bandid=" + bandid + "&seq=" + bandseq
+      Process.select(duplicateSeqCheck, changeSeqCheck)(bandSeq.id.get, seq.toLong, memberseq.toLong, msg, path) match {
+        case "add" => registerMember()
+        case "update" => updateMember
+      }
+    } catch {
+      case e: java.lang.NumberFormatException => {
+        S.error("SEQ must be the number!")
+        S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
+      }
+    }
   }
 
   def registerMember() {
@@ -54,28 +75,61 @@ class MemberView {
                    }
                    case pl: List[Player] => pl.head
     }
-    player.save
-    val bandSeqPlayer: BandSeqPlayers = BandSeqPlayers.create.bandseq(bandSeq.id.get).player(player.id.get).seq(seq.toLong)
-    bandSeqPlayer.save
-    S.notice("Added member " + player.name)
+    player.validate match {
+      case Nil => {
+        // 登録時にメンバーの重複がないかチェック
+        bandSeq.players.toList.contains(player) match {
+          case true => {
+            S.notice("Duplicate member!")
+            S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
+          }
+          case false => {
+            player.save
+            val bandSeqPlayer: BandSeqPlayers = BandSeqPlayers.create.bandseq(bandSeq.id.get).player(player.id.get).seq(seq.toLong)
+            bandSeqPlayer.validate match {
+              case Nil => {
+                bandSeqPlayer.save
+                S.notice("Added member " + player.name)
+                S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
+              }
+              case s => {
+                S.notice("Seq must be over 1")
+                S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
+              }
+            }
+          }
+        }
+      }
+      case x => {
+        S.error("Validation Error!")
+        S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
+      }
+    }
+  }
+
+  def updateMember {
+    println("updated")
+    S.notice("updated member ")
     S.redirectTo("/member?bandid=" + bandid + "&seq=" +bandseq)
   }
   
   private
     def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
-      bandSeq.players.flatMap(pl =>
+      bandSeq.players.flatMap(pl => {
+        val bsp = pl.bandSeqPlayers.filter{bsp => bsp.bandseq.get.equals(bandSeq.id.get)}
+        val memberseq = bsp.isEmpty match {
+          case true => "0"
+          case false => bsp.head.seq.toString
+        }
+        val bandseqplayerid: String = pl.bandSeqPlayers.filter{bsp => bsp.bandseq == bandSeq.id.get}.head.id.get.toString
         bind("member", html,
           "seq" -> <span>{
-            val bsp = pl.bandSeqPlayers.filter{bsp => bsp.bandseq.get.equals(bandSeq.id.get)}
-            bsp.isEmpty match {
-              case true => "0"
-              case false => bsp.head.seq
-            }
+            link("member?bandid=" + bandid + "&seq=" + bandseq + "&memberseq=" + memberseq + "&bandseqplayerid=" + bandseqplayerid, () => (), Text(memberseq))
           }</span>,
           "name" -> <span>{pl.name}</span>,
           "delete" -> <span>{link("member?bandid=" + bandid + "&seq=" + bandseq, () => delete(bandSeq.id.get, pl.id.get), Text("delete"))}</span>
         )
-      )
+      })
     }
 
     def delete(bandseqid: Long, playerid: Long): Unit = {
@@ -84,5 +138,12 @@ class MemberView {
         case Nil => ()
         case _ => bandSeqPlayers.head.delete_!
       }
+    }
+
+    def duplicateSeqCheck(bandseqid: Long, seq: Long): Boolean = {
+      BandSeq.findAll(By(BandSeq.id, bandseqid)).head.bandseqPlayers.filter{ bsp => bsp.seq == seq }.size.equals(0)
+    }
+    def changeSeqCheck(bandseqPlayersId: Long, seq: Long): Boolean = {
+      BandSeqPlayers.findAll(By(BandSeqPlayers.id, bandseqPlayersId)).head.seq.equals(seq)
     }
 }

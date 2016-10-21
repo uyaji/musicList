@@ -22,7 +22,7 @@ class TrackView {
   val albumtrcid = Param.get("albumtrcid")
   var tracktitle: String = Param.get("seq") match {
                      case "0" => ""
-                     case _   => Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.seq == Param.get("seq").toLong}.head.getTrack.tracktitle.get
+                     case _   => album.albumTracks.filter{ atr => atr.seq == Param.get("seq").toLong}.head.getTrack.tracktitle.get
                    }
   var upload: Box[FileParamHolder] = Empty
   val id = 0
@@ -49,9 +49,18 @@ class TrackView {
   }
 
   def process() {
-    Process.select(duplicateSeqCheck, changeSeqCheck)(albumid.toLong, seq.toLong, albumtrcid.toLong) match {
-      case "add" => addProcess()
-      case "update" => updateProcess()
+    try {
+      val msg = "Can not register.Already exsist track. Please update"
+      val path = "/track?albumid=" + albumid
+      Process.select(duplicateSeqCheck, changeSeqCheck)(albumid.toLong, seq.toLong, albumtrcid.toLong, msg, path) match {
+        case "add" => addProcess()
+        case "update" => updateProcess()
+      }
+    } catch {
+      case e: java.lang.NumberFormatException => {
+        S.error("SEQ must be the number!")
+        S.redirectTo("/track?albumid=" + albumid)
+      }
     }
   }
 
@@ -65,59 +74,60 @@ class TrackView {
   }
 
   def addProcess() {
-    try {
-      val track: Track = isAtachFileExist(upload) match {
-        case true => {
-          val attaches = Attach.findAll(By(Attach.filename, getFileParamHolder(upload).fileName))
-          val attach: Attach = attaches match {
-            case Nil => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
-            case _ => attaches.head
-          }
-          val tracks: List[Track] = Track.findAll(By(Track.tracktitle, tracktitle))
-          val track: Track = tracks match {
-            case Nil => {
-              val track = Track.create.tracktitle(tracktitle)
-              track
-            }
-            case _ => tracks.head
-          }
-          track.attaches += attach
-          track
+    val track: Track = isAtachFileExist(upload) match {
+      case true => {
+        val attaches = Attach.findAll(By(Attach.filename, getFileParamHolder(upload).fileName))
+        val attach: Attach = attaches match {
+          case Nil => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
+          case _ => attaches.head
         }
-        case false => {
-          val tracks: List[Track] = Track.findAll(By(Track.tracktitle, tracktitle))
-          val track: Track = tracks match {
-            case Nil => Track.create.tracktitle(tracktitle)
-            case _ => tracks.head
+        val tracks: List[Track] = Track.findAll(By(Track.tracktitle, tracktitle))
+        val track: Track = tracks match {
+          case Nil => {
+            val track = Track.create.tracktitle(tracktitle)
+            track
           }
-          track
+          case _ => tracks.head
+        }
+        track.attaches += attach
+        track
+      }
+      case false => {
+        val tracks: List[Track] = Track.findAll(By(Track.tracktitle, tracktitle))
+        val track: Track = tracks match {
+          case Nil => Track.create.tracktitle(tracktitle)
+          case _ => tracks.head
+        }
+        track
+      }
+    }
+    track.validate match{
+      case Nil => {
+        // 登録時にtrackの重複がないかチェック
+        album.tracks.toList.contains(track) match {
+          case true => {
+            S.error("Duplicate track!")
+            S.redirectTo("/track?albumid=" + albumid)
+          }
+          case false => {
+            track.save
+            val albumTrack: AlbumTracks = AlbumTracks.create.album(albumid.toLong).track(track.id.get).seq(seq.toLong)
+            albumTrack.validate match {
+              case Nil => {
+                albumTrack.save
+                S.notice("Added " + track.tracktitle)
+                S.redirectTo("/track?albumid=" + albumid)
+              }
+              case x => {
+                S.error("Seq must be over 1")
+                S.redirectTo("/track?albumid=" + albumid)
+              }
+            }
+          }
         }
       }
-      track.validate match{
-        case Nil => {
-          // 登録時にtrackの重複がないかチェック
-          album.tracks.toList.contains(track) match {
-            case true => {
-              S.error("Duplicate track!")
-              S.redirectTo("/track?albumid=" + albumid)
-            }
-            case false => {
-              track.save
-              val albumTrack: AlbumTracks = AlbumTracks.create.album(albumid.toLong).track(track.id.get).seq(seq.toLong)
-              albumTrack.save
-              S.notice("Added " + track.tracktitle)
-              S.redirectTo("/track?albumid=" + albumid)
-            }
-          }
-        }
-        case x => {
-          S.error("Validation Error!")
-          S.redirectTo("/track?albumid=" + albumid)
-        }
-      }
-    } catch {
-      case e: java.lang.NumberFormatException => {
-        S.error("SEQ must be the number!")
+      case x => {
+        S.error("Validation Error!")
         S.redirectTo("/track?albumid=" + albumid)
       }
     }
@@ -270,7 +280,7 @@ class TrackView {
 }
 
 object Process {
-  def select(duplicateCheck: (Long, Long) => Boolean, changeKeyCheck: (Long, Long) => Boolean)(target: Long, key: Long, relationKey: Long): String = {
+  def select(duplicateCheck: (Long, Long) => Boolean, changeKeyCheck: (Long, Long) => Boolean)(target: Long, key: Long, relationKey: Long, msg: String, path: String): String = {
     duplicateCheck(target, key) match {
       // seqの重複なし。
       case true => {
@@ -287,8 +297,8 @@ object Process {
         relationKey match {
           // 新規登録からの既存SEQへの変更。
           case 0 => {
-            S.error("Can not register.Already exsist track. Please update")
-            S.redirectTo("/track?albumid=" + target.toString)
+            S.error(msg)
+            S.redirectTo(path)
           }
           // 既存データ表示からの変更登録。
           case _ => {
@@ -296,8 +306,8 @@ object Process {
               // seqの変更が無ければ、更新。
               case true => "update"
               case _ => {
-                S.error("Can not register.Already exsist track. Please update")
-                S.redirectTo("/track?albumid=" + target.toString)
+                S.error(msg)
+                S.redirectTo(path)
               }
             }
           }
