@@ -21,7 +21,7 @@ class AlbumTracks extends LongKeyedMapper[AlbumTracks] with IdPK {
       minVal _ :: super.validations
     def minVal(in: Long): List[FieldError] = 
       if (in > 0 ) Nil 
-      else List(FieldError(this, <b>Seq must be over 1</b>))
+      else List(FieldError(this, <div>Seq must be over 1</div>))
   }
   def getTrack(): Track = Track.findAll(By(Track.id, track.get)).head
   def setSeq(seq: Long): Unit = {this.seq(seq)} 

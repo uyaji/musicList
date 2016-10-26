@@ -18,8 +18,8 @@ class Band extends LongKeyedMapper[Band] with IdPK with OneToMany[Long, Band] {
 
   object bandname extends MappedString(this, 100) {
     override def validations =
-      valMaxLen(100, "name length must be under 100 characters long ") _ ::
-      valMinLen(1, "you have to input!!") _ ::
+      valMaxLen(100, "bandname length must be under 100 characters long ") _ ::
+      valMinLen(1, "you have to input bandname") _ ::
       super.validations
   }
 

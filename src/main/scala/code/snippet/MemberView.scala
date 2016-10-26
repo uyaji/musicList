@@ -17,7 +17,7 @@ class MemberView {
   val bandid = Param.get("bandid")
   val bandseq = Param.get("seq")
   val memberseq = Param.get("memberseq")
-  val bandseqplayerid = Param.get("banseqplayerid")
+  val bandseqplayerid = Param.get("bandseqplayerid")
   val band = Band.findAll(By(Band.id, bandid.toLong)).head
   val bandSeq = band.bandSeqs.filter{ bs => bs.seq == bandseq.toLong }.head
   var name: String = memberseq match {
@@ -44,6 +44,7 @@ class MemberView {
     def doBind(form: NodeSeq): NodeSeq = {
       var sel =
         "name=memberseq" #> SHtml.hidden( () => memberseq) &
+        "name=bandseqplayerid" #> SHtml.hidden( () => bandseqplayerid) &
         "name=seq" #> SHtml.text( seq, seq = _) &
         "name=name" #> SHtml.text( name, name = _) &
         "type=submit" #> SHtml.onSubmitUnit(process);
@@ -56,7 +57,7 @@ class MemberView {
     try {
       val msg = "Can not register.Already exsist member. Please update"
       val path = "/member?bandid=" + bandid + "&seq=" + bandseq
-      Process.select(duplicateSeqCheck, changeSeqCheck)(bandSeq.id.get, seq.toLong, memberseq.toLong, msg, path) match {
+      Process.select(duplicateSeqCheck, changeSeqCheck)(bandSeq.id.get, seq.toLong, bandseqplayerid.toLong, msg, path) match {
         case "add" => registerMember()
         case "update" => updateMember
       }
@@ -92,24 +93,67 @@ class MemberView {
                 S.notice("Added member " + player.name)
                 S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
               }
-              case s => {
-                S.notice("Seq must be over 1")
+              case errors => {
+                S.error(errors)
                 S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
               }
             }
           }
         }
       }
-      case x => {
-        S.error("Validation Error!")
+      case errors => {
+        S.error(errors)
         S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
       }
     }
   }
 
   def updateMember {
-    println("updated")
-    S.notice("updated member ")
+    val player = bandSeq.bandseqPlayers.filter{ bsp => bsp.id == bandseqplayerid.toLong}.head.getPlayer
+    val bandseqplayer = BandSeqPlayers.findAll(By(BandSeqPlayers.id, bandseqplayerid.toLong)).head
+    // 指定されたPlayerが既存かどうかチェック。
+    //   既存: BandSeqPlayersのアソシエーションの変更
+    //   未存: Playerのnameの更新
+    var exist = false
+    // 入力されたnameで、playerオブジェクトをインスタンス化
+    val existPlayers = Player.findAll(By(Player.name, name))
+    // nameの変更を確認
+    player.name.equals(name) match {
+      // 変更が無ければ、重複問題なし
+      case true => exist = true
+      // 変更の場合、重複の可能性あり
+      case _ => {
+        // 入力playerオブジェクトの有無確認
+        existPlayers.size match {
+          case 0 => exist = true
+          case _ => exist = false
+        }
+      }
+    }
+    exist match {
+      // 重複の問題がないので、nameの変更。
+      case true => {
+        player.name(name)
+      }
+      // 重複の恐れあり。BandSeq内のplayerをチェック
+      case _ => {
+        val bandseq = BandSeq.findAll(By(BandSeq.id, bandSeq.id.get)).head
+        bandseq.players.toList.contains(existPlayers.head) match {
+          // 重複あり
+          case true => {
+            S.error("Duplcate player!")
+            S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
+          }
+          // 重複がないので、アソシエーションの変更。
+          case false =>
+            bandseqplayer.player(existPlayers.head.id.get)
+        }
+      }
+    }
+    player.save
+    bandseqplayer.seq(seq.toLong)
+    bandseqplayer.save
+    S.notice("updated member " + player.name)
     S.redirectTo("/member?bandid=" + bandid + "&seq=" +bandseq)
   }
   

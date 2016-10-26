@@ -35,13 +35,21 @@ class AlbumView {
         }
         case _ => bands.head
       }
-      var album = new Album(albumtitle)
-      album.validate match{
+      band.validate match {
         case Nil => {
-          band.albums += album
-          band.save(); S.notice("Added " + album.albumtitle);
+          var album = new Album(albumtitle)
+          album.validate match{
+            case Nil => {
+              band.albums += album
+              band.save(); S.notice("Added " + album.albumtitle);
+            }
+            case errors => S.error(errors); S.mapSnippet("AlbumView.add", doBind)
+          }
         }
-        case x => S.error(x); S.mapSnippet("AlbumView.add", doBind)
+        case errors => {
+          S.error(errors)
+          S.mapSnippet("AlbumView.add", doBind)
+        }
       }
     }
 

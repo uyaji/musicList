@@ -18,8 +18,8 @@ class Player extends LongKeyedMapper[Player] with IdPK with ManyToMany with OneT
 
   object name extends MappedString(this, 80) {
     override def validations =
-      valMaxLen(80, "name length must be under 80 characters long ") _ ::
-      valMinLen(1, "you have to input!!") _ ::
+      valMaxLen(80, "player name length must be under 80 characters long ") _ ::
+      valMinLen(1, "you have to input player name") _ ::
       super.validations
   }
 

@@ -118,16 +118,16 @@ class TrackView {
                 S.notice("Added " + track.tracktitle)
                 S.redirectTo("/track?albumid=" + albumid)
               }
-              case x => {
-                S.error("Seq must be over 1")
+              case errors => {
+                S.error(errors)
                 S.redirectTo("/track?albumid=" + albumid)
               }
             }
           }
         }
       }
-      case x => {
-        S.error("Validation Error!")
+      case errors => {
+        S.error(errors)
         S.redirectTo("/track?albumid=" + albumid)
       }
     }

@@ -18,8 +18,8 @@ class Track extends LongKeyedMapper[Track] with IdPK with ManyToMany with OneToM
 
   object tracktitle extends MappedString(this, 100) {
     override def validations =
-      valMaxLen(100, "name length must be under 100 characters long ") _  ::
-      valMinLen(1, "you have to input!!") _ ::
+      valMaxLen(100, "title length must be under 100 characters long ") _  ::
+      valMinLen(1, "you have to input the title") _ ::
       super.validations
   }
 

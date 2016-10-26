@@ -18,8 +18,8 @@ class Album extends LongKeyedMapper[Album] with IdPK with ManyToMany with OneToM
 
   object albumtitle extends MappedString(this, 100) {
     override def validations =
-      valMaxLen(100, "message must be under 100 characters long ") _ ::
-      valMinLen(1, "you have to input") _ ::
+      valMaxLen(100, "title must be under 100 characters long ") _ ::
+      valMinLen(1, "you have to input title") _ ::
       super.validations
   }
   object band extends LongMappedMapper(this, Band)
