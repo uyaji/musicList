@@ -5,8 +5,9 @@ import net.liftweb.util._
 import net.liftweb.common._
 import java.util.Date
 
-object BandSeq extends BandSeq with LongKeyedMetaMapper[BandSeq] {
+object BandSeq extends BandSeq with LongKeyedMetaMapper[BandSeq] with Parent {
   override def dbTableName = "bandseqs"
+  override def getTargets = this.players.toList.asInstanceOf[List[Target]]
 }
 
 class BandSeq extends LongKeyedMapper[BandSeq] with IdPK with ManyToMany with OneToMany[Long, BandSeq] {

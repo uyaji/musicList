@@ -4,8 +4,16 @@ import net.liftweb.mapper._
 import net.liftweb.common._
 import net.liftweb.util._
 
-object Player extends Player with LongKeyedMetaMapper[Player] {
+object Player extends Player with LongKeyedMetaMapper[Player] with Target {
   override def dbTableName = "players"
+  override def getName = name.get
+  override def setName(name: String) = {
+    this.name(name)
+  }
+  override def getId = id.get 
+  override def save = {
+    this.save
+  }
 }
 
 class Player extends LongKeyedMapper[Player] with IdPK with ManyToMany with OneToMany[Long, Player] {
