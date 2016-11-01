@@ -315,6 +315,55 @@ object Process {
       }
     }
   }
+
+  def updateTarget(getTarget: (Long, Long) => Target, getParent: Long => Parent, getRelation: Long => Relation, getExistTarget: String => List[Target])(parentId: Long, relationId: Long, name: String, path: String, msg: String, errorMsg: String, seq: Long): Unit = {
+    val target = getTarget(parentId, relationId)
+    val relation = getRelation(relationId)
+    // 指定されたtargetが既存かどうかチェック。
+    //   既存: relationのアソシエーションの変更
+    //   未存: targetのnameの更新
+    var exist = false
+    // 入力されたnameで、targetオブジェクトをインスタンス化
+    val existTargets = getExistTarget(name)
+    // nameの変更を確認
+    target.getName.equals(name) match {
+      // 変更が無ければ、重複問題なし
+      case true => exist = true
+      // 変更の場合、重複の可能性あり
+      case _ => {
+        // 入力targetオブジェクトの有無確認
+        existTargets.size match {
+          case 0 => exist = true
+          case _ => exist = false
+        }
+      }
+    }
+    exist match {
+      // 重複の問題がないので、nameの変更。
+      case true => {
+        target.setName(name)
+      }
+      // 重複の恐れあり。BandSeq内のplayerをチェック
+      case _ => {
+        val parent = getParent(parentId)
+        parent.getTargets.contains(existTargets.head) match {
+          // 重複あり
+          case true => {
+            S.error(errorMsg)
+            S.redirectTo(path)
+          }
+          // 重複がないので、アソシエーションの変更。
+          case false =>
+            relation.setTarget(existTargets.head.getId)
+        }
+      }
+    }
+    target.save
+    relation.setSeq(seq)
+    relation.save
+    S.notice(msg)
+    S.redirectTo(path)
+  }
 }
 
 object Generater {

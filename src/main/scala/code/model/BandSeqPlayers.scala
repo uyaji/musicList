@@ -4,18 +4,18 @@ import net.liftweb.mapper._
 import net.liftweb.util._
 import net.liftweb.common._
 
-object BandSeqPlayers extends BandSeqPlayers with LongKeyedMetaMapper[BandSeqPlayers] with Relation {
+object BandSeqPlayers extends BandSeqPlayers with LongKeyedMetaMapper[BandSeqPlayers] 
+
+class BandSeqPlayers extends Relation with LongKeyedMapper[BandSeqPlayers] with IdPK {
+  def getSingleton = BandSeqPlayers
+//
   override def setSeq(seq: Long) = {
     this.seq(seq)
   }
-  override def setPlayer(playerid: Long) = {
+  override def setTarget(playerid: Long) = {
     this.player(playerid)
   }
-  override def save = this.save
-}
-
-class BandSeqPlayers extends LongKeyedMapper[BandSeqPlayers] with IdPK{
-  def getSingleton = BandSeqPlayers
+//
   object bandseq extends LongMappedMapper(this, BandSeq)
   object player extends LongMappedMapper(this, Player)
   object seq extends MappedLong(this) {

@@ -1,4 +1,3 @@
-//AnyRefのno such methodのエラーは、targetとparentのsuper classを作成する。
 package code.snippet
 import scala.xml.{NodeSeq, Text}
 import net.liftweb.common._
@@ -107,54 +106,12 @@ class MemberView {
   }
 
   def updateMember {
-    val player = bandSeq.bandseqPlayers.filter{ bsp => bsp.id == bandseqplayerid.toLong}.head.getPlayer
-    val bandseqplayer = BandSeqPlayers.findAll(By(BandSeqPlayers.id, bandseqplayerid.toLong)).head
-    // 指定されたPlayerが既存かどうかチェック。
-    //   既存: BandSeqPlayersのアソシエーションの変更
-    //   未存: Playerのnameの更新
-    var exist = false
-    // 入力されたnameで、playerオブジェクトをインスタンス化
-    val existPlayers = Player.findAll(By(Player.name, name))
-    // nameの変更を確認
-    player.name.equals(name) match {
-      // 変更が無ければ、重複問題なし
-      case true => exist = true
-      // 変更の場合、重複の可能性あり
-      case _ => {
-        // 入力playerオブジェクトの有無確認
-        existPlayers.size match {
-          case 0 => exist = true
-          case _ => exist = false
-        }
-      }
-    }
-    exist match {
-      // 重複の問題がないので、nameの変更。
-      case true => {
-        player.name(name)
-      }
-      // 重複の恐れあり。BandSeq内のplayerをチェック
-      case _ => {
-        val bandseq = BandSeq.findAll(By(BandSeq.id, bandSeq.id.get)).head
-        bandseq.players.toList.contains(existPlayers.head) match {
-          // 重複あり
-          case true => {
-            S.error("Duplcate player!")
-            S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
-          }
-          // 重複がないので、アソシエーションの変更。
-          case false =>
-            bandseqplayer.player(existPlayers.head.id.get)
-        }
-      }
-    }
-    player.save
-    bandseqplayer.seq(seq.toLong)
-    bandseqplayer.save
-    S.notice("updated member " + player.name)
-    S.redirectTo("/member?bandid=" + bandid + "&seq=" +bandseq)
+    val msg = "updated member " + name
+    val errorMsg = "Duplcate player!"
+    val path = "/member?bandid=" + bandid + "&seq=" + bandseq
+    Process.updateTarget(getTarget, getParent, getRelation, getExistTarget)(bandSeq.id.get, bandseqplayerid.toLong, name, path, msg, errorMsg, seq.toLong)
   }
-  
+
   private
     def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
       bandSeq.players.flatMap(pl => {
@@ -188,61 +145,9 @@ class MemberView {
     def changeSeqCheck(bandseqPlayersId: Long, seq: Long): Boolean = {
       BandSeqPlayers.findAll(By(BandSeqPlayers.id, bandseqPlayersId)).head.seq.equals(seq)
     }
-    def getParent(bandseqid: Long): BandSeq = BandSeq.findAll(By(BandSeq.id, bandseqid)).head
-    def getTarget(bandseqid: Long, banseqplayrid: Long): Player = getParent(bandseqid).bandseqPlayers.filter{ bsp => bsp.id == bandseqplayerid}.head.getPlayer
-    def getRelation(bandseqplayerid: Long): BandSeqPlayers = BandSeqPlayers.findAll(By(BandSeqPlayers.id, bandseqplayerid)).head
-    def getExistTarget(name: String): List[Player] = Player.findAll(By(Player.name, name))
+    def getParent(bandseqid: Long): Parent = BandSeq.findAll(By(BandSeq.id, bandseqid)).head
+    def getTarget(bandseqid: Long, banseqplayrid: Long): Target =   BandSeq.findAll(By(BandSeq.id, bandseqid)).head.bandseqPlayers.filter{ bsp => bsp.id.get.toLong == bandseqplayerid.toLong}.head.getPlayer
+    def getRelation(bandseqplayerid: Long): Relation = BandSeqPlayers.findAll(By(BandSeqPlayers.id, bandseqplayerid)).head
+    def getExistTarget(name: String): List[Target] = Player.findAll(By(Player.name, name))
     
-    def updateMember(getTarget: (Long, Long) => Target, getParent: Long => Parent, getRelation: Long => Relation, getExistTarget: String => List[Target])(parentId: Long, relationId: Long, name: String, path: String, msg: String, seq: Long): Unit = {
-      val target = getTarget(parentId, relationId)
-      val relation = getRelation(relationId)
-      // 指定されたtargetが既存かどうかチェック。
-      //   既存: relationのアソシエーションの変更
-      //   未存: targetのnameの更新
-      var exist = false
-      // 入力されたnameで、targetオブジェクトをインスタンス化
-      val existTargets = getExistTarget(name)
-      // nameの変更を確認
-      target.getName.equals(name) match {
-        // 変更が無ければ、重複問題なし
-        case true => exist = true
-        // 変更の場合、重複の可能性あり
-        case _ => {
-          // 入力targetオブジェクトの有無確認
-          existTargets.size match {
-            case 0 => exist = true
-            case _ => exist = false
-          }
-        }
-      }
-      exist match {
-        // 重複の問題がないので、nameの変更。
-        case true => {
-          target.setName(name)
-        }
-        // 重複の恐れあり。BandSeq内のplayerをチェック
-        case _ => {
-          val parent = getParent(parentId)
-          parent.getTargets.contains(existTargets.head) match {
-            // 重複あり
-            case true => {
-              S.error(msg)
-              S.redirectTo(path)
-//              S.error("Duplcate player!")
-//              S.redirectTo("/member?bandid=" + grandparentid + "&seq=" + seq)
-            }
-            // 重複がないので、アソシエーションの変更。
-            case false =>
-              relation.setPlayer(existTargets.head.getId)
-          }
-        }
-      }
-      target.save
-      relation.setSeq(seq)
-      relation.save
-      S.notice(msg)
-      S.redirectTo(msg)
-//      S.notice("updated member " + target.getName)
-//      S.redirectTo("/member?bandid=" + grandparentid + "&seq=" +seq)
-    }
 }
