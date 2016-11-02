@@ -134,6 +134,12 @@ class TrackView {
   }
 
   def updateProcess() {
+    val msg = "Updateed " + tracktitle
+    val errorMsg = "Duplicate track!"
+    val path = "/track?albumid=" + albumid
+    Process.updateTarget(getTarget, getParent, getRelation, getExistTarget)(album.id.get, albumtrcid.toLong, tracktitle, path, msg, errorMsg, seq.toLong)
+  }
+/*  def updateProcess() {
     val track = Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.id == albumtrcid.toLong}.head.getTrack
     val albumTrack = AlbumTracks.findAll(By(AlbumTracks.id, albumtrcid.toLong)).head
     // 指定されたTrackが既存かどうかチェック。
@@ -185,7 +191,7 @@ class TrackView {
     albumTrack.save
     S.notice("Updateed " + track.tracktitle)
     S.redirectTo("track?albumid=" + albumid)
-  }
+  } */
 
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
     bind("track", html, "albumid" -> <input type="text" name="albumid" class="column span-10"/>)
@@ -277,6 +283,10 @@ class TrackView {
           Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.seq == seq }.size.equals(0)
     def changeSeqCheck(albumTrackId: Long, seq: Long): Boolean =
           AlbumTracks.findAll(By(AlbumTracks.id, albumTrackId)).head.seq.equals(seq)
+    def getParent(albumid: Long): Parent = Album.findAll(By(Album.id, albumid)).head
+    def getTarget(albumid: Long, albumtrcid: Long): Target = Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.id == albumtrcid}.head.getTrack
+    def getRelation(albumtrcid: Long): Relation = AlbumTracks.findAll(By(AlbumTracks.id, albumtrcid)).head
+    def getExistTarget(tracktitle: String): List[Target] = Track.findAll(By(Track.tracktitle, tracktitle))
 }
 
 object Process {

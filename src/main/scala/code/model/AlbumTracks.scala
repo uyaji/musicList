@@ -6,14 +6,18 @@ import net.liftweb.common._
 
 object AlbumTracks extends AlbumTracks with LongKeyedMetaMapper[AlbumTracks]
 
-class AlbumTracks extends LongKeyedMapper[AlbumTracks] with IdPK {
+class AlbumTracks extends Relation with LongKeyedMapper[AlbumTracks] with IdPK {
   def this(album: Long, track: Long, seq: Long) = {
     this()
     this.seq(seq)
     this.album(album)
     this.track(track)
   }
+
   def getSingleton = AlbumTracks
+  override def setSeq(seq: Long) = this.seq(seq)
+  override def setTarget(trackid: Long) = this.track(trackid)
+
   object album extends LongMappedMapper(this, Album)
   object track extends LongMappedMapper(this, Track)
   object seq extends MappedLong(this) {
@@ -24,5 +28,4 @@ class AlbumTracks extends LongKeyedMapper[AlbumTracks] with IdPK {
       else List(FieldError(this, <div>Seq must be over 1</div>))
   }
   def getTrack(): Track = Track.findAll(By(Track.id, track.get)).head
-  def setSeq(seq: Long): Unit = {this.seq(seq)} 
 }

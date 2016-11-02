@@ -8,13 +8,16 @@ object Track extends Track with LongKeyedMetaMapper[Track] {
   override def dbTableName = "tracks"
 }
 
-class Track extends LongKeyedMapper[Track] with IdPK with ManyToMany with OneToMany[Long, Track] {
+class Track extends Target with LongKeyedMapper[Track] with IdPK with ManyToMany with OneToMany[Long, Track] {
   def this(seq: Long, tracktitle: String) = {
     this()
     this.tracktitle(tracktitle)
   }
 
   def getSingleton = Track
+  override def getName = tracktitle.get
+  override def setName(title: String) = this.tracktitle(title)
+  override def getId = id.get
 
   object tracktitle extends MappedString(this, 100) {
     override def validations =

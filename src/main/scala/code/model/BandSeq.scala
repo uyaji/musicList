@@ -24,7 +24,7 @@ class BandSeq extends Parent with LongKeyedMapper[BandSeq] with IdPK with ManyTo
   }
 
   def getSingleton = BandSeq
-  def getTargets = players.toList.toList
+  override def getTargets = players.toList
 
   object bandSeqStartAt extends MappedDateTime(this)
   object bandSeqEndAt extends MappedDateTime(this)

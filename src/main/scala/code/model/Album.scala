@@ -8,13 +8,14 @@ object Album extends Album with LongKeyedMetaMapper[Album] {
   override def dbTableName = "albums"
 }
 
-class Album extends LongKeyedMapper[Album] with IdPK with ManyToMany with OneToMany[Long, Album] {
+class Album extends Parent with LongKeyedMapper[Album] with IdPK with ManyToMany with OneToMany[Long, Album] {
   def this(albumtitle: String) = {
     this()
     this.albumtitle(albumtitle)
   }
  
   def getSingleton = Album
+  override def getTargets = tracks.toList
 
   object albumtitle extends MappedString(this, 100) {
     override def validations =
