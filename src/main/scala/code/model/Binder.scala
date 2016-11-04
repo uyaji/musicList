@@ -1,5 +1,5 @@
 package code.model
 
-trait Parent {
+trait Binder {
   def getTargets: List[Target]
 }

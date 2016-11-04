@@ -137,62 +137,12 @@ class TrackView {
     val msg = "Updateed " + tracktitle
     val errorMsg = "Duplicate track!"
     val path = "/track?albumid=" + albumid
-    val attach = new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
-    Process.updateTarget(getTarget, getParent, getRelation, getExistTarget, isAtachFileExist)(album.id.get, albumtrcid.toLong, tracktitle, path, msg, errorMsg, seq.toLong, upload, attach)
+    val attach = isAtachFileExist(upload) match {
+      case true => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
+      case false => null
+    }
+    Process.updateTarget(getTarget, getBinder, getRelation, getExistTarget, isAtachFileExist)(album.id.get, albumtrcid.toLong, tracktitle, path, msg, errorMsg, seq.toLong, upload, attach)
   }
-/*  def updateProcess() {
-    val track = Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.id == albumtrcid.toLong}.head.getTrack
-    val albumTrack = AlbumTracks.findAll(By(AlbumTracks.id, albumtrcid.toLong)).head
-    // 指定されたTrackが既存かどうかチェック。
-    //   既存: AlbumTracksのアソシエーションの変更
-    //   未存：Trackのtracktitleの更新
-    // trackの重複チェック用フラグ:exist
-    var exist = false
-    // 入力されたtracktitleで,trackオブジェクトをインスタンス化
-    val existTracks = Track.findAll(By(Track.tracktitle, tracktitle))
-    // tracktitleの変更を確認
-    track.tracktitle.equals(tracktitle) match {
-      // 変更がなければ、重複問題なし 
-      case true => exist = true
-      // 変更の場合、重複の可能性あり 
-      case _ => {
-        // 入力trackオブジェクトの有無確認
-        existTracks.size match {
-          case 0 => exist = true
-          case _ => exist = false
-        }
-      }
-    }
-    exist match {
-      // 重複の問題がないので、tracktitleの変更、attachの追加。
-      case true => {
-        track.tracktitle(tracktitle)
-      }
-      // 重複の恐れあり。Album内のtrackをチェック
-      case _ => {
-        val album = Album.findAll(By(Album.id, albumid.toLong)).head
-        album.tracks.toList.contains(existTracks.head) match {
-          // 重複あり
-          case true => {
-            S.error("Duplicate track!")
-            S.redirectTo("/track?albumid=" + albumid)
-          }
-          // 重複がないので、アソシエーションの変更。
-          case false =>
-            albumTrack.track(existTracks.head.id.get)
-        }
-      }
-    }
-    if(isAtachFileExist(upload)) {
-      val attach = new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
-      track.attaches += attach
-    }
-    track.save
-    albumTrack.seq(seq.toLong)
-    albumTrack.save
-    S.notice("Updateed " + track.tracktitle)
-    S.redirectTo("track?albumid=" + albumid)
-  } */
 
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
     bind("track", html, "albumid" -> <input type="text" name="albumid" class="column span-10"/>)
@@ -284,7 +234,7 @@ class TrackView {
           Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.seq == seq }.size.equals(0)
     def changeSeqCheck(albumTrackId: Long, seq: Long): Boolean =
           AlbumTracks.findAll(By(AlbumTracks.id, albumTrackId)).head.seq.equals(seq)
-    def getParent(albumid: Long): Parent = Album.findAll(By(Album.id, albumid)).head
+    def getBinder(albumid: Long): Binder = Album.findAll(By(Album.id, albumid)).head
     def getTarget(albumid: Long, albumtrcid: Long): Target = Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.id == albumtrcid}.head.getTrack
     def getRelation(albumtrcid: Long): Relation = AlbumTracks.findAll(By(AlbumTracks.id, albumtrcid)).head
     def getExistTarget(tracktitle: String): List[Target] = Track.findAll(By(Track.tracktitle, tracktitle))
@@ -327,8 +277,8 @@ object Process {
     }
   }
 
-  def updateTarget(getTarget: (Long, Long) => Target, getParent: Long => Parent, getRelation: Long => Relation, getExistTarget: String => List[Target], isAtachFileExist: Box[FileParamHolder] => Boolean)(parentId: Long, relationId: Long, name: String, path: String, msg: String, errorMsg: String, seq: Long, upload: Box[FileParamHolder], attach: Attach): Unit = {
-    val target = getTarget(parentId, relationId)
+  def updateTarget(getTarget: (Long, Long) => Target, getBinder: Long => Binder, getRelation: Long => Relation, getExistTarget: String => List[Target], isAtachFileExist: Box[FileParamHolder] => Boolean)(binderId: Long, relationId: Long, name: String, path: String, msg: String, errorMsg: String, seq: Long, upload: Box[FileParamHolder], attach: Attach): Unit = {
+    val target = getTarget(binderId, relationId)
     val relation = getRelation(relationId)
     // 指定されたtargetが既存かどうかチェック。
     //   既存: relationのアソシエーションの変更
@@ -356,8 +306,8 @@ object Process {
       }
       // 重複の恐れあり。BandSeq内のplayerをチェック
       case _ => {
-        val parent = getParent(parentId)
-        parent.getTargets.contains(existTargets.head) match {
+        val binder = getBinder(binderId)
+        binder.getTargets.contains(existTargets.head) match {
           // 重複あり
           case true => {
             S.error(errorMsg)
