@@ -1,6 +1,6 @@
 db.driver     =com.mysql.jdbc.Driver
 db.user       =adminfbRSsRE
-db.password   =LuZquhmSVQAv
+db.password   =password
 db.url_prefix =jdbc:mysql://
 db.host       =OPENSHIFT_MYSQL_DB_HOST
 db.port       =OPENSHIFT_MYSQL_DB_PORT
