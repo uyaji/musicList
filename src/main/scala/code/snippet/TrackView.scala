@@ -137,7 +137,8 @@ class TrackView {
     val msg = "Updateed " + tracktitle
     val errorMsg = "Duplicate track!"
     val path = "/track?albumid=" + albumid
-    Process.updateTarget(getTarget, getParent, getRelation, getExistTarget)(album.id.get, albumtrcid.toLong, tracktitle, path, msg, errorMsg, seq.toLong)
+    val attach = new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
+    Process.updateTarget(getTarget, getParent, getRelation, getExistTarget, isAtachFileExist)(album.id.get, albumtrcid.toLong, tracktitle, path, msg, errorMsg, seq.toLong, upload, attach)
   }
 /*  def updateProcess() {
     val track = Album.findAll(By(Album.id, albumid.toLong)).head.albumTracks.filter{ atr => atr.id == albumtrcid.toLong}.head.getTrack
@@ -326,7 +327,7 @@ object Process {
     }
   }
 
-  def updateTarget(getTarget: (Long, Long) => Target, getParent: Long => Parent, getRelation: Long => Relation, getExistTarget: String => List[Target])(parentId: Long, relationId: Long, name: String, path: String, msg: String, errorMsg: String, seq: Long): Unit = {
+  def updateTarget(getTarget: (Long, Long) => Target, getParent: Long => Parent, getRelation: Long => Relation, getExistTarget: String => List[Target], isAtachFileExist: Box[FileParamHolder] => Boolean)(parentId: Long, relationId: Long, name: String, path: String, msg: String, errorMsg: String, seq: Long, upload: Box[FileParamHolder], attach: Attach): Unit = {
     val target = getTarget(parentId, relationId)
     val relation = getRelation(relationId)
     // 指定されたtargetが既存かどうかチェック。
@@ -367,6 +368,9 @@ object Process {
             relation.setTarget(existTargets.head.getId)
         }
       }
+    }
+    if(isAtachFileExist(upload)) {
+      target.setLob(attach)  
     }
     target.save
     relation.setSeq(seq)

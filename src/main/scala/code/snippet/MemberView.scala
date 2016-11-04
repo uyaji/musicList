@@ -109,7 +109,7 @@ class MemberView {
     val msg = "updated member " + name
     val errorMsg = "Duplcate player!"
     val path = "/member?bandid=" + bandid + "&seq=" + bandseq
-    Process.updateTarget(getTarget, getParent, getRelation, getExistTarget)(bandSeq.id.get, bandseqplayerid.toLong, name, path, msg, errorMsg, seq.toLong)
+    Process.updateTarget(getTarget, getParent, getRelation, getExistTarget, Nil => false)(bandSeq.id.get, bandseqplayerid.toLong, name, path, msg, errorMsg, seq.toLong, null, null)
   }
 
   private

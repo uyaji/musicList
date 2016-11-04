@@ -21,6 +21,7 @@ class Player extends Target with LongKeyedMapper[Player] with IdPK with ManyToMa
     this.name(name)
   }
   override def getId = id.get 
+  override def setLob(attach: Attach) = () => () 
 //
   object name extends MappedString(this, 80) {
     override def validations =
