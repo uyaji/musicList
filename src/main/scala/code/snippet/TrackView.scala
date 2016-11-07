@@ -7,6 +7,8 @@ import net.liftweb.common._
 import Helpers._
 
 import code.model._
+import code.logic.Logic
+import code.logic.Util
 import net.liftweb.mapper._
 import net.liftweb.http._
 import S._
@@ -14,15 +16,15 @@ import SHtml._
 import net.liftweb.http.js.{JsCmd, JsCmds}
 
 class TrackView {
-  val albumid = Param.get("albumid")
+  val albumid = Util.paramGet("albumid")
   val album = Album.findAll(By(Album.id, albumid.toLong)).head
-  var seq = Generater.generateSeq(album.albumTracks.size, 
+  var seq = Util.generateSeq(album.albumTracks.size, 
               () => album.albumTracks.reduceLeft((at1, at2) => if(at1.seq.get > at2.seq.get) at1 else at2).seq.get + 1,
-              Param.get("seq"))
-  val albumtrcid = Param.get("albumtrcid")
-  var tracktitle: String = Param.get("seq") match {
+              Util.paramGet("seq"))
+  val albumtrcid = Util.paramGet("albumtrcid")
+  var tracktitle: String = Util.paramGet("seq") match {
                      case "0" => ""
-                     case _   => album.albumTracks.filter{ atr => atr.seq == Param.get("seq").toLong}.head.getTrack.tracktitle.get
+                     case _   => album.albumTracks.filter{ atr => atr.seq == Util.paramGet("seq").toLong}.head.getTrack.tracktitle.get
                    }
   var upload: Box[FileParamHolder] = Empty
   val id = 0
@@ -52,7 +54,7 @@ class TrackView {
     try {
       val msg = "Can not register.Already exsist track. Please update"
       val path = "/track?albumid=" + albumid
-      Process.select(duplicateSeqCheck, changeSeqCheck)(albumid.toLong, seq.toLong, albumtrcid.toLong, msg, path) match {
+      Logic.select(duplicateSeqCheck, changeSeqCheck)(albumid.toLong, seq.toLong, albumtrcid.toLong, msg, path) match {
         case "add" => addProcess()
         case "update" => updateProcess()
       }
@@ -141,19 +143,19 @@ class TrackView {
       case true => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
       case false => null
     }
-    Process.updateTarget(getTarget, getBinder, getRelation, getExistTarget, isAtachFileExist)(album.id.get, albumtrcid.toLong, tracktitle, path, msg, errorMsg, seq.toLong, upload, attach)
+    Logic.updateTarget(getTarget, getBinder, getRelation, getExistTarget, isAtachFileExist)(album.id.get, albumtrcid.toLong, tracktitle, path, msg, errorMsg, seq.toLong, upload, attach)
   }
 
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
     bind("track", html, "albumid" -> <input type="text" name="albumid" class="column span-10"/>)
     album.tracks.flatMap(trk => {
-      val trkSeq: String = trk.albumTracks.filter{atr => atr.album == Param.get("albumid").toLong }.head.seq.get.toString
-      val albumtrcid: String = trk.albumTracks.filter{atr => atr.album == Param.get("albumid").toLong }.head.id.get.toString
+      val trkSeq: String = trk.albumTracks.filter{atr => atr.album == Util.paramGet("albumid").toLong }.head.seq.get.toString
+      val albumtrcid: String = trk.albumTracks.filter{atr => atr.album == Util.paramGet("albumid").toLong }.head.id.get.toString
       trk.attaches.size match {
         case 0 => {
           bind("track", html, AttrBindParam("id", trk.id.toString, "id"),
              "seq" -> <span>{
-                   link("track?albumid=" + Param.get("albumid") + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid, () => (), Text(trkSeq))
+                   link("track?albumid=" + Util.paramGet("albumid") + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid, () => (), Text(trkSeq))
              }</span>,
              "tracktitle" -> <span>{
                    trk.tracktitle.toString
@@ -162,7 +164,7 @@ class TrackView {
                  Text(" ")
              }</span>,
              "delete" -> <span>{
-                   link("track?albumid=" + Param.get("albumid"), () => delete(trk.id.get,0), Text("delete"))
+                   link("track?albumid=" + Util.paramGet("albumid"), () => delete(trk.id.get,0), Text("delete"))
              }</span>
           );
         }
@@ -174,7 +176,7 @@ class TrackView {
              "seq" -> <span>{
                i match {
                  case 1 =>
-                   link("track?albumid=" + Param.get("albumid") + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid, () => (), Text(trkSeq))
+                   link("track?albumid=" + Util.paramGet("albumid") + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid, () => (), Text(trkSeq))
                  case _ =>
                    Text("")
                }
@@ -194,7 +196,7 @@ class TrackView {
                }
              }</span>,
              "delete" -> <span>{
-               link("track?albumid=" + Param.get("albumid"), () => delete(trk.id.get, atc.id.get), Text("delete"))
+               link("track?albumid=" + Util.paramGet("albumid"), () => delete(trk.id.get, atc.id.get), Text("delete"))
              }</span>
             );
           })
@@ -220,7 +222,7 @@ class TrackView {
               track.delete_!
             }
             case _ => ()
-            val album = Album.findAll(By(Album.id, Param.get("albumid").toLong)).head
+            val album = Album.findAll(By(Album.id, Util.paramGet("albumid").toLong)).head
             album.tracks -= track
             album.save
           }
@@ -238,115 +240,4 @@ class TrackView {
     def getTarget(albumid: Long, albumtrcid: Long): Target = Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.id == albumtrcid}.head.getTrack
     def getRelation(albumtrcid: Long): Relation = AlbumTracks.findAll(By(AlbumTracks.id, albumtrcid)).head
     def getExistTarget(tracktitle: String): List[Target] = Track.findAll(By(Track.tracktitle, tracktitle))
-}
-
-object Process {
-  def select(duplicateCheck: (Long, Long) => Boolean, changeKeyCheck: (Long, Long) => Boolean)(target: Long, key: Long, relationKey: Long, msg: String, path: String): String = {
-    duplicateCheck(target, key) match {
-      // seqの重複なし。
-      case true => {
-        relationKey match {
-          // 新規登録
-          case 0 => "add"
-          // 既存データ表示からの変更登録。
-          case _ => "update"
-        }
-      }
-      // seqの重複あり。
-      case _ => {
-        // seqの変更が無ければ、更新。
-        relationKey match {
-          // 新規登録からの既存SEQへの変更。
-          case 0 => {
-            S.error(msg)
-            S.redirectTo(path)
-          }
-          // 既存データ表示からの変更登録。
-          case _ => {
-            changeKeyCheck(relationKey, key) match {
-              // seqの変更が無ければ、更新。
-              case true => "update"
-              case _ => {
-                S.error(msg)
-                S.redirectTo(path)
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  def updateTarget(getTarget: (Long, Long) => Target, getBinder: Long => Binder, getRelation: Long => Relation, getExistTarget: String => List[Target], isAtachFileExist: Box[FileParamHolder] => Boolean)(binderId: Long, relationId: Long, name: String, path: String, msg: String, errorMsg: String, seq: Long, upload: Box[FileParamHolder], attach: Attach): Unit = {
-    val target = getTarget(binderId, relationId)
-    val relation = getRelation(relationId)
-    // 指定されたtargetが既存かどうかチェック。
-    //   既存: relationのアソシエーションの変更
-    //   未存: targetのnameの更新
-    var exist = false
-    // 入力されたnameで、targetオブジェクトをインスタンス化
-    val existTargets = getExistTarget(name)
-    // nameの変更を確認
-    target.getName.equals(name) match {
-      // 変更が無ければ、重複問題なし
-      case true => exist = true
-      // 変更の場合、重複の可能性あり
-      case _ => {
-        // 入力targetオブジェクトの有無確認
-        existTargets.size match {
-          case 0 => exist = true
-          case _ => exist = false
-        }
-      }
-    }
-    exist match {
-      // 重複の問題がないので、nameの変更。
-      case true => {
-        target.setName(name)
-      }
-      // 重複の恐れあり。BandSeq内のplayerをチェック
-      case _ => {
-        val binder = getBinder(binderId)
-        binder.getTargets.contains(existTargets.head) match {
-          // 重複あり
-          case true => {
-            S.error(errorMsg)
-            S.redirectTo(path)
-          }
-          // 重複がないので、アソシエーションの変更。
-          case false =>
-            relation.setTarget(existTargets.head.getId)
-        }
-      }
-    }
-    if(isAtachFileExist(upload)) {
-      target.setLob(attach)  
-    }
-    target.save
-    relation.setSeq(seq)
-    relation.save
-    S.notice(msg)
-    S.redirectTo(path)
-  }
-}
-
-object Generater {
-  def generateSeq(rowCount: Long, getMaxSeq: () => Long, paramSeq: String): String = {
-    paramSeq match {
-      case "0" => rowCount match {
-        case 0 => "1"
-        case _ => getMaxSeq().toString
-      }
-      case _ => paramSeq
-    }
-  }
-}
-
-object Param {
-  def get(key: String): String = {
-    S.param(key) match {
-      case Full(value) => value
-      case _ => "0"
-    }
-  }
 }

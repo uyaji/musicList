@@ -9,19 +9,21 @@ import net.liftweb.http._
 import S._
 import SHtml._
 import code.model._
+import code.logic.Logic
+import code.logic.Util
 
 class MemberView {
-  val bandid = Param.get("bandid")
-  val bandseq = Param.get("seq")
-  val memberseq = Param.get("memberseq")
-  val bandseqplayerid = Param.get("bandseqplayerid")
+  val bandid = Util.paramGet("bandid")
+  val bandseq = Util.paramGet("seq")
+  val memberseq = Util.paramGet("memberseq")
+  val bandseqplayerid = Util.paramGet("bandseqplayerid")
   val band = Band.findAll(By(Band.id, bandid.toLong)).head
   val bandSeq = band.bandSeqs.filter{ bs => bs.seq == bandseq.toLong }.head
   var name: String = memberseq match {
                case "0" => ""
                case _   => bandSeq.bandseqPlayers.filter{bsp => bsp.seq == memberseq.toLong}.head.getPlayer.name.get
              }
-  var seq = Generater.generateSeq(bandSeq.bandseqPlayers.size,
+  var seq = Util.generateSeq(bandSeq.bandseqPlayers.size,
               () => bandSeq.bandseqPlayers.reduceLeft((bp1, bp2) => if(bp1.seq.get > bp2.seq.get) bp1 else bp2).seq.get +1,
               memberseq)
   def bandNameSeq(html: NodeSeq): NodeSeq = {
@@ -54,7 +56,7 @@ class MemberView {
     try {
       val msg = "Can not register.Already exsist member. Please update"
       val path = "/member?bandid=" + bandid + "&seq=" + bandseq
-      Process.select(duplicateSeqCheck, changeSeqCheck)(bandSeq.id.get, seq.toLong, bandseqplayerid.toLong, msg, path) match {
+      Logic.select(duplicateSeqCheck, changeSeqCheck)(bandSeq.id.get, seq.toLong, bandseqplayerid.toLong, msg, path) match {
         case "add" => registerMember()
         case "update" => updateMember
       }
@@ -109,7 +111,7 @@ class MemberView {
     val msg = "updated member " + name
     val errorMsg = "Duplcate player!"
     val path = "/member?bandid=" + bandid + "&seq=" + bandseq
-    Process.updateTarget(getTarget, getBinder, getRelation, getExistTarget, Nil => false)(bandSeq.id.get, bandseqplayerid.toLong, name, path, msg, errorMsg, seq.toLong, null, null)
+    Logic.updateTarget(getTarget, getBinder, getRelation, getExistTarget, Nil => false)(bandSeq.id.get, bandseqplayerid.toLong, name, path, msg, errorMsg, seq.toLong, null, null)
   }
 
   private

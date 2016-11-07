@@ -12,17 +12,19 @@ import net.liftweb.http.js.{JsCmd, JsCmds}
 import code.model.Band
 import code.model.BandSeq
 import code.model.BandSeqPlayers
+import code.logic.Logic
+import code.logic.Util
 import java.text.SimpleDateFormat
 import java.util.Date
 
 class BandView {
-  val bandid = Param.get("bandid")
+  val bandid = Util.paramGet("bandid")
   val band = Band.findAll(By(Band.id, bandid.toLong)).head
-  var initSeq = Param.get("seq")
-  var seq = Generater.generateSeq(band.bandSeqs.size,
+  var initSeq = Util.paramGet("seq")
+  var seq = Util.generateSeq(band.bandSeqs.size,
               () => band.bandSeqs.reduceLeft((bs1, bs2) => if(bs1.seq.get > bs2.seq.get) bs1 else bs2).seq.get + 1,
-              Param.get("seq"))
-  val bandSeq = Param.get("seq") match {
+              Util.paramGet("seq"))
+  val bandSeq = Util.paramGet("seq") match {
                   case "0" => new BandSeq(new Date(0), new Date(0), seq.toInt)
                   case _   => band.bandSeqs.filter{ bs => bs.seq == seq.toInt }.head
                 }
@@ -57,7 +59,7 @@ class BandView {
   def registerSeq() {
     val msg = "Can not register.Already exsist Band Seq. Please update"
     val path = "/band?bandid=" + bandid
-    Process.select(duplicateSeqCheck, _==_ )(bandid.toLong, initSeq.toLong, initSeq.toLong, msg, path) match {
+    Logic.select(duplicateSeqCheck, _==_ )(bandid.toLong, initSeq.toLong, initSeq.toLong, msg, path) match {
       case "add" => addSeq
       case "update" => updateSeq
     }
@@ -98,7 +100,7 @@ class BandView {
           case true =>
                           bind("band", html,
                           "seq" -> <span>{
-                             link("band?bandid=" + Param.get("bandid") + "&seq=" + bds.seq.toString , () => (), Text(bds.seq.get.toString))
+                             link("band?bandid=" + Util.paramGet("bandid") + "&seq=" + bds.seq.toString , () => (), Text(bds.seq.get.toString))
                           }</span>,
                           "startat" -> <span>{link("member?bandid=" + bds.band.toString + "&seq=" + bds.seq.toString, () => (), Text(bds.bandSeqStartAt.get.toString.substring(0,4)))}</span>,
                           "endat" -> <span>{bds.bandSeqEndAt.get.toString.substring(0, 4)}</span>,
@@ -107,7 +109,7 @@ class BandView {
           case _ => 
                           bind("band", html,
                           "seq" -> <span>{
-                             link("band?bandid=" + Param.get("bandid") + "&seq=" + bds.seq.toString , () => (), Text(bds.seq.get.toString))
+                             link("band?bandid=" + Util.paramGet("bandid") + "&seq=" + bds.seq.toString , () => (), Text(bds.seq.get.toString))
                           }</span>,
                           "startat" -> <span>{link("member?bandid=" + bds.band.toString + "&seq=" + bds.seq.toString, () => (), Text(bds.bandSeqStartAt.get.toString.substring(0,4)))}</span>,
                           "endat" -> <span>{bds.bandSeqEndAt.get.toString.substring(0, 4)}</span>,
