@@ -6,7 +6,7 @@ import net.liftweb.common._
 
 object BandSeqPlayers extends BandSeqPlayers with LongKeyedMetaMapper[BandSeqPlayers] 
 
-class BandSeqPlayers extends Relation with LongKeyedMapper[BandSeqPlayers] with IdPK {
+class BandSeqPlayers extends Relation with LongKeyedMapper[BandSeqPlayers] with IdPK with OneToMany[Long, BandSeqPlayers] {
   def getSingleton = BandSeqPlayers
 //
   override def setSeq(seq: Long) = {
@@ -14,6 +14,9 @@ class BandSeqPlayers extends Relation with LongKeyedMapper[BandSeqPlayers] with 
   }
   override def setTarget(playerid: Long) = {
     this.player(playerid)
+  }
+  override def getTarget() = {
+    this.player.obj.get
   }
 //
   object bandseq extends LongMappedMapper(this, BandSeq)
@@ -25,5 +28,5 @@ class BandSeqPlayers extends Relation with LongKeyedMapper[BandSeqPlayers] with 
       if (in > 0 ) Nil
       else List(FieldError(this, <b>Seq must be over 1</b>))
   }
-  def getPlayer(): Player = Player.findAll(By(Player.id, player.get)).head
+  def getPlayer() = Player.findAll(By(Player.id, player)).head
 }

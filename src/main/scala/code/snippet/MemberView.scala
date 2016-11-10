@@ -111,7 +111,7 @@ class MemberView {
     val msg = "updated member " + name
     val errorMsg = "Duplcate player!"
     val path = "/member?bandid=" + bandid + "&seq=" + bandseq
-    Logic.updateTarget(getTarget, getBinder, getRelation, getExistTarget, Nil => false)(bandSeq.id.get, bandseqplayerid.toLong, name, path, msg, errorMsg, seq.toLong, null, null)
+    Logic.updateTarget(getTarget, getBinder, getExistTarget, Nil => false)(bandSeq.id.get, bandseqplayerid.toLong, name, path, msg, errorMsg, seq.toLong, null, null)
   }
 
   private
@@ -148,8 +148,7 @@ class MemberView {
       BandSeqPlayers.findAll(By(BandSeqPlayers.id, bandseqPlayersId)).head.seq.equals(seq)
     }
     def getBinder(bandseqid: Long): Binder = BandSeq.findAll(By(BandSeq.id, bandseqid)).head
-    def getTarget(bandseqid: Long, banseqplayrid: Long): Target =   BandSeq.findAll(By(BandSeq.id, bandseqid)).head.bandseqPlayers.filter{ bsp => bsp.id.get.toLong == bandseqplayerid.toLong}.head.getPlayer
-    def getRelation(bandseqplayerid: Long): Relation = BandSeqPlayers.findAll(By(BandSeqPlayers.id, bandseqplayerid)).head
+    def getTarget(bandseqid: Long, banseqplayrid: Long): Player =   BandSeq.findAll(By(BandSeq.id, bandseqid)).head.bandseqPlayers.filter{ bsp => bsp.id.get.toLong == bandseqplayerid.toLong}.head.getPlayer
     def getExistTarget(name: String): List[Target] = Player.findAll(By(Player.name, name))
     
 }

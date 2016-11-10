@@ -4,11 +4,8 @@ import net.liftweb.common._
 import net.liftweb.http._
 import S._
 import code.model.Target
-import code.model.Player
 import code.model.Binder
-import code.model.BandSeq
 import code.model.Relation
-import code.model.BandSeqPlayers
 import code.model.Attach
 
 object Logic {
@@ -48,9 +45,9 @@ object Logic {
     }
   }
 
-  def updateTarget(getTarget: (Long, Long) => Target, getBinder: Long => Binder, getExistTarget: String => List[Target], isAtachFileExist: Box[FileParamHolder] => Boolean)(binderId: Long, relationId: Long, name: String, path: String, msg: String, errorMsg: String, seq: Long, upload: Box[FileParamHolder], attach: Attach): Unit = {
+  def updateTarget(getTarget: (Long, Long) => Target, getBinder: Long => Binder, getRelation: Long => Relation, getExistTarget: String => List[Target], isAtachFileExist: Box[FileParamHolder] => Boolean)(binderId: Long, relationId: Long, name: String, path: String, msg: String, errorMsg: String, seq: Long, upload: Box[FileParamHolder], attach: Attach): Unit = {
     val target = getTarget(binderId, relationId)
-    val relation = target.getRelation(relationId)
+    val relation = getRelation(relationId)
     // 指定されたtargetが既存かどうかチェック。
     //   既存: relationのアソシエーションの変更
     //   未存: targetのnameの更新
@@ -93,11 +90,11 @@ object Logic {
     if(isAtachFileExist(upload)) {
       target.setLob(attach)  
     }
-    relation.setSeq(seq)
     target.save
+    relation.setSeq(seq)
+    relation.save
     S.notice(msg)
     S.redirectTo(path)
   }
-
 }
 

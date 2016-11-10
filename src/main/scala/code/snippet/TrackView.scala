@@ -112,11 +112,13 @@ class TrackView {
             S.redirectTo("/track?albumid=" + albumid)
           }
           case false => {
-            track.save
-            val albumTrack: AlbumTracks = AlbumTracks.create.album(albumid.toLong).track(track.id.get).seq(seq.toLong)
+            val albumTrack: AlbumTracks = AlbumTracks.create.album(albumid.toLong).seq(seq.toLong)
+            album.albumTracks += albumTrack
             albumTrack.validate match {
               case Nil => {
-                albumTrack.save
+                track.save
+                albumTrack.track(track.id.get)
+                album.save
                 S.notice("Added " + track.tracktitle)
                 S.redirectTo("/track?albumid=" + albumid)
               }
@@ -143,7 +145,7 @@ class TrackView {
       case true => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
       case false => null
     }
-    Logic.updateTarget(getTarget, getBinder, getRelation, getExistTarget, isAtachFileExist)(album.id.get, albumtrcid.toLong, tracktitle, path, msg, errorMsg, seq.toLong, upload, attach)
+    Logic.updateTarget(getTarget, getBinder, getExistTarget, isAtachFileExist)(album.id.get, albumtrcid.toLong, tracktitle, path, msg, errorMsg, seq.toLong, upload, attach)
   }
 
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
@@ -238,6 +240,5 @@ class TrackView {
           AlbumTracks.findAll(By(AlbumTracks.id, albumTrackId)).head.seq.equals(seq)
     def getBinder(albumid: Long): Binder = Album.findAll(By(Album.id, albumid)).head
     def getTarget(albumid: Long, albumtrcid: Long): Target = Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.id == albumtrcid}.head.getTrack
-    def getRelation(albumtrcid: Long): Relation = AlbumTracks.findAll(By(AlbumTracks.id, albumtrcid)).head
     def getExistTarget(tracktitle: String): List[Target] = Track.findAll(By(Track.tracktitle, tracktitle))
 }
