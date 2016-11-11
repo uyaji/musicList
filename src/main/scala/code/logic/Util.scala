@@ -3,6 +3,8 @@ package code.logic
 import net.liftweb.common._
 import net.liftweb.http._
 import S._
+import java.text.SimpleDateFormat
+import java.util.Date
 
 object Util {
   def generateSeq(rowCount: Long, getMaxSeq: () => Long, paramSeq: String): String = {
@@ -20,5 +22,15 @@ object Util {
       case Full(value) => value
       case _ => "0"
     }
+  }
+
+  def stringToDate(strDate: String): Date = {
+    val sdf = new SimpleDateFormat("yyyy");
+    sdf.parse(strDate.substring(0,4))
+  }
+
+  def dateToString(date: Date): String = {
+    val sdf = new SimpleDateFormat("yyyy");
+    sdf.format(date)
   }
 }

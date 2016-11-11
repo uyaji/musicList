@@ -86,8 +86,7 @@ class TrackView {
         val tracks: List[Track] = Track.findAll(By(Track.tracktitle, tracktitle))
         val track: Track = tracks match {
           case Nil => {
-            val track = Track.create.tracktitle(tracktitle)
-            track
+            Track.create.tracktitle(tracktitle)
           }
           case _ => tracks.head
         }
@@ -213,7 +212,7 @@ class TrackView {
       val attaches: List[Attach] = Attach.findAll(By(Attach.id, attachid))
       attaches.size match {
         case 0 =>
-        case _ => val result = attaches.head.delete_!
+        case _ => attaches.head.delete_!
       }
       val comAttaches: List[Attach] = Attach.findAll(By(Attach.track, trackid))
       val track: Track = Track.findAll(By(Track.id, trackid)).head
@@ -224,12 +223,12 @@ class TrackView {
               track.delete_!
             }
             case _ => ()
-            val album = Album.findAll(By(Album.id, Util.paramGet("albumid").toLong)).head
-            album.tracks -= track
-            album.save
           }
+          val album = Album.findAll(By(Album.id, Util.paramGet("albumid").toLong)).head
+          album.tracks -= track
+          album.save
         }
-        case _ =>
+        case _ => ()
       }
       S.notice("Deleted " + track.tracktitle)
     }

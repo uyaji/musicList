@@ -14,7 +14,6 @@ import code.model.BandSeq
 import code.model.BandSeqPlayers
 import code.logic.Logic
 import code.logic.Util
-import java.text.SimpleDateFormat
 import java.util.Date
 
 class BandView {
@@ -28,8 +27,8 @@ class BandView {
                   case "0" => new BandSeq(new Date(0), new Date(0), seq.toInt)
                   case _   => band.bandSeqs.filter{ bs => bs.seq == seq.toInt }.head
                 }
-  var startat = dateToString(bandSeq.bandSeqStartAt.get)
-  var endat = dateToString(bandSeq.bandSeqEndAt.get)
+  var startat = Util.dateToString(bandSeq.bandSeqStartAt.get)
+  var endat = Util.dateToString(bandSeq.bandSeqEndAt.get)
 
   def list(html: NodeSeq): NodeSeq = {
     def renderRow(): NodeSeq = {
@@ -66,7 +65,7 @@ class BandView {
   }
 
   def addSeq() {
-    band.bandSeqs += new BandSeq(stringToDate(startat), stringToDate(endat), seq.toInt)
+    band.bandSeqs += new BandSeq(Util.stringToDate(startat), Util.stringToDate(endat), seq.toInt)
     band.save
     S.notice("Added Seq " + seq)
     S.redirectTo("/band?bandid=" + bandid)
@@ -74,24 +73,14 @@ class BandView {
 
   def updateSeq() {
     var bandSeq = band.bandSeqs.filter{ bs => bs.seq == seq.toInt }.head
-    bandSeq.bandSeqStartAt(stringToDate(startat))
-    bandSeq.bandSeqEndAt(stringToDate(endat))
+    bandSeq.bandSeqStartAt(Util.stringToDate(startat))
+    bandSeq.bandSeqEndAt(Util.stringToDate(endat))
     bandSeq.save
     S.notice("Updated Seq " + seq)
     S.redirectTo("/band?bandid=" + bandid)
   }
 
   private 
-    def stringToDate(strDate: String): Date = {
-      val sdf = new SimpleDateFormat("yyyy");
-      sdf.parse(strDate.substring(0,4)) 
-    }
-
-    def dateToString(date: Date): String = {
-      val sdf = new SimpleDateFormat("yyyy");
-      sdf.format(date) 
-    }
-
     def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
 //      var bandseqs: List[BandSeq] = BandSeq.findAll(By(BandSeq.band, bandid.toLong), OrderBy(BandSeq.seq, Ascending))
       val seqSize = band.bandSeqs.size

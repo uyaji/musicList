@@ -27,7 +27,7 @@ class MemberView {
               () => bandSeq.bandseqPlayers.reduceLeft((bp1, bp2) => if(bp1.seq.get > bp2.seq.get) bp1 else bp2).seq.get +1,
               memberseq)
   def bandNameSeq(html: NodeSeq): NodeSeq = {
-    bind("band", html, "nameseq" -> (band.bandname + " : " + bandseq ))
+    bind("band", html, "nameseq" -> (band.bandname + " : " + Util.dateToString(bandSeq.bandSeqStartAt.get) + " - " + Util.dateToString(bandSeq.bandSeqEndAt.get) ))
   }
 
   def list(html: NodeSeq): NodeSeq = {
@@ -71,7 +71,7 @@ class MemberView {
   def registerMember() {
     val player: Player = Player.findAll(By(Player.name, name)) match {
                    case Nil => {
-                     new Player(name)
+                     Player.create.name(name)
                    }
                    case pl: List[Player] => pl.head
     }
@@ -84,11 +84,13 @@ class MemberView {
             S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
           }
           case false => {
-            player.save
-            val bandSeqPlayer: BandSeqPlayers = BandSeqPlayers.create.bandseq(bandSeq.id.get).player(player.id.get).seq(seq.toLong)
+            val bandSeqPlayer: BandSeqPlayers = BandSeqPlayers.create.bandseq(bandSeq.id.get).seq(seq.toLong)
+            bandSeq.bandseqPlayers += bandSeqPlayer
             bandSeqPlayer.validate match {
               case Nil => {
-                bandSeqPlayer.save
+                player.save
+                bandSeqPlayer.player(player.id.get)
+                bandSeq.save
                 S.notice("Added member " + player.name)
                 S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
               }
@@ -134,11 +136,15 @@ class MemberView {
     }
 
     def delete(bandseqid: Long, playerid: Long): Unit = {
-      val bandSeqPlayers: List[BandSeqPlayers] = BandSeqPlayers.findAll(By(BandSeqPlayers.bandseq, bandseqid), By(BandSeqPlayers.player, playerid))
-      bandSeqPlayers match {
-        case Nil => ()
-        case _ => bandSeqPlayers.head.delete_!
+      val player = Player.findAll(By(Player.id, playerid)).head
+      player.bandseqs.size match {
+        case 1 => player.delete_!
+        case _ => ()
       }
+      val bandSeq = BandSeq.findAll(By(BandSeq.id, bandseqid)).head
+      bandSeq.players -= player
+      bandSeq.save
+      S.notice("Deleted " + player.name)
     }
 
     def duplicateSeqCheck(bandseqid: Long, seq: Long): Boolean = {
