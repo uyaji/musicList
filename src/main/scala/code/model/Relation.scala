@@ -5,4 +5,5 @@ trait Relation{
   def setTarget(targetid: Long): Unit
   def save: Boolean
   def getTarget(): Target
+  def validate: List[net.liftweb.util.FieldError]
 }

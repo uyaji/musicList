@@ -99,5 +99,42 @@ object Logic {
     S.redirectTo(path)
   }
 
+  def registTarget(getTarget: String => List[Target], duplicateKeyCheck: Target => Boolean)(uniqueKey: String, generatedTarget: Target, generatedRelation: Relation, binder: Binder, msg: String, errMsg: String, path: String): Unit = {
+    val target: Target = getTarget(uniqueKey).head match {
+      case t: Target => t
+      case _ => generatedTarget
+    }
+    target.validates match {
+      case Nil => {
+        // 登録時にターゲットの重複がないかチェック
+        duplicateKeyCheck(target) match {
+          case true => {
+            S.error(errMsg)
+            S.redirectTo(path)
+          }
+          case false => {
+            binder.getRelation += generatedRelation
+            generatedRelation.validate match {
+              case Nil => {
+                target.save
+                generatedRelation.setTarget(target.getId)
+                generatedRelation.save
+                S.notice(msg)
+                S.redirectTo(path)
+              }
+              case errors => {
+                S.error(errors)
+                S.redirectTo(path)
+              }
+            }
+          }
+        }
+      }
+      case errors => {
+        S.error(errors)
+        S.redirectTo(path)
+      }
+    }
+  }
 }
 

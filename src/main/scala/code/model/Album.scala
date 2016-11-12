@@ -16,6 +16,7 @@ class Album extends Binder with LongKeyedMapper[Album] with IdPK with ManyToMany
  
   def getSingleton = Album
   override def getTargets = tracks.toList
+  override def getRelation = albumTracks.asInstanceOf[scala.collection.mutable.Buffer[Relation]]
 
   object albumtitle extends MappedString(this, 100) {
     override def validations =

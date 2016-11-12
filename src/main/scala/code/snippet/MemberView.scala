@@ -69,7 +69,14 @@ class MemberView {
   }
 
   def registerMember() {
-    val player: Player = Player.findAll(By(Player.name, name)) match {
+    val generatedPlayer = Player.create.name(name)
+    val generatedBandSeqPlayer = BandSeqPlayers.create.bandseq(bandSeq.id.get).seq(seq.toLong)
+    val msg = "Added member " + name
+    val errMsg = "Duplicate member!"
+    val path = "/member?bandid=" + bandid + "&seq=" + bandseq
+    Logic.registTarget(getExistTarget, duplicateKeyCheck)(name, generatedPlayer, generatedBandSeqPlayer, bandSeq, msg, errMsg, path)
+
+/*    val player: Player = Player.findAll(By(Player.name, name)) match {
                    case Nil => {
                      Player.create.name(name)
                    }
@@ -80,7 +87,7 @@ class MemberView {
         // 登録時にメンバーの重複がないかチェック
         bandSeq.players.toList.contains(player) match {
           case true => {
-            S.notice("Duplicate member!")
+            S.error("Duplicate member!")
             S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
           }
           case false => {
@@ -106,7 +113,7 @@ class MemberView {
         S.error(errors)
         S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
       }
-    }
+    }*/
   }
 
   def updateMember {
@@ -156,5 +163,5 @@ class MemberView {
     def getBinder(bandseqid: Long): Binder = BandSeq.findAll(By(BandSeq.id, bandseqid)).head
     def getTarget(bandseqid: Long, banseqplayrid: Long): Player =   BandSeq.findAll(By(BandSeq.id, bandseqid)).head.bandseqPlayers.filter{ bsp => bsp.id.get.toLong == bandseqplayerid.toLong}.head.getPlayer
     def getExistTarget(name: String): List[Target] = Player.findAll(By(Player.name, name))
-    
+    def duplicateKeyCheck(player: Target): Boolean = BandSeq.findAll(By(BandSeq.id, bandSeq.id.get)).head.players.toList.contains(player)
 }

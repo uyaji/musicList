@@ -7,4 +7,5 @@ trait Target {
   def setLob(attach: Attach): Unit
   def getRelation(ralationId: Long): Relation
   def save: Boolean
+  def validates: List[net.liftweb.util.FieldError]
 }

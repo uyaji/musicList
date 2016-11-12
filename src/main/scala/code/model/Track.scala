@@ -24,6 +24,7 @@ class Track extends Target with LongKeyedMapper[Track] with IdPK with ManyToMany
     this.attaches += attach
   }
   override def getRelation(relationId: Long) = this.albumTracks.filter{ at => at.id == relationId}.head
+  override def validates = this.validate
 
   object tracktitle extends MappedString(this, 100) {
     override def validations =
