@@ -1,3 +1,5 @@
 package code.model
 
-trait LargeObject 
+trait LargeObject {
+  def getFileName:String
+}

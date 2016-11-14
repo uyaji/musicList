@@ -4,12 +4,9 @@ import net.liftweb.common._
 import net.liftweb.http._
 import S._
 import code.model.Target
-import code.model.Player
 import code.model.Binder
-import code.model.BandSeq
 import code.model.Relation
-import code.model.BandSeqPlayers
-import code.model.Attach
+import code.model.LargeObject
 
 object Logic {
   def select(duplicateCheck: (Long, Long) => Boolean, changeKeyCheck: (Long, Long) => Boolean)(target: Long, key: Long, relationKey: Long, msg: String, path: String): String = {
@@ -49,7 +46,7 @@ object Logic {
   }
 
 // attachファイルの重複チェックが未実装
-  def updateTarget(getTarget: (Long, Long) => Target, getBinder: Long => Binder, getExistTarget: String => List[Target], isAtachFileExist: Box[FileParamHolder] => Boolean)(binderId: Long, relationId: Long, name: String, path: String, msg: String, errorMsg: String, seq: Long, upload: Box[FileParamHolder], attach: Attach): Unit = {
+  def updateTarget(getTarget: (Long, Long) => Target, getBinder: Long => Binder, getExistTarget: String => List[Target], isAtachFileExist: Box[FileParamHolder] => Boolean)(binderId: Long, relationId: Long, name: String, path: String, msg: String, errorMsg: String, seq: Long, upload: Box[FileParamHolder], attach: LargeObject): Unit = {
     val target = getTarget(binderId, relationId)
     val relation = target.getRelation(relationId)
     // 指定されたtargetが既存かどうかチェック。
@@ -100,11 +97,11 @@ object Logic {
     S.redirectTo(path)
   }
 
-  def registTarget(getTarget: String => List[Target], duplicateKeyCheck: Target => Boolean, isAtachFileExist: Box[FileParamHolder] => Boolean, getExistAttach: String => List[Attach])(uniqueKey: String, generatedTarget: Target, generatedRelation: Relation, binder: Binder, msg: String, errMsg: String, path: String, upload: Box[FileParamHolder], transferAttach: Attach): Unit = {
+  def registTarget(getTarget: String => List[Target], duplicateKeyCheck: Target => Boolean, isAtachFileExist: Box[FileParamHolder] => Boolean, getExistAttach: String => List[LargeObject])(uniqueKey: String, generatedTarget: Target, generatedRelation: Relation, binder: Binder, msg: String, errMsg: String, path: String, upload: Box[FileParamHolder], transferAttach: LargeObject): Unit = {
     val target: Target = isAtachFileExist(upload) match {
       case true => {
-        val attaches = getExistAttach(transferAttach.filename.get)
-        val attach: Attach = attaches match {
+        val attaches = getExistAttach(transferAttach.getFileName)
+        val attach: LargeObject = attaches match {
           case Nil => transferAttach
           case _ => attaches.head
         }
