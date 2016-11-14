@@ -74,46 +74,7 @@ class MemberView {
     val msg = "Added member " + name
     val errMsg = "Duplicate member!"
     val path = "/member?bandid=" + bandid + "&seq=" + bandseq
-    Logic.registTarget(getExistTarget, duplicateKeyCheck)(name, generatedPlayer, generatedBandSeqPlayer, bandSeq, msg, errMsg, path)
-
-/*    val player: Player = Player.findAll(By(Player.name, name)) match {
-                   case Nil => {
-                     Player.create.name(name)
-                   }
-                   case pl: List[Player] => pl.head
-    }
-    player.validate match {
-      case Nil => {
-        // 登録時にメンバーの重複がないかチェック
-        bandSeq.players.toList.contains(player) match {
-          case true => {
-            S.error("Duplicate member!")
-            S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
-          }
-          case false => {
-            val bandSeqPlayer: BandSeqPlayers = BandSeqPlayers.create.bandseq(bandSeq.id.get).seq(seq.toLong)
-            bandSeq.bandseqPlayers += bandSeqPlayer
-            bandSeqPlayer.validate match {
-              case Nil => {
-                player.save
-                bandSeqPlayer.player(player.id.get)
-                bandSeq.save
-                S.notice("Added member " + player.name)
-                S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
-              }
-              case errors => {
-                S.error(errors)
-                S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
-              }
-            }
-          }
-        }
-      }
-      case errors => {
-        S.error(errors)
-        S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
-      }
-    }*/
+    Logic.registTarget(getExistTarget, duplicateKeyCheck, Nil => false,  _ => Nil)(name, generatedPlayer, generatedBandSeqPlayer, bandSeq, msg, errMsg, path, null, null)
   }
 
   def updateMember {

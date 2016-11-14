@@ -48,6 +48,7 @@ object Logic {
     }
   }
 
+// attachファイルの重複チェックが未実装
   def updateTarget(getTarget: (Long, Long) => Target, getBinder: Long => Binder, getExistTarget: String => List[Target], isAtachFileExist: Box[FileParamHolder] => Boolean)(binderId: Long, relationId: Long, name: String, path: String, msg: String, errorMsg: String, seq: Long, upload: Box[FileParamHolder], attach: Attach): Unit = {
     val target = getTarget(binderId, relationId)
     val relation = target.getRelation(relationId)
@@ -99,10 +100,27 @@ object Logic {
     S.redirectTo(path)
   }
 
-  def registTarget(getTarget: String => List[Target], duplicateKeyCheck: Target => Boolean)(uniqueKey: String, generatedTarget: Target, generatedRelation: Relation, binder: Binder, msg: String, errMsg: String, path: String): Unit = {
-    val target: Target = getTarget(uniqueKey).head match {
-      case t: Target => t
-      case _ => generatedTarget
+  def registTarget(getTarget: String => List[Target], duplicateKeyCheck: Target => Boolean, isAtachFileExist: Box[FileParamHolder] => Boolean, getExistAttach: String => List[Attach])(uniqueKey: String, generatedTarget: Target, generatedRelation: Relation, binder: Binder, msg: String, errMsg: String, path: String, upload: Box[FileParamHolder], transferAttach: Attach): Unit = {
+    val target: Target = isAtachFileExist(upload) match {
+      case true => {
+        val attaches = getExistAttach(transferAttach.filename.get)
+        val attach: Attach = attaches match {
+          case Nil => transferAttach
+          case _ => attaches.head
+        }
+        val target = getTarget(uniqueKey) match {
+          case Nil => generatedTarget
+          case _ => getTarget(uniqueKey).head
+        }
+        target.setLob(attach)
+        target
+      }
+      case false => {
+        getTarget(uniqueKey) match {
+          case Nil => generatedTarget
+          case _ => getTarget(uniqueKey).head
+        }
+      }
     }
     target.validates match {
       case Nil => {
