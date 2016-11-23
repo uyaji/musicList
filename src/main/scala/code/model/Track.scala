@@ -22,6 +22,7 @@ class Track extends Target with LongKeyedMapper[Track] with IdPK with ManyToMany
   override def getId = id.get
   override def setLob(attach: LargeObject) {
     this.attaches += attach.asInstanceOf[Attach]
+//    this.attaches += attach
   }
   override def getRelation(relationId: Long) = this.albumTracks.filter{ at => at.id == relationId}.head
   override def validates = this.validate
@@ -35,7 +36,7 @@ class Track extends Target with LongKeyedMapper[Track] with IdPK with ManyToMany
 
   object albums extends MappedManyToMany(AlbumTracks, AlbumTracks.track, AlbumTracks.album, Album)
 
-  object attaches extends MappedOneToMany (Attach, Attach.track, OrderBy(Attach.id, Ascending))
+  object attaches extends MappedOneToMany(Attach, Attach.track, OrderBy(Attach.id, Ascending))
   object albumTracks extends MappedOneToMany(AlbumTracks, AlbumTracks.track, OrderBy(AlbumTracks.album, Ascending))
 
 }
