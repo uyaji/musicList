@@ -89,7 +89,7 @@ object Logic {
       }
     }
     if(isAtachFileExist(upload)) {
-      target.setLob(attach)  
+      target.setLob(attach.asInstanceOf[target.SuitableObject])
     }
     relation.setSeq(seq)
     target.save
@@ -109,7 +109,7 @@ object Logic {
           case Nil => generatedTarget
           case _ => getTarget(uniqueKey).head
         }
-        target.setLob(attach)
+        target.setLob(attach.asInstanceOf[target.SuitableObject])
         target
       }
       case false => {

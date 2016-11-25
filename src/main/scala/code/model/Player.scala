@@ -9,6 +9,7 @@ object Player extends Player with LongKeyedMetaMapper[Player] {
 }
 
 class Player extends Target with LongKeyedMapper[Player] with IdPK with ManyToMany with OneToMany[Long, Player] {
+  type SuitableObject <: LargeObject
   def this(name: String) = {
     this()
     this.name(name)
@@ -21,7 +22,7 @@ class Player extends Target with LongKeyedMapper[Player] with IdPK with ManyToMa
     this.name(name)
   }
   override def getId = id.get 
-  override def setLob(attach: LargeObject) = () => () 
+  override def setLob(attach: SuitableObject) = () => () 
   override def getRelation(relationId: Long) = this.bandSeqPlayers.filter{bsp => bsp.id == relationId}.head
   override def validates = this.validate
 //
