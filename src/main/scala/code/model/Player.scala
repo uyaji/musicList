@@ -9,7 +9,7 @@ object Player extends Player with LongKeyedMetaMapper[Player] {
 }
 
 class Player extends Target with LongKeyedMapper[Player] with IdPK with ManyToMany with OneToMany[Long, Player] {
-  type SuitableObject <: LargeObject
+  type SuitableObject = LargeObject
   def this(name: String) = {
     this()
     this.name(name)
