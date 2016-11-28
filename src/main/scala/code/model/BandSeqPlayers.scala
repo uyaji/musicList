@@ -9,6 +9,7 @@ object BandSeqPlayers extends BandSeqPlayers with LongKeyedMetaMapper[BandSeqPla
 class BandSeqPlayers extends Relation with LongKeyedMapper[BandSeqPlayers] with IdPK with OneToMany[Long, BandSeqPlayers] {
   def getSingleton = BandSeqPlayers
 //
+  override def getId = this.id
   override def setSeq(seq: Long) = {
     this.seq(seq)
   }

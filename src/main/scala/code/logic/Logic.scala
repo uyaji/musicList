@@ -6,6 +6,7 @@ import S._
 import code.model.Target
 import code.model.Binder
 import code.model.Relation
+import code.model.AlbumTracks
 import code.model.LargeObject
 
 object Logic {
@@ -46,9 +47,10 @@ object Logic {
   }
 
 // attachファイルの重複チェックが未実装
-  def updateTarget(getTarget: (Long, Long) => Target, getBinder: Long => Binder, getExistTarget: String => List[Target], isAtachFileExist: Box[FileParamHolder] => Boolean)(binderId: Long, relationId: Long, name: String, path: String, msg: String, errorMsg: String, seq: Long, upload: Box[FileParamHolder], attach: LargeObject): Unit = {
+  def updateTarget(getTarget: (Long, Long) => Target, getBinder: Long => Binder, getExistTarget: String => List[Target], isAtachFileExist: Box[FileParamHolder] => Boolean)(binderId: Long, relationId: Long, name: String, path: String, msg: String, errorMsgTarget: String, errorMsgLob: String, seq: Long, upload: Box[FileParamHolder], attach: LargeObject): Unit = {
     val target = getTarget(binderId, relationId)
-    val relation = target.getRelation(relationId)
+    var relation = target.getRelation(relationId)
+//    val relation = target.getRelations.filter{bsp => bsp.getId == relationId}.head
     // 指定されたtargetが既存かどうかチェック。
     //   既存: relationのアソシエーションの変更
     //   未存: targetのnameの更新
@@ -73,25 +75,35 @@ object Logic {
       case true => {
         target.setName(name)
       }
-      // 重複の恐れあり。BandSeq内のplayerをチェック
+      // 重複の恐れあり。binder内のtargetをチェック
       case _ => {
         val binder = getBinder(binderId)
         binder.getTargets.contains(existTargets.head) match {
           // 重複あり
           case true => {
-            S.error(errorMsg)
+            S.error(errorMsgTarget)
             S.redirectTo(path)
           }
           // 重複がないので、アソシエーションの変更。
-          case false =>
+          case false => {
             relation.setTarget(existTargets.head.getId)
+          }
         }
       }
     }
     if(isAtachFileExist(upload)) {
-      target.setLob(attach.asInstanceOf[target.SuitableObject])
+      target.getLobs.contains(attach) match {
+        case true => {
+          S.error(errorMsgLob)
+          S.redirectTo(path)
+        }
+        case false => {
+          target.setLob(attach.asInstanceOf[target.SuitableObject])
+        }
+      }
     }
     relation.setSeq(seq)
+    relation.save
     target.save
     S.notice(msg)
     S.redirectTo(path)

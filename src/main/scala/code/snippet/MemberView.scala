@@ -79,9 +79,10 @@ class MemberView {
 
   def updateMember {
     val msg = "updated member " + name
-    val errorMsg = "Duplcate player!"
+    val errorMsgPlayer = "Duplcate player!"
+    val errorMsgLob = ""
     val path = "/member?bandid=" + bandid + "&seq=" + bandseq
-    Logic.updateTarget(getTarget, getBinder, getExistTarget, Nil => false)(bandSeq.id.get, bandseqplayerid.toLong, name, path, msg, errorMsg, seq.toLong, null, null)
+    Logic.updateTarget(getTarget, getBinder, getExistTarget, Nil => false)(bandSeq.id.get, bandseqplayerid.toLong, name, path, msg, errorMsgPlayer, errorMsgLob, seq.toLong, null, null)
   }
 
   private

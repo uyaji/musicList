@@ -90,13 +90,20 @@ class TrackView {
 
   def updateProcess() {
     val msg = "Updateed " + tracktitle
-    val errorMsg = "Duplicate track!"
+    val errorMsgTrack = "Duplicate track!"
+    val errorMsgAttach = "Duplicate attach!"
     val path = "/track?albumid=" + albumid
     val attach = isAtachFileExist(upload) match {
-      case true => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
+      case true => {
+        val attach = Attach.findAll(By(Attach.filename, getFileParamHolder(upload).fileName))
+        attach match {
+          case Nil => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
+          case _ => attach.head
+        }
+      }
       case false => null
     }
-    Logic.updateTarget(getTarget, getBinder, getExistTarget, isAtachFileExist)(album.id.get, albumtrcid.toLong, tracktitle, path, msg, errorMsg, seq.toLong, upload, attach)
+    Logic.updateTarget(getTarget, getBinder, getExistTarget, isAtachFileExist)(album.id.get, albumtrcid.toLong, tracktitle, path, msg, errorMsgTrack, errorMsgAttach, seq.toLong, upload, attach)
   }
 
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
