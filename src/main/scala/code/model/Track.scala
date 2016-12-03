@@ -21,14 +21,18 @@ class Track extends Target with LongKeyedMapper[Track] with IdPK with ManyToMany
     this.tracktitle(title)
   }
   override def getId = id.get
-  override def getLobs = attaches.toList
+/*  override def getLobs = attaches.toList
   override def setLob(attach: Attach) {
 //    this.attaches += attach.asInstanceOf[Attach]
     this.attaches += attach
-  }
+  }*/
   override def getRelation(relationId: Long) = this.albumTracks.filter{ at => at.id == relationId}.head
   override def validates = this.validate
 
+  def getLobs = attaches.toList
+  def setLob(attach: Attach) {
+    this.attaches += attach
+  }
   object tracktitle extends MappedString(this, 100) {
     override def validations =
       valMaxLen(100, "title length must be under 100 characters long ") _  ::

@@ -70,7 +70,7 @@ class TrackView {
     case Full(FileParamHolder(name, mime, fileName, data)) => FileParamHolder(name, mime, fileName, data)
   }
 
-  def isAtachFileExist(upload: Box[FileParamHolder]):Boolean = upload match {
+  def isAttachFileExist(upload: Box[FileParamHolder]):Boolean = upload match {
     case Full(FileParamHolder(name, mime, fileName, data)) => true
     case _ => false
   }
@@ -81,11 +81,11 @@ class TrackView {
     val msg = "Added " + tracktitle
     val errMsg = "Duplicate track!"
     val path = "/track?albumid=" + albumid
-    val attach = isAtachFileExist(upload) match {
+    val attach = isAttachFileExist(upload) match {
       case true => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
       case false => null
     }
-    Logic.registTarget(getExistTarget, duplicateKeyCheck, isAtachFileExist, getExistAttach)(tracktitle, generatedTrack, generatedAlbumTrack, album, msg, errMsg, path, upload, attach)
+    Logic.registTarget(getExistTrack, duplicateKeyCheck, isAttachFileExist, getExistAttach)(tracktitle, generatedTrack, generatedAlbumTrack, album, msg, errMsg, path, upload, attach)
   }
 
   def updateProcess() {
@@ -93,7 +93,7 @@ class TrackView {
     val errorMsgTrack = "Duplicate track!"
     val errorMsgAttach = "Duplicate attach!"
     val path = "/track?albumid=" + albumid
-    val attach = isAtachFileExist(upload) match {
+    val attach = isAttachFileExist(upload) match {
       case true => {
         val attach = Attach.findAll(By(Attach.filename, getFileParamHolder(upload).fileName))
         attach match {
@@ -103,7 +103,42 @@ class TrackView {
       }
       case false => null
     }
-    Logic.updateTarget(getTarget, getBinder, getExistTarget, isAtachFileExist)(album.id.get, albumtrcid.toLong, tracktitle, path, msg, errorMsgTrack, errorMsgAttach, seq.toLong, upload, attach)
+    val result = Logic.updateTarget(getTrack, getBinder, getExistTrack)(album.id.get, albumtrcid.toLong, tracktitle)
+    result.error match {
+      case true => {
+        S.error(errorMsgTrack)
+        S.redirectTo(path)
+      }
+      case false => ()
+    }
+    val track = getTrack(album.id.get, albumtrcid.toLong)
+    val albumTrack = track.getRelation(albumtrcid.toLong)
+    val existTracks = getExistTrack(tracktitle)
+    result.changeContent match {
+      case "name" => {
+        track.setName(tracktitle)
+      }
+      case _ => {
+        albumTrack.track(existTracks.head.getId)
+      }
+    }
+    if(isAttachFileExist(upload)) {
+      track.getLobs.contains(attach) match {
+        // attachの重複エラー
+        case true => {
+          S.error(errorMsgAttach)
+          S.redirectTo(path)
+        }
+        case false => {
+          track.setLob(attach)
+        }
+      }
+    }
+    albumTrack.seq(seq.toLong)
+    albumTrack.save
+    track.save
+    S.notice(msg)
+    S.redirectTo(path)
   }
 
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
@@ -197,8 +232,8 @@ class TrackView {
     def changeSeqCheck(albumTrackId: Long, seq: Long): Boolean =
           AlbumTracks.findAll(By(AlbumTracks.id, albumTrackId)).head.seq.equals(seq)
     def getBinder(albumid: Long): Binder = Album.findAll(By(Album.id, albumid)).head
-    def getTarget(albumid: Long, albumtrcid: Long): Target = Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.id == albumtrcid}.head.getTrack
-    def getExistTarget(tracktitle: String): List[Target] = Track.findAll(By(Track.tracktitle, tracktitle))
+    def getTrack(albumid: Long, albumtrcid: Long): Track = Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.id == albumtrcid}.head.getTrack
+    def getExistTrack(tracktitle: String): List[Target] = Track.findAll(By(Track.tracktitle, tracktitle))
     def duplicateKeyCheck(track: Target): Boolean = Album.findAll(By(Album.id, album.id.get)).head.tracks.toList.contains(track)
     def getExistAttach(fileName: String) = Attach.findAll(By(Attach.filename, fileName))
 }
