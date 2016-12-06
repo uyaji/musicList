@@ -11,7 +11,7 @@
     <style type="text/css">
 /* <![CDATA[ */
 body {
-  background-image: url("images/02580.jpg")
+  background-image: url("../images/02580.jpg")
 }
 .edit_error_class {
   display: block;
