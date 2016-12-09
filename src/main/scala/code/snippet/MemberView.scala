@@ -74,7 +74,26 @@ class MemberView {
     val msg = "Added member " + name
     val errMsg = "Duplicate member!"
     val path = "/member?bandid=" + bandid + "&seq=" + bandseq
-    Logic.registTarget2(getExistPlayer, duplicateKeyCheck, Nil => false,  _ => Nil)(name, generatedPlayer, generatedBandSeqPlayer, bandSeq, msg, errMsg, path, null, null)
+    val player = getExistPlayer(name) match {
+      case Nil => generatedPlayer
+      case players: List[Player] => players.head
+    }
+    Logic.registTarget(duplicateKeyCheck)(player, generatedBandSeqPlayer, bandSeq, msg, errMsg, path) match {
+      case Nil => {
+        player.save
+        generatedBandSeqPlayer.player(player.id.get)
+        generatedBandSeqPlayer.save
+        S.notice(msg)
+        S.redirectTo(path)
+      }
+      case errors: List[FieldError] => {
+        errors(0).field match {
+          case null => S.error(errors(0).msg)
+          case _ => S.error(errors)
+        }
+        S.redirectTo(path)
+      }
+    }
   }
 
   def updateMember {
@@ -147,6 +166,6 @@ class MemberView {
     }
     def getBinder(bandseqid: Long): Binder = BandSeq.findAll(By(BandSeq.id, bandseqid)).head
     def getPlayer(bandseqid: Long, banseqplayrid: Long): Player =   BandSeq.findAll(By(BandSeq.id, bandseqid)).head.bandseqPlayers.filter{ bsp => bsp.id.get.toLong == bandseqplayerid.toLong}.head.getPlayer
-    def getExistPlayer(name: String): List[Target] = Player.findAll(By(Player.name, name))
+    def getExistPlayer(name: String): List[Player] = Player.findAll(By(Player.name, name))
     def duplicateKeyCheck(player: Target): Boolean = BandSeq.findAll(By(BandSeq.id, bandSeq.id.get)).head.players.toList.contains(player)
 }

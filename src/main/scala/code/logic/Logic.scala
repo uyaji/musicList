@@ -2,12 +2,14 @@ package code.logic
 
 import net.liftweb.common._
 import net.liftweb.http._
+import net.liftweb.util._
 import S._
 import code.model.Target
 import code.model.Binder
 import code.model.Relation
 import code.model.AlbumTracks
 import code.model.LargeObject
+import net.liftweb.util.FieldError
 
 object Logic {
   def select(duplicateCheck: (Long, Long) => Boolean, changeKeyCheck: (Long, Long) => Boolean)(target: Long, key: Long, relationKey: Long, msg: String, path: String): String = {
@@ -94,6 +96,38 @@ object Logic {
     result
   }
 
+  def registTarget(duplicateKeyCheck: Target => Boolean)(target: Target, generatedRelation: Relation, binder: Binder, msg: String, errMsg: String, path: String): List[FieldError] = {
+    target.validates match {
+      case Nil => {
+        // 登録時にターゲットの重複がないかチェック
+        duplicateKeyCheck(target) match {
+          case true => {
+            List(FieldError(null, <li>{errMsg}</li>))
+          }
+          case false => {
+            generatedRelation.validate match {
+              case Nil => {
+                Nil
+              }
+              case errors => {
+                errors
+              }
+            }
+          }
+        }
+      }
+      case errors => {
+        errors
+      }
+    }
+  }
+}
+
+case class Result (
+  var error: Boolean,
+  var changeContent: String
+)
+
 /*  def updateTarget(getTarget: (Long, Long) => Target, getBinder: Long => Binder, getExistTarget: String => List[Target], isAtachFileExist: Box[FileParamHolder] => Boolean)(binderId: Long, relationId: Long, name: String, path: String, msg: String, errorMsgTarget: String, errorMsgLob: String, seq: Long, upload: Box[FileParamHolder], attach: LargeObject): Unit = {
     val target = getTarget(binderId, relationId)
     var relation = target.getRelation(relationId)
@@ -155,63 +189,9 @@ object Logic {
     target.save
     S.notice(msg)
     S.redirectTo(path)
-  }*/
-
-  def registTarget(duplicateKeyCheck: Target => Boolean)(target: Target, generatedRelation: Relation, binder: Binder, msg: String, errMsg: String, path: String): Unit = {
-/*    val target: Target = isAtachFileExist(upload) match {
-      case true => {
-        val attaches = getExistAttach(transferAttach.getFileName)
-        val attach: LargeObject = attaches match {
-          case Nil => transferAttach
-          case _ => attaches.head
-        }
-        val target = getTarget(uniqueKey) match {
-          case Nil => generatedTarget
-          case _ => getTarget(uniqueKey).head
-        }
-        target
-      }
-      case false => {
-        getTarget(uniqueKey) match {
-          case Nil => generatedTarget
-          case _ => getTarget(uniqueKey).head
-        }
-      }
-    }*/
-    target.validates match {
-      case Nil => {
-        // 登録時にターゲットの重複がないかチェック
-        duplicateKeyCheck(target) match {
-          case true => {
-            S.error(errMsg)
-            S.redirectTo(path)
-          }
-          case false => {
-            binder.getRelation += generatedRelation
-            generatedRelation.validate match {
-              case Nil => {
-                target.save
-                generatedRelation.setTarget(target.getId)
-                generatedRelation.save
-                S.notice(msg)
-                S.redirectTo(path)
-              }
-              case errors => {
-                S.error(errors)
-                S.redirectTo(path)
-              }
-            }
-          }
-        }
-      }
-      case errors => {
-        S.error(errors)
-        S.redirectTo(path)
-      }
-    }
   }
 
-  def registTarget2(getTarget: String => List[Target], duplicateKeyCheck: Target => Boolean, isAtachFileExist: Box[FileParamHolder] => Boolean, getExistAttach: String => List[LargeObject])(uniqueKey: String, generatedTarget: Target, generatedRelation: Relation, binder: Binder, msg: String, errMsg: String, path: String, upload: Box[FileParamHolder], transferAttach: LargeObject): Unit = {
+  def registTarget(getTarget: String => List[Target], duplicateKeyCheck: Target => Boolean, isAtachFileExist: Box[FileParamHolder] => Boolean, getExistAttach: String => List[LargeObject])(uniqueKey: String, generatedTarget: Target, generatedRelation: Relation, binder: Binder, msg: String, errMsg: String, path: String, upload: Box[FileParamHolder], transferAttach: LargeObject): Unit = {
     val target: Target = isAtachFileExist(upload) match {
       case true => {
         val attaches = getExistAttach(transferAttach.getFileName)
@@ -264,10 +244,4 @@ object Logic {
         S.redirectTo(path)
       }
     }
-  }
-}
-
-case class Result (
-  var error: Boolean,
-  var changeContent: String
-)
+  }*/

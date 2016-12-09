@@ -93,7 +93,22 @@ class TrackView {
       case false => null
     }
     if(isAttachFileExist(upload)) track.attaches += attach
-    Logic.registTarget(duplicateKeyCheck)(track, generatedAlbumTrack, album, msg, errMsg, path)
+    Logic.registTarget(duplicateKeyCheck)(track, generatedAlbumTrack, album, msg, errMsg, path) match {
+      case Nil =>{
+        track.save
+        generatedAlbumTrack.track(track.id.get)
+        generatedAlbumTrack.save
+        S.notice(msg)
+        S.redirectTo(path)
+      }
+      case errors: List[FieldError] => {
+        errors(0).field match {
+          case null => S.error(errors(0).msg)
+          case _ => S.error(errors)
+        }
+        S.redirectTo(path)
+      }
+    }
   }
 
   def updateProcess() {
