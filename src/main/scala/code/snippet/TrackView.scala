@@ -81,11 +81,19 @@ class TrackView {
     val msg = "Added " + tracktitle
     val errMsg = "Duplicate track!"
     val path = "/track?albumid=" + albumid
+    val track = getExistTrack(tracktitle) match {
+      case Nil => generatedTrack
+      case tracks: List[Track] => tracks.head
+    }
     val attach = isAttachFileExist(upload) match {
-      case true => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
+      case true => getExistAttach(getFileParamHolder(upload).fileName) match {
+        case Nil => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
+        case attaches: List[Attach] => attaches.head
+      }
       case false => null
     }
-    Logic.registTarget(getExistTrack, duplicateKeyCheck, isAttachFileExist, getExistAttach)(tracktitle, generatedTrack, generatedAlbumTrack, album, msg, errMsg, path, upload, attach)
+    if(isAttachFileExist(upload)) track.attaches += attach
+    Logic.registTarget(duplicateKeyCheck)(track, generatedAlbumTrack, album, msg, errMsg, path)
   }
 
   def updateProcess() {
@@ -233,7 +241,8 @@ class TrackView {
           AlbumTracks.findAll(By(AlbumTracks.id, albumTrackId)).head.seq.equals(seq)
     def getBinder(albumid: Long): Binder = Album.findAll(By(Album.id, albumid)).head
     def getTrack(albumid: Long, albumtrcid: Long): Track = Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.id == albumtrcid}.head.getTrack
-    def getExistTrack(tracktitle: String): List[Target] = Track.findAll(By(Track.tracktitle, tracktitle))
+//    def getExistTrack(tracktitle: String): List[Target] = Track.findAll(By(Track.tracktitle, tracktitle))
+    def getExistTrack(tracktitle: String): List[Track] = Track.findAll(By(Track.tracktitle, tracktitle))
     def duplicateKeyCheck(track: Target): Boolean = Album.findAll(By(Album.id, album.id.get)).head.tracks.toList.contains(track)
     def getExistAttach(fileName: String) = Attach.findAll(By(Attach.filename, fileName))
 }

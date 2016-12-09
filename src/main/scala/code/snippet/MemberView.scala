@@ -74,7 +74,7 @@ class MemberView {
     val msg = "Added member " + name
     val errMsg = "Duplicate member!"
     val path = "/member?bandid=" + bandid + "&seq=" + bandseq
-    Logic.registTarget(getExistPlayer, duplicateKeyCheck, Nil => false,  _ => Nil)(name, generatedPlayer, generatedBandSeqPlayer, bandSeq, msg, errMsg, path, null, null)
+    Logic.registTarget2(getExistPlayer, duplicateKeyCheck, Nil => false,  _ => Nil)(name, generatedPlayer, generatedBandSeqPlayer, bandSeq, msg, errMsg, path, null, null)
   }
 
   def updateMember {
