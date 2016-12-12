@@ -9,7 +9,7 @@ object Track extends Track with LongKeyedMetaMapper[Track] {
 }
 
 class Track extends Target with LongKeyedMapper[Track] with IdPK with ManyToMany with OneToMany[Long, Track] {
-  type SuitableObject = Attach
+//  type SuitableObject = Attach
   def this(seq: Long, tracktitle: String) = {
     this()
     this.tracktitle(tracktitle)
@@ -17,9 +17,6 @@ class Track extends Target with LongKeyedMapper[Track] with IdPK with ManyToMany
 
   def getSingleton = Track
   override def getName = tracktitle.get
-  override def setName(title: String) {
-    this.tracktitle(title)
-  }
   override def getId = id.get
 /*  override def getLobs = attaches.toList
   override def setLob(attach: Attach) {

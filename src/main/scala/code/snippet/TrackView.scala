@@ -139,7 +139,7 @@ class TrackView {
     val existTracks = getExistTrack(tracktitle)
     result.changeContent match {
       case "name" => {
-        track.setName(tracktitle)
+        track.tracktitle(tracktitle)
       }
       case _ => {
         albumTrack.track(existTracks.head.getId)

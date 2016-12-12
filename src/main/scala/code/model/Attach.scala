@@ -6,10 +6,11 @@ object Attach extends Attach with LongKeyedMetaMapper[Attach] {
   override def dbTableName = "attaches"
 }
 
-class Attach extends LargeObject with LongKeyedMapper[Attach] with IdPK {
+//class Attach extends LargeObject with LongKeyedMapper[Attach] with IdPK {
+class Attach extends LongKeyedMapper[Attach] with IdPK {
   def getSingleton = Attach
 
-  override def getFileName = this.filename.get
+//  override def getFileName = this.filename.get
   def this(filename: String, mimetype: String, trackattach: Array[Byte]) = {
     this()
     this.filename(filename)

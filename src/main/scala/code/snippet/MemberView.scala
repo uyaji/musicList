@@ -114,7 +114,7 @@ class MemberView {
     val existPlayers = getExistPlayer(name)
     result.changeContent match {
       case "name" => {
-        player.setName(name)
+        player.name(name)
       }
       case _ => {
         bandSeqPlayer.player(existPlayers.head.getId)
