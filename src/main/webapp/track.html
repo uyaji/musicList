@@ -6,40 +6,45 @@
   </head>
   <body data-lift-content-id="main">
     <div id="main" data-lift="surround?with=default;at=content">
-      <h2>Welcome your Music detail!</h2>
-      <div class="lift:TrackView.albumtitle">
-        <h3>Album title : <album:title></album:title></h3>
-      </div>
-      <form class="lift:TrackView?form=post;multipart=true">
-        <input name="albumid"><br />
-        <input name="albumtrcid"><br />
-        <label for="seq">track seq</label><br />
-        <input name="seq" id="seq"><br />
-        <label for="tracktile">track title</label><br />
-        <input name="tracktitle" id="tracktitle"><br />
-        <input name="upload"><br />
-        <input type="submit" value="Add Track!">
-      </form>
-      <div>
-        <table>
-          <thead>
-            <tr>
-              <th>seq</th>
-              <th>Track Title</th>
-              <th>Attach File</th>
-              <th>action</th>
-            </tr>
-          </thead>
-          <tbody id="all_tracks" class="lift:TrackView.list">
-            <tr tracK:id="">
-              <td><track:seq></track:seq></td>
-              <td><track:tracktitle></track:tracktitle></td>
-              <td><track:filename></track:filename></td>
-              <td><track:delete></track:delete></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <lift:Util.out>Please
+        <lift:menu.item name="Login">Log In</item:memu.item>
+      </lift:Util.out>
+      <lift:Util.in>
+        <h2>Welcome your Music detail!</h2>
+        <div class="lift:TrackView.albumtitle">
+          <h3>Album title : <album:title></album:title></h3>
+        </div>
+        <form class="lift:TrackView?form=post;multipart=true">
+          <input name="albumid"><br />
+          <input name="albumtrcid"><br />
+          <label for="seq">track seq</label><br />
+          <input name="seq" id="seq"><br />
+          <label for="tracktile">track title</label><br />
+          <input name="tracktitle" id="tracktitle"><br />
+          <input name="upload"><br />
+          <input type="submit" value="Add Track!">
+        </form>
+        <div>
+          <table>
+            <thead>
+              <tr>
+                <th>seq</th>
+                <th>Track Title</th>
+                <th>Attach File</th>
+                <th>action</th>
+              </tr>
+            </thead>
+            <tbody id="all_tracks" class="lift:TrackView.list">
+              <tr tracK:id="">
+                <td><track:seq></track:seq></td>
+                <td><track:tracktitle></track:tracktitle></td>
+                <td><track:filename></track:filename></td>
+                <td><track:delete></track:delete></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      <lift:Util.in>
     </div>
   </body>
 </html>

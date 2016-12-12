@@ -6,30 +6,35 @@
   </head>
   <body data-lift-content-id="main">
     <div id="main" data-lift="surround?with=default;at=content">
-      <h2>Welcome your Music collection!</h2>
-      <form class="lift:AlbumView.add?form=post">
-        <label for="albumtitle" class="column span-10">album title</label><br />
-        <input type="text" name="albumtitle" id="albumtitle" class="column span-10"/><br />
-        <label for="artisname" class="column span-10">artist name</label><br />
-        <input type="text" name="artistname" class="column span-10"/><br />
-        <input type="submit" value="Add Album!" style="margin-top:5px;"/>
-      </form>
-      <div>
-        <table>
-          <thead>
-            <tr>
-              <th>Album Title</th>
-              <th>Artist</th>
-            </tr>
-          </thead>
-          <tbody id="all_albums" class="lift:AlbumView.list">
-            <tr album:id="">
-              <td><album:albumtitle></album:albumtitle></td>
-              <td><album:artistname></album:artistname></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <lift:Util.out>Pleas
+        <Lift:menu.item name="Login">Log In</lift:menu.item>
+      </lift:Util.out>
+      <lift:Util.in>
+        <h2>Welcome your Music collection!</h2>
+        <form class="lift:AlbumView.add?form=post">
+          <label for="albumtitle" class="column span-10">album title</label><br />
+          <input type="text" name="albumtitle" id="albumtitle" class="column span-10"/><br />
+          <label for="artisname" class="column span-10">artist name</label><br />
+          <input type="text" name="artistname" class="column span-10"/><br />
+          <input type="submit" value="Add Album!" style="margin-top:5px;"/>
+        </form>
+        <div>
+          <table>
+            <thead>
+              <tr>
+                <th>Album Title</th>
+                <th>Artist</th>
+              </tr>
+            </thead>
+            <tbody id="all_albums" class="lift:AlbumView.list">
+              <tr album:id="">
+                <td><album:albumtitle></album:albumtitle></td>
+                <td><album:artistname></album:artistname></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </lift:Util.in>
     </div>
   </body>
 </html>

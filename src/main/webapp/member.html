@@ -6,37 +6,42 @@
   </head>
   <body data-lift-content-id="main">
     <div id="main" data-lift="surround?with=default;at=content">
-      <h2>Welcome Member detail!</h2>
-      <div class="lift:MemberView.bandNameSeq">
-        <h3> Band name : <band:nameseq></nemaseq></h3>
-      </div>
-      <form class="lift:MemberView.add?form=post">
-        <input name="memberseq"><br />
-        <input name="bandseqplayerid"><br />
-        <label for="seq" class="column span-10">seq</label><br />
-        <input type="text" name="seq" class="column span-10"/><br />
-        <label for="name" class="column span-10">name</label><br />
-        <input type="text" name="name" class="column span-10"/><br />
-        <input type="submit" value="Add member!" style="margin-top:5px;"/>
-      </form>
-      <div>
-        <table>
-          <thead>
-            <tr>
-              <th>SEQ</th>
-              <th>Name</th>
-              <th>action</th>
-            </tr>
-          </thead>
-          <tbody id="members" class="lift:MemberView.list">
-            <tr member>
-              <td><member:seq></member:seq></td>
-              <td><member:name></member:name></td>
-              <td><member:delete></member:delete></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <lift:Util.out>Pleas
+        <lift:menu.item name="Login">Log In</lift:menu.item>
+      </lift:Util.out>
+      <lift:Util.in>
+        <h2>Welcome Member detail!</h2>
+        <div class="lift:MemberView.bandNameSeq">
+          <h3> Band name : <band:nameseq></nemaseq></h3>
+        </div>
+        <form class="lift:MemberView.add?form=post">
+          <input name="memberseq"><br />
+          <input name="bandseqplayerid"><br />
+          <label for="seq" class="column span-10">seq</label><br />
+          <input type="text" name="seq" class="column span-10"/><br />
+          <label for="name" class="column span-10">name</label><br />
+          <input type="text" name="name" class="column span-10"/><br />
+          <input type="submit" value="Add member!" style="margin-top:5px;"/>
+        </form>
+        <div>
+          <table>
+            <thead>
+              <tr>
+                <th>SEQ</th>
+                <th>Name</th>
+                <th>action</th>
+              </tr>
+            </thead>
+            <tbody id="members" class="lift:MemberView.list">
+              <tr member>
+                <td><member:seq></member:seq></td>
+                <td><member:name></member:name></td>
+                <td><member:delete></member:delete></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </lift:Util.in>
     </div>
   </body>
 </html>

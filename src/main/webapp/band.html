@@ -6,37 +6,42 @@
   </head>
   <body data-lift-content-id="main">
     <div id="main" data-lift="surround?with=default;at=content">
-      <h2>Welcome Band detail information</h2>
-      <div class="lift:BandView.bandName">
-        <h3>Band name : <band:name></band:name></h3>
-      </div>
-      <form class="lift:BandView.add?form=post">
-        <label for="seq" class="column span-10">seq</label><br />
-        <input type="text" name="seq" class="column span-10"/><br />
-        <label for="startat" class="column span-10">start at</label><br />
-        <input type="text" name="startat" class="column span-10"/><br />
-        <label for="endat" class="column span-10">end at</label><br />
-        <input type="text" name="endat" class="column span-10"/><br />
-        <input type="submit" value="Add Seq!" style="margin-top:5px;"/>
-      </form>
-      <div>
-        <table>
-          <thead>
-            <tr>
-              <th>SEQ</th>
-              <th>DURING</th>
-              <th>action</th>
-            </tr>
-          </thead>
-          <tbody id="band_history" class="lift:BandView.list">
-            <tr band>
-              <td><band:seq></band:seq></td>
-              <td><band:startat></band:startat> - <band:endat></band:endat></td>
-              <td><band:delete></band:delete></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <lift:Util.out>Please
+        <lift:menu.item name="Login">Log In</lift:menu.item>
+      </lift:Util.out>
+      <lift:Util.in>
+        <h2>Welcome Band detail information</h2>
+        <div class="lift:BandView.bandName">
+          <h3>Band name : <band:name></band:name></h3>
+        </div>
+        <form class="lift:BandView.add?form=post">
+          <label for="seq" class="column span-10">seq</label><br />
+          <input type="text" name="seq" class="column span-10"/><br />
+          <label for="startat" class="column span-10">start at</label><br />
+          <input type="text" name="startat" class="column span-10"/><br />
+          <label for="endat" class="column span-10">end at</label><br />
+          <input type="text" name="endat" class="column span-10"/><br />
+          <input type="submit" value="Add Seq!" style="margin-top:5px;"/>
+        </form>
+        <div>
+          <table>
+            <thead>
+              <tr>
+                <th>SEQ</th>
+                <th>DURING</th>
+                <th>action</th>
+              </tr>
+            </thead>
+            <tbody id="band_history" class="lift:BandView.list">
+              <tr band>
+                <td><band:seq></band:seq></td>
+                <td><band:startat></band:startat> - <band:endat></band:endat></td>
+                <td><band:delete></band:delete></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </lift:Util.in>
     </div>
   </body>
 </html>
