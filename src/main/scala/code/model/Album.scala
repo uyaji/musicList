@@ -24,10 +24,10 @@ class Album extends Binder with LongKeyedMapper[Album] with IdPK with ManyToMany
       valMinLen(1, "you have to input title") _ ::
       super.validations
   }
-  object band extends LongMappedMapper(this, Band)
+  object bandseq extends LongMappedMapper(this, BandSeq)
 
-  def getBand(): Band = {
-    Band.findAll(By(Band.id, band.get)).head
+  def getBandSeq(): BandSeq = {
+    BandSeq.findAll(By(BandSeq.id, bandseq.get)).head
   } 
 
   object tracks extends MappedManyToMany(AlbumTracks, AlbumTracks.album, AlbumTracks.track, Track, OrderBy(AlbumTracks.seq, Ascending))

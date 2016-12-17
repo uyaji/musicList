@@ -6,6 +6,7 @@ import Helpers._
 
 import code.model.Album
 import code.model.Band
+import code.model.BandSeq
 import net.liftweb.mapper._
 import net.liftweb.http._
 import S._
@@ -26,6 +27,7 @@ class AlbumView {
   def add(from : NodeSeq): NodeSeq = {
     var albumtitle = ""
     var artistname = ""
+    var artistseq = ""
 
     def addAlbum() = {
       val bands = Band.findAll(By(Band.bandname,artistname)) 
@@ -35,13 +37,40 @@ class AlbumView {
         }
         case _ => bands.head
       }
-      band.validate match {
+      val bandSeqs = BandSeq.findAll(By(BandSeq.band, band.id.get), By(BandSeq.seq, artistseq.toInt))
+      val bandSeq = bandSeqs match {
+        case Nil => {
+          val regSeq = artistseq.toInt match {
+            case 0 => 1
+            case n: Int => n
+          }
+          new BandSeq(new Date(0), new Date(0), regSeq.toInt)
+        }
+        case _ => bandSeqs.head
+      }
+      bandSeqs match {
+        case Nil => {
+          band.validate match {
+            case Nil => {
+              band.bandSeqs += bandSeq
+              band.save
+            }
+            case errors => {
+              S.error(errors)
+              S.mapSnippet("AlbumView.add", doBind)
+            }
+          }
+        }
+        case _ => ()
+      }
+      bandSeq.validate match {
         case Nil => {
           var album = new Album(albumtitle)
           album.validate match{
             case Nil => {
-              band.albums += album
-              band.save(); S.notice("Added " + album.albumtitle);
+              bandSeq.albums += album
+              bandSeq.save();
+              S.notice("Added " + album.albumtitle);
             }
             case errors => S.error(errors); S.mapSnippet("AlbumView.add", doBind)
           }
@@ -55,8 +84,9 @@ class AlbumView {
 
     def doBind(from: NodeSeq): NodeSeq = {
       var sel =
-        "name=albumtitle" #> SHtml.onSubmit(albumtitle = _) &
-        "name=artistname" #> SHtml.onSubmit(artistname = _) &
+        "name=albumtitle" #> SHtml.text(albumtitle, albumtitle = _) &
+        "name=artistname" #> SHtml.text(artistname, artistname = _) &
+        "name=artistseq"  #> SHtml.text(artistseq, artistseq = _) &
         "type=submit" #> SHtml.onSubmitUnit(addAlbum);
       return sel(from)
     }
@@ -70,7 +100,8 @@ class AlbumView {
     albums.flatMap(alb =>
       bind("album", html, AttrBindParam("id", alb.id.toString, "id"),
                           "albumtitle" -> <span>{link("track?albumid=" + alb.id.toString, () => (), Text(alb.albumtitle.get))}</span>,
-                          "artistname" -> <span>{link("band?bandid="+ alb.getBand().id.toString, () => (), Text(alb.getBand().bandname.get))}</span>
+                          "artistname" -> <span>{link("band?bandid="+ alb.getBandSeq().getBand().id.toString, () => (), Text(alb.getBandSeq().getBand().bandname.get))}</span>,
+                          "artistseq" -> <span>{link("member?bandid="+ alb.getBandSeq().getBand().id.toString + "&seq=" + alb.getBandSeq().seq.toString, () => (), Text(alb.getBandSeq().seq.toString))}</span>
       )
     )
   }          
