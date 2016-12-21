@@ -33,4 +33,9 @@ object Util {
     val sdf = new SimpleDateFormat("yyyy");
     sdf.format(date)
   }
+
+  def isAllDigits(s: String) = s match {
+    case "" => false
+    case p: String => p forall Character.isDigit
+  }
 }

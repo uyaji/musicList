@@ -7,6 +7,7 @@ import Helpers._
 import code.model.Album
 import code.model.Band
 import code.model.BandSeq
+import code.logic.Util
 import net.liftweb.mapper._
 import net.liftweb.http._
 import S._
@@ -37,13 +38,13 @@ class AlbumView {
         }
         case _ => bands.head
       }
-      val bandSeqs = BandSeq.findAll(By(BandSeq.band, band.id.get), By(BandSeq.seq, artistseq.toInt))
+      val regSeq = Util.isAllDigits(artistseq) match {
+        case true => artistseq.toInt
+        case _ => 1
+      }
+      val bandSeqs = BandSeq.findAll(By(BandSeq.band, band.id.get), By(BandSeq.seq, regSeq))
       val bandSeq = bandSeqs match {
         case Nil => {
-          val regSeq = artistseq.toInt match {
-            case 0 => 1
-            case n: Int => n
-          }
           new BandSeq(new Date(0), new Date(0), regSeq.toInt)
         }
         case _ => bandSeqs.head

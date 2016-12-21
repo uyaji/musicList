@@ -9,6 +9,7 @@ import net.liftweb.http._
 import S._
 import SHtml._
 import net.liftweb.http.js.{JsCmd, JsCmds}
+import code.model.Album
 import code.model.Band
 import code.model.BandSeq
 import code.model.BandSeqPlayers
@@ -86,7 +87,8 @@ class BandView {
       val seqSize = band.bandSeqs.size
       band.bandSeqs.flatMap(bds =>
         bds.seq.equals(seqSize) match {
-          case true =>
+          case true => relationNonExisti(findAlbum)(bds.id.get) && relationNonExisti(findBandSeqPlayers)(bds.id.get) match {
+            case true => 
                           bind("band", html,
                           "seq" -> <span>{
                              link("band?bandid=" + Util.paramGet("bandid") + "&seq=" + bds.seq.toString , () => (), Text(bds.seq.get.toString))
@@ -95,6 +97,16 @@ class BandView {
                           "endat" -> <span>{bds.bandSeqEndAt.get.toString.substring(0, 4)}</span>,
                           "delete" -> <span>{link("band?bandid=" + bandid, () => delete(bandid.toLong, bds.seq.get), Text("delete"))}</span>
                           )
+            case _ => 
+                          bind("band", html,
+                          "seq" -> <span>{
+                             link("band?bandid=" + Util.paramGet("bandid") + "&seq=" + bds.seq.toString , () => (), Text(bds.seq.get.toString))
+                          }</span>,
+                          "startat" -> <span>{link("member?bandid=" + bds.band.toString + "&seq=" + bds.seq.toString, () => (), Text(bds.bandSeqStartAt.get.toString.substring(0,4)))}</span>,
+                          "endat" -> <span>{bds.bandSeqEndAt.get.toString.substring(0, 4)}</span>,
+                          "delete" -> <span></span>
+                          )
+            }
           case _ => 
                           bind("band", html,
                           "seq" -> <span>{
@@ -115,6 +127,12 @@ class BandView {
       bandSeq.save
       bandSeq.delete_!
    }
+
+   def relationNonExisti(findTable: Long => Boolean)(id: Long): Boolean = findTable(id)
+
+   def findAlbum(id: Long): Boolean = Album.findAll(By(Album.bandseq, id)).size.equals(0)
+
+   def findBandSeqPlayers(id: Long): Boolean = BandSeqPlayers.findAll(By(BandSeqPlayers.bandseq, id)).size.equals(0)
 
    def duplicateSeqCheck(bandid: Long, seq: Long): Boolean =
          Band.findAll(By(Band.id, bandid)).head.bandSeqs.filter{ bs => bs.seq == seq }.size.equals(0)
