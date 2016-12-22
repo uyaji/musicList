@@ -46,7 +46,7 @@ class AlbumView {
       val path = "/"
       Logic.select(duplicateAlbumCheck, _==_ )(albumid, albumid, albumid, msg, path) match {
         case "add" => addAlbum()
-        case "update" => println("update")
+        case "update" => updateAlbum(albumid)
       }
       S.mapSnippet("AlbumView.add", doBind)
     }
@@ -89,8 +89,45 @@ class AlbumView {
       }
     }
 
-    def updateAlbum() = {
-      S.mapSnippet("AlbumView.add", doBind)
+    def updateAlbum(albumid: Long) = {
+      val band: Band = generateBand(artistname)
+      val regSeq = Util.isAllDigits(artistseq) match {
+        case true => artistseq.toInt
+        case _ => 1
+      }
+      val bandSeq = generateBandSeq(band, regSeq)
+      band.validate match {
+        case Nil => ()
+        case errors => {
+          S.error(errors)
+          S.redirectTo("/")
+        }
+      }
+      bandSeq.validate match {
+        case Nil => ()
+        case errors => {
+          S.error(errors)
+          S.redirectTo("/")
+        }
+      }
+      var album = Album.findAll(By(Album.id, albumid)).head
+      album.validate match{
+        case Nil => ()
+        case errors => S.error(errors); S.redirectTo("/")
+      }
+      if(!album.albumtitle.equals(albumtitle) || !album.getBandSeq().getBand().bandname.equals(artistname)) {
+        if(!band.bandSeqs.forall(bseq => bseq.albums.forall(alb => alb.albumtitle != albumtitle))) {
+          S.error("duplicate album"); S.redirectTo("/")
+        }
+      }
+      band.bandSeqs += bandSeq
+      band.save
+      album.getBandSeq().albums -= album
+      bandSeq.albums += album
+      album.albumtitle(albumtitle)
+      bandSeq.save();
+      S.notice("updated " + album.albumtitle);
+      S.redirectTo("/")
     }
 
     def doBind(from: NodeSeq): NodeSeq = {
