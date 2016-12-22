@@ -52,58 +52,40 @@ class AlbumView {
     }
 
     def addAlbum() = {
-      val bands = Band.findAll(By(Band.bandname,artistname)) 
-      val band = bands match {
-        case Nil => {
-          new Band(artistname)
-        }
-        case _ => bands.head
-      }
+      val band: Band = generateBand(artistname)
       val regSeq = Util.isAllDigits(artistseq) match {
         case true => artistseq.toInt
         case _ => 1
       }
-      val bandSeqs = BandSeq.findAll(By(BandSeq.band, band.id.get), By(BandSeq.seq, regSeq))
-      val bandSeq = bandSeqs match {
-        case Nil => {
-          new BandSeq(new Date(0), new Date(0), regSeq.toInt)
-        }
-        case _ => bandSeqs.head
-      }
-      bandSeqs match {
-        case Nil => {
-          band.validate match {
-            case Nil => ()
-            case errors => {
-              S.error(errors)
-              S.mapSnippet("AlbumView.add", doBind)
-            }
-          }
-        }
-        case _ => ()
-      }
-      bandSeq.validate match {
-        case Nil => {
-          var album = new Album(albumtitle)
-          album.validate match{
-            case Nil => {
-              if(Band.findAll(By(Band.id, band.id.get)).head.bandSeqs.forall(bseq => bseq.albums.forall(alb => alb.albumtitle != albumtitle))) {
-                band.bandSeqs += bandSeq
-                band.save
-                bandSeq.albums += album
-                bandSeq.save();
-                S.notice("Added " + album.albumtitle);
-              } else {
-                S.error("duplicate album"); S.mapSnippet("AlbumView.add", doBind)
-              }
-            }
-            case errors => S.error(errors); S.mapSnippet("AlbumView.add", doBind)
-          }
-        }
+      val bandSeq = generateBandSeq(band, regSeq)
+      band.validate match {
+        case Nil => ()
         case errors => {
           S.error(errors)
-          S.mapSnippet("AlbumView.add", doBind)
+          S.redirectTo("/")
         }
+      }
+      bandSeq.validate match {
+        case Nil => ()
+        case errors => {
+          S.error(errors)
+          S.redirectTo("/")
+        }
+      }
+      var album = new Album(albumtitle)
+      album.validate match{
+        case Nil => ()
+        case errors => S.error(errors); S.redirectTo("/")
+      }
+      if(band.bandSeqs.forall(bseq => bseq.albums.forall(alb => alb.albumtitle != albumtitle))) {
+        band.bandSeqs += bandSeq
+        band.save
+        bandSeq.albums += album
+        bandSeq.save();
+        S.notice("Added " + album.albumtitle);
+        S.redirectTo("/")
+      } else {
+        S.error("duplicate album"); S.redirectTo("/")
       }
     }
 
@@ -137,6 +119,27 @@ class AlbumView {
       )
     })
   }          
+
+  private def generateBand(artistName: String): Band = {
+    val bands = Band.findAll(By(Band.bandname,artistName)) 
+    bands match {
+      case Nil => {
+        new Band(artistName)
+      }
+      case _ => bands.head
+    }
+    
+  }
+
+  private def generateBandSeq(band: Band, seq: Int): BandSeq = {
+    val bandSeqs = BandSeq.findAll(By(BandSeq.band, band.id.get), By(BandSeq.seq, seq))
+    bandSeqs match {
+      case Nil => {
+        new BandSeq(new Date(0), new Date(0), seq)
+      }
+      case _ => bandSeqs.head
+    }
+  }
 
   private def duplicateAlbumCheck(albumid: Long, seq: Long):Boolean =
     Album.findAll(By(Album.id, albumid)).size.equals(0)
