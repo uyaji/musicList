@@ -9,8 +9,7 @@ import net.liftweb.http._
 import S._
 import SHtml._
 import code.model._
-import code.logic.Logic
-import code.logic.Util
+import code.logic._
 
 class MemberView {
   val bandid = Util.paramGet("bandid")

@@ -13,8 +13,7 @@ import code.model.Album
 import code.model.Band
 import code.model.BandSeq
 import code.model.BandSeqPlayers
-import code.logic.Logic
-import code.logic.Util
+import code.logic._
 import java.util.Date
 
 class BandView {

@@ -7,7 +7,7 @@ import Helpers._
 import code.model.Album
 import code.model.Band
 import code.model.BandSeq
-import code.logic.Util
+import code.logic._
 import net.liftweb.mapper._
 import net.liftweb.http._
 import S._
@@ -26,9 +26,30 @@ class AlbumView {
   }
 
   def add(from : NodeSeq): NodeSeq = {
+    val albumid = Util.paramGet("albumid").toLong
     var albumtitle = ""
     var artistname = ""
     var artistseq = ""
+    albumid match {
+      case 0 => ()
+      case aid => {
+        val album = Album.findAll(By(Album.id, aid.toLong)).head
+        albumtitle = album.albumtitle.get
+        val bandseq = BandSeq.findAll(By(BandSeq.id, album.bandseq.get)).head
+        val band = Band.findAll(By(Band.id, bandseq.band.get)).head
+        artistname = band.bandname.get
+        artistseq = bandseq.seq.get.toString
+      }
+    }
+    def albumProcess() {
+      val msg = "Can not register. Already exist Album. Please update"
+      val path = "/"
+      Logic.select(duplicateAlbumCheck, _==_ )(albumid, albumid, albumid, msg, path) match {
+        case "add" => addAlbum()
+        case "update" => println("update")
+      }
+      S.mapSnippet("AlbumView.add", doBind)
+    }
 
     def addAlbum() = {
       val bands = Band.findAll(By(Band.bandname,artistname)) 
@@ -52,10 +73,7 @@ class AlbumView {
       bandSeqs match {
         case Nil => {
           band.validate match {
-            case Nil => {
-              band.bandSeqs += bandSeq
-              band.save
-            }
+            case Nil => ()
             case errors => {
               S.error(errors)
               S.mapSnippet("AlbumView.add", doBind)
@@ -69,9 +87,15 @@ class AlbumView {
           var album = new Album(albumtitle)
           album.validate match{
             case Nil => {
-              bandSeq.albums += album
-              bandSeq.save();
-              S.notice("Added " + album.albumtitle);
+              if(Band.findAll(By(Band.id, band.id.get)).head.bandSeqs.forall(bseq => bseq.albums.forall(alb => alb.albumtitle != albumtitle))) {
+                band.bandSeqs += bandSeq
+                band.save
+                bandSeq.albums += album
+                bandSeq.save();
+                S.notice("Added " + album.albumtitle);
+              } else {
+                S.error("duplicate album"); S.mapSnippet("AlbumView.add", doBind)
+              }
             }
             case errors => S.error(errors); S.mapSnippet("AlbumView.add", doBind)
           }
@@ -83,12 +107,16 @@ class AlbumView {
       }
     }
 
+    def updateAlbum() = {
+      S.mapSnippet("AlbumView.add", doBind)
+    }
+
     def doBind(from: NodeSeq): NodeSeq = {
       var sel =
         "name=albumtitle" #> SHtml.text(albumtitle, albumtitle = _) &
         "name=artistname" #> SHtml.text(artistname, artistname = _) &
         "name=artistseq"  #> SHtml.text(artistseq, artistseq = _) &
-        "type=submit" #> SHtml.onSubmitUnit(addAlbum);
+        "type=submit" #> SHtml.onSubmitUnit(albumProcess);
       return sel(from)
     }
 
@@ -98,13 +126,18 @@ class AlbumView {
   
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
     var albums:List[Album] = Album.findAll(OrderBy(Album.albumtitle, Ascending))
-    albums.flatMap(alb =>
+    var seq: Int = 0
+    albums.flatMap(alb => {
+      seq = seq + 1
       bind("album", html, AttrBindParam("id", alb.id.toString, "id"),
+                          "seq" -> <span>{link("/?albumid=" + alb.id.toString, () => (), Text(seq.toString))}</span>,
                           "albumtitle" -> <span>{link("track?albumid=" + alb.id.toString, () => (), Text(alb.albumtitle.get))}</span>,
                           "artistname" -> <span>{link("band?bandid="+ alb.getBandSeq().getBand().id.toString, () => (), Text(alb.getBandSeq().getBand().bandname.get))}</span>,
                           "artistseq" -> <span>{link("member?bandid="+ alb.getBandSeq().getBand().id.toString + "&seq=" + alb.getBandSeq().seq.toString, () => (), Text(alb.getBandSeq().seq.toString))}</span>
       )
-    )
+    })
   }          
 
+  private def duplicateAlbumCheck(albumid: Long, seq: Long):Boolean =
+    Album.findAll(By(Album.id, albumid)).size.equals(0)
 }
