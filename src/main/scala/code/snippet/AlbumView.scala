@@ -75,7 +75,7 @@ class AlbumView {
         }
       }
 
-      var album: Album = getAlbum(f)(key)
+      var album: Album = f(key)
       album.validate match{
         case Nil => ()
         case errors => S.error(errors); S.redirectTo("/")
@@ -145,10 +145,6 @@ class AlbumView {
       }
       case _ => bandSeqs.head
     }
-  }
-
-  private def getAlbum(f: String => Album)(key: String): Album = {
-    f(key)
   }
 
   private def duplicateAlbumCheck(albumid: Long, seq: Long):Boolean =
