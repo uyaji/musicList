@@ -58,26 +58,26 @@ class BandView {
   def registerSeq() {
     val msg = "Can not register.Already exsist Band Seq. Please update"
     val path = "/band?bandid=" + bandid
-    Logic.select(duplicateSeqCheck, _==_ )(bandid.toLong, initSeq.toLong, initSeq.toLong, msg, path) match {
-      case "add" => addSeq
-      case "update" => updateSeq
+    val process = Logic.select(duplicateSeqCheck, _==_ )(bandid.toLong, initSeq.toLong, initSeq.toLong, msg, path)
+    process match {
+      case "add" => seqToDataBase(band: Band, (start, end, seq) => new BandSeq(Util.stringToDate(start), Util.stringToDate(end), seq), startat, endat, seq, process)
+      case "update" => seqToDataBase(band: Band, (start, end, seq) => band.bandSeqs.filter{ bs => bs.seq == seq }.head.bandSeqStartAt(Util.stringToDate(start)).bandSeqEndAt(Util.stringToDate(end)), startat, endat, seq, process)
     }
   }
 
-  def addSeq() {
-    band.bandSeqs += new BandSeq(Util.stringToDate(startat), Util.stringToDate(endat), seq.toInt)
-    band.save
-    S.notice("Added Seq " + seq)
-    S.redirectTo("/band?bandid=" + bandid)
-  }
-
-  def updateSeq() {
-    var bandSeq = band.bandSeqs.filter{ bs => bs.seq == seq.toInt }.head
-    bandSeq.bandSeqStartAt(Util.stringToDate(startat))
-    bandSeq.bandSeqEndAt(Util.stringToDate(endat))
-    bandSeq.save
-    S.notice("Updated Seq " + seq)
-    S.redirectTo("/band?bandid=" + bandid)
+  def seqToDataBase(band: Band, f: (String, String, Int) => BandSeq, start: String, end: String, seq: String, process: String) {
+    val bandSeq = f(start, end, seq.toInt)
+    process match {
+      case "add" => {
+        band.bandSeqs += bandSeq
+        band.save
+      }
+      case _ => {
+        bandSeq.save
+      }
+    }
+    S.notice(process + "ed Seq " + seq)
+    S.redirectTo("/band?bandid=" + band.id)
   }
 
   private 
