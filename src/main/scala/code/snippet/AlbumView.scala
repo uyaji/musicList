@@ -46,16 +46,16 @@ class AlbumView {
       val path = "/"
       val process = Logic.select(duplicateAlbumCheck, _==_ )(albumid, albumid, albumid, errorMsg, path)
       process match {
-        case "add" => albumToDataBase(title => new Album(title), albumtitle, process, errorMsg)
-        case "update" => albumToDataBase(id => Album.findAll(By(Album.id, id.toLong)).head, albumid.toString, process, errorMsg)
+        case "add" => albumToDataBase(title => new Album(title), albumtitle, artistname, artistseq, albumtitle, process, errorMsg)
+        case "update" => albumToDataBase(id => Album.findAll(By(Album.id, id.toLong)).head, albumid.toString, artistname, artistseq, albumtitle, process, errorMsg)
       }
       S.mapSnippet("AlbumView.add", doBind)
     }
 
-    def albumToDataBase(f: String => Album, key: String, process: String, errorMsg: String) = {
-      val band: Band = generateBand(artistname)
-      val regSeq = Util.isAllDigits(artistseq) match {
-        case true => artistseq.toInt
+    def albumToDataBase(f: String => Album, key: String, artistName: String, artistSeq: String, albumTitle: String, process: String, errorMsg: String) = {
+      val band: Band = generateBand(artistName)
+      val regSeq = Util.isAllDigits(artistSeq) match {
+        case true => artistSeq.toInt
         case _ => 1
       }
       val bandSeq = generateBandSeq(band, regSeq)
@@ -80,9 +80,9 @@ class AlbumView {
         case Nil => ()
         case errors => S.error(errors); S.redirectTo("/")
       }
-      if(!band.bandSeqs.forall(bseq => bseq.albums.forall(alb => alb.albumtitle != albumtitle))) {
+      if(!band.bandSeqs.forall(bseq => bseq.albums.forall(alb => alb.albumtitle != albumTitle))) {
         if(process.equals("update")) {
-          if(!album.albumtitle.equals(albumtitle) || !album.getBandSeq().getBand().bandname.equals(artistname)) {
+          if(!album.albumtitle.equals(albumTitle) || !album.getBandSeq().getBand().bandname.equals(artistName)) {
             S.error(errorMsg); S.redirectTo("/")
           }
         } else {
@@ -93,9 +93,9 @@ class AlbumView {
       band.save
       if(process.equals("update")) album.getBandSeq().albums -= album
       bandSeq.albums += album
-      if(process.equals("update")) album.albumtitle(albumtitle)
+      if(process.equals("update")) album.albumtitle(albumTitle)
       bandSeq.save()
-      S.notice(process + "ed " + album.albumtitle)
+      S.notice(process + "ed " + albumTitle)
       S.redirectTo("/")
     }
 
