@@ -33,7 +33,7 @@ class BandSeq extends Binder with LongKeyedMapper[BandSeq] with IdPK with ManyTo
     override def defaultValue = 1
   }
 
-  def getBand(): Band = Band.findAll(By(Band.id, band)).head
+  def getBand(): Band = Band.findAll(By(Band.id, band.get)).head
   object players extends MappedManyToMany(BandSeqPlayers, BandSeqPlayers.bandseq, BandSeqPlayers.player, Player, OrderBy(BandSeqPlayers.seq, Ascending))
   object band extends LongMappedMapper(this, Band)
   object bandseqPlayers extends MappedOneToMany(BandSeqPlayers, BandSeqPlayers.bandseq, OrderBy(BandSeqPlayers.seq, Ascending))

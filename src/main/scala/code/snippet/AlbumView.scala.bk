@@ -27,8 +27,8 @@ class AlbumView {
 
   def add(from : NodeSeq): NodeSeq = {
     val albumid = Util.paramGet("albumid").toLong
-    var artistname = ""
     var albumtitle = ""
+    var artistname = ""
     var artistseq = ""
     albumid match {
       case 0 => ()

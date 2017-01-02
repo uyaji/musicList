@@ -7,8 +7,7 @@ import net.liftweb.common._
 import Helpers._
 
 import code.model._
-import code.logic.Logic
-import code.logic.Util
+import code.logic._
 import net.liftweb.mapper._
 import net.liftweb.http._
 import S._
@@ -53,10 +52,13 @@ class TrackView {
   def process() {
     try {
       val msg = "Can not register.Already exsist track. Please update"
+      val errMsgTrack = "Duplicate track!"
       val path = "/track?albumid=" + albumid
       Logic.select(duplicateSeqCheck, changeSeqCheck)(albumid.toLong, seq.toLong, albumtrcid.toLong, msg, path) match {
-        case "add" => addProcess()
-        case "update" => updateProcess()
+        case "add" => {
+          addProcess(Logic.registTarget, duplicateKeyCheck, tracktitle, seq.toLong, upload, album, "Added " + tracktitle, "Duplicate track!", "", path)
+        }
+        case "update" => updateProcess(Logic.updateTarget, getTrack, getBinder, getExistTrack, tracktitle, seq.toLong, upload, album, albumtrcid.toLong, "updated " + tracktitle, "Duplicate track!", "Duplicate attach!", path)
       }
     } catch {
       case e: java.lang.NumberFormatException => {
@@ -75,16 +77,7 @@ class TrackView {
     case _ => false
   }
 
-  def addProcess() {
-    val generatedTrack = Track.create.tracktitle(tracktitle)
-    val generatedAlbumTrack = AlbumTracks.create.album(album.id.get).seq(seq.toLong)
-    val msg = "Added " + tracktitle
-    val errMsg = "Duplicate track!"
-    val path = "/track?albumid=" + albumid
-    val track = getExistTrack(tracktitle) match {
-      case Nil => generatedTrack
-      case tracks: List[Track] => tracks.head
-    }
+  def addProcess(function1: (Target => Boolean) => (Target, Relation, Binder, String, String, String) => List[FieldError], function2: Target => Boolean, trackTitle: String, seq: Long, upload: Box[FileParamHolder], album: Album, msg: String, errMsgTrack: String, errMsgAttach: String, path: String) {
     val attach = isAttachFileExist(upload) match {
       case true => getExistAttach(getFileParamHolder(upload).fileName) match {
         case Nil => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
@@ -92,8 +85,15 @@ class TrackView {
       }
       case false => null
     }
+    val generatedTrack = Track.create.tracktitle(trackTitle)
+    val generatedAlbumTrack = AlbumTracks.create.album(album.id.get).seq(seq)
+    val track = getExistTrack(trackTitle) match {
+      case Nil => generatedTrack
+      case tracks: List[Track] => tracks.head
+    }
     if(isAttachFileExist(upload)) track.attaches += attach
-    Logic.registTarget(duplicateKeyCheck)(track, generatedAlbumTrack, album, msg, errMsg, path) match {
+    function1(function2)(track, generatedAlbumTrack, album, msg, errMsgTrack, path) match {
+//    Logic.registTarget(duplicateKeyCheck)(track, generatedAlbumTrack, album, msg, errMsgTrack, path) match {
       case Nil =>{
         track.save
         generatedAlbumTrack.track(track.id.get)
@@ -111,35 +111,28 @@ class TrackView {
     }
   }
 
-  def updateProcess() {
-    val msg = "Updateed " + tracktitle
-    val errorMsgTrack = "Duplicate track!"
-    val errorMsgAttach = "Duplicate attach!"
-    val path = "/track?albumid=" + albumid
+  def updateProcess(function1: ((Long, Long) => Track, Long => Binder,String => List[Track]) => (Long, Long, String) => Result, function2: (Long, Long) => Track, function3: Long => Binder, function4: String => List[Track], trackTitle: String, seq: Long, upload: Box[FileParamHolder], album: Album, albumTrcId: Long, msg: String, errMsgTrack: String, errMsgAttach: String, path: String) {
     val attach = isAttachFileExist(upload) match {
-      case true => {
-        val attach = Attach.findAll(By(Attach.filename, getFileParamHolder(upload).fileName))
-        attach match {
-          case Nil => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
-          case _ => attach.head
-        }
+      case true => getExistAttach(getFileParamHolder(upload).fileName) match {
+        case Nil => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
+        case attaches: List[Attach] => attaches.head
       }
       case false => null
     }
-    val result = Logic.updateTarget(getTrack, getBinder, getExistTrack)(album.id.get, albumtrcid.toLong, tracktitle)
+    val result = function1(function2, function3, function4)(album.id.get, albumTrcId, trackTitle)
     result.error match {
       case true => {
-        S.error(errorMsgTrack)
+        S.error(errMsgTrack)
         S.redirectTo(path)
       }
       case false => ()
     }
-    val track = getTrack(album.id.get, albumtrcid.toLong)
-    val albumTrack = track.getRelation(albumtrcid.toLong)
-    val existTracks = getExistTrack(tracktitle)
+    val track = getTrack(album.id.get, albumTrcId)
+    val albumTrack = track.getRelation(albumTrcId)
+    val existTracks = getExistTrack(trackTitle)
     result.changeContent match {
       case "name" => {
-        track.tracktitle(tracktitle)
+        track.tracktitle(trackTitle)
       }
       case _ => {
         albumTrack.track(existTracks.head.getId)
@@ -149,7 +142,7 @@ class TrackView {
       track.getLobs.contains(attach) match {
         // attachの重複エラー
         case true => {
-          S.error(errorMsgAttach)
+          S.error(errMsgAttach)
           S.redirectTo(path)
         }
         case false => {
