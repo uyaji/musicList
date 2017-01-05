@@ -77,7 +77,7 @@ class TrackView {
     case _ => false
   }
 
-  def addProcess(function1: (Target => Boolean) => (Target, Relation, Binder, String, String, String) => List[FieldError], function2: Target => Boolean, trackTitle: String, seq: Long, upload: Box[FileParamHolder], album: Album, msg: String, errMsgTrack: String, errMsgAttach: String, path: String) {
+  def addProcess(function1: (Target => Boolean) => (Target, Relation, Binder, String) => List[FieldError], function2: Target => Boolean, trackTitle: String, seq: Long, upload: Box[FileParamHolder], album: Album, msg: String, errMsgTrack: String, errMsgAttach: String, path: String) {
     val attach = isAttachFileExist(upload) match {
       case true => getExistAttach(getFileParamHolder(upload).fileName) match {
         case Nil => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
@@ -92,8 +92,7 @@ class TrackView {
       case tracks: List[Track] => tracks.head
     }
     if(isAttachFileExist(upload)) track.attaches += attach
-    function1(function2)(track, generatedAlbumTrack, album, msg, errMsgTrack, path) match {
-//    Logic.registTarget(duplicateKeyCheck)(track, generatedAlbumTrack, album, msg, errMsgTrack, path) match {
+    function1(function2)(track, generatedAlbumTrack, album, errMsgTrack) match {
       case Nil =>{
         track.save
         generatedAlbumTrack.track(track.id.get)
@@ -111,7 +110,7 @@ class TrackView {
     }
   }
 
-  def updateProcess(function1: ((Long, Long) => Track, Long => Binder,String => List[Track]) => (Long, Long, String) => Result, function2: (Long, Long) => Track, function3: Long => Binder, function4: String => List[Track], trackTitle: String, seq: Long, upload: Box[FileParamHolder], album: Album, albumTrcId: Long, msg: String, errMsgTrack: String, errMsgAttach: String, path: String) {
+  def updateProcess(function1: ((Long, Long) => Target, Long => Binder,String => List[Target]) => (Long, Long, String) => Result, function2: (Long, Long) => Target, function3: Long => Binder, function4: String => List[Target], trackTitle: String, seq: Long, upload: Box[FileParamHolder], album: Album, albumTrcId: Long, msg: String, errMsgTrack: String, errMsgAttach: String, path: String) {
     val attach = isAttachFileExist(upload) match {
       case true => getExistAttach(getFileParamHolder(upload).fileName) match {
         case Nil => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)

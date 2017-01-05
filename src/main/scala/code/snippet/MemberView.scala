@@ -53,11 +53,14 @@ class MemberView {
 
   def process() {
     try {
-      val msg = "Can not register.Already exsist member. Please update"
+      val errMsg = "Can not register.Already exsist member. Please update"
       val path = "/member?bandid=" + bandid + "&seq=" + bandseq
-      Logic.select(duplicateSeqCheck, changeSeqCheck)(bandSeq.id.get, seq.toLong, bandseqplayerid.toLong, msg, path) match {
-        case "add" => registerMember()
-        case "update" => updateMember
+      val addMsg = "Added member " + name
+      val updateMsg = "updated member " + name
+      val errMsgMember = "Duplicate member!"
+      Logic.select(duplicateSeqCheck, changeSeqCheck)(bandSeq.id.get, seq.toLong, bandseqplayerid.toLong, errMsg, path) match {
+        case "add" => registerMember(Logic.registTarget, duplicateKeyCheck, name, seq.toLong, bandSeq, addMsg, errMsgMember, path)
+        case "update" => updateMember(Logic.updateTarget, getPlayer, getBinder, getExistPlayer, name, seq.toLong, bandSeq, updateMsg, errMsgMember, path)
       }
     } catch {
       case e: java.lang.NumberFormatException => {
@@ -67,17 +70,14 @@ class MemberView {
     }
   }
 
-  def registerMember() {
+  def registerMember(function1: (Target => Boolean) => (Target, Relation, Binder, String) => List[FieldError], function2: Target => Boolean, name: String, seq: Long, bandSeq: BandSeq, msg: String, errMsg: String, path: String) {
     val generatedPlayer = Player.create.name(name)
-    val generatedBandSeqPlayer = BandSeqPlayers.create.bandseq(bandSeq.id.get).seq(seq.toLong)
-    val msg = "Added member " + name
-    val errMsg = "Duplicate member!"
-    val path = "/member?bandid=" + bandid + "&seq=" + bandseq
+    val generatedBandSeqPlayer = BandSeqPlayers.create.bandseq(bandSeq.id.get).seq(seq)
     val player = getExistPlayer(name) match {
       case Nil => generatedPlayer
       case players: List[Player] => players.head
     }
-    Logic.registTarget(duplicateKeyCheck)(player, generatedBandSeqPlayer, bandSeq, msg, errMsg, path) match {
+    function1(function2)(player, generatedBandSeqPlayer, bandSeq, errMsg) match {
       case Nil => {
         player.save
         generatedBandSeqPlayer.player(player.id.get)
@@ -95,15 +95,11 @@ class MemberView {
     }
   }
 
-  def updateMember {
-    val msg = "updated member " + name
-    val errorMsgPlayer = "Duplcate player!"
-    val errorMsgLob = ""
-    val path = "/member?bandid=" + bandid + "&seq=" + bandseq
-    val result = Logic.updateTarget(getPlayer, getBinder, getExistPlayer)(bandSeq.id.get, bandseqplayerid.toLong, name)
+  def updateMember(function1: ((Long, Long) => Target, Long => Binder, String => List[Target]) => (Long, Long, String) => Result, function2: (Long, Long) => Target, function3: Long => Binder, function4: String => List[Target], name: String, seq: Long, bandSeq: BandSeq, msg: String, errMsg: String, path: String) {
+    val result = function1(function2, function3, function4)(bandSeq.id.get, bandseqplayerid.toLong, name)
     result.error match {
       case true => {
-        S.error(errorMsgPlayer)
+        S.error(errMsg)
         S.redirectTo(path)
       }
       case flase => ()
