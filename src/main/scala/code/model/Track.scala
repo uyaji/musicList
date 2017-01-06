@@ -9,7 +9,7 @@ object Track extends Track with LongKeyedMetaMapper[Track] {
 }
 
 class Track extends Target with LongKeyedMapper[Track] with IdPK with ManyToMany with OneToMany[Long, Track] {
-//  type SuitableObject = Attach
+  type SuitableObject = Attach
   def this(seq: Long, tracktitle: String) = {
     this()
     this.tracktitle(tracktitle)
@@ -18,18 +18,14 @@ class Track extends Target with LongKeyedMapper[Track] with IdPK with ManyToMany
   def getSingleton = Track
   override def getName = tracktitle.get
   override def getId = id.get
-/*  override def getLobs = attaches.toList
-  override def setLob(attach: Attach) {
-//    this.attaches += attach.asInstanceOf[Attach]
+//  override def getLobs = attaches.toList
+  override def setLob(attach: SuitableObject) {
     this.attaches += attach
-  }*/
+  }
   override def getRelation(relationId: Long) = this.albumTracks.filter{ at => at.id == relationId}.head
   override def validates = this.validate
 
   def getLobs = attaches.toList
-  def setLob(attach: Attach) {
-    this.attaches += attach
-  }
   object tracktitle extends MappedString(this, 100) {
     override def validations =
       valMaxLen(100, "title length must be under 100 characters long ") _  ::

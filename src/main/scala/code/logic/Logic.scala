@@ -96,11 +96,11 @@ object Logic {
     result
   }
 
-  def registTarget(duplicateKeyCheck: Target => Boolean)(target: Target, generatedRelation: Relation, binder: Binder, errMsg: String): List[FieldError] = {
+  def registTarget(duplicateKeyCheck: (Target, Binder) => Boolean)(target: Target, generatedRelation: Relation, binder: Binder, errMsg: String): List[FieldError] = {
     target.validates match {
       case Nil => {
         // 登録時にターゲットの重複がないかチェック
-        duplicateKeyCheck(target) match {
+        duplicateKeyCheck(target, binder) match {
           case true => {
             List(FieldError(null, <li>{errMsg}</li>))
           }

@@ -54,9 +54,16 @@ class TrackView {
       val msg = "Can not register.Already exsist track. Please update"
       val errMsgTrack = "Duplicate track!"
       val path = "/track?albumid=" + albumid
+      val attach = isAttachFileExist(upload) match {
+        case true => getExistAttach(getFileParamHolder(upload).fileName) match {
+          case Nil => Some(new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file))
+          case attaches: List[Attach] => Some(attaches.head)
+        }
+        case false => None
+      }
       Logic.select(duplicateSeqCheck, changeSeqCheck)(albumid.toLong, seq.toLong, albumtrcid.toLong, msg, path) match {
         case "add" => {
-          addProcess(Logic.registTarget, duplicateKeyCheck, tracktitle, seq.toLong, upload, album, "Added " + tracktitle, "Duplicate track!", "", path)
+          Process.add(Logic.registTarget, duplicateKeyCheck, getExistTrack, tracktitle, album, Track.create.tracktitle(tracktitle), AlbumTracks.create.album(album.id.get).seq(seq.toLong), attach, "Added " + tracktitle, "Duplicate track!", path)
         }
         case "update" => updateProcess(Logic.updateTarget, getTrack, getBinder, getExistTrack, tracktitle, seq.toLong, upload, album, albumtrcid.toLong, "updated " + tracktitle, "Duplicate track!", "Duplicate attach!", path)
       }
@@ -75,39 +82,6 @@ class TrackView {
   def isAttachFileExist(upload: Box[FileParamHolder]):Boolean = upload match {
     case Full(FileParamHolder(name, mime, fileName, data)) => true
     case _ => false
-  }
-
-  def addProcess(function1: (Target => Boolean) => (Target, Relation, Binder, String) => List[FieldError], function2: Target => Boolean, trackTitle: String, seq: Long, upload: Box[FileParamHolder], album: Album, msg: String, errMsgTrack: String, errMsgAttach: String, path: String) {
-    val attach = isAttachFileExist(upload) match {
-      case true => getExistAttach(getFileParamHolder(upload).fileName) match {
-        case Nil => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
-        case attaches: List[Attach] => attaches.head
-      }
-      case false => null
-    }
-    val generatedTrack = Track.create.tracktitle(trackTitle)
-    val generatedAlbumTrack = AlbumTracks.create.album(album.id.get).seq(seq)
-    val track = getExistTrack(trackTitle) match {
-      case Nil => generatedTrack
-      case tracks: List[Track] => tracks.head
-    }
-    if(isAttachFileExist(upload)) track.attaches += attach
-    function1(function2)(track, generatedAlbumTrack, album, errMsgTrack) match {
-      case Nil =>{
-        track.save
-        generatedAlbumTrack.track(track.id.get)
-        generatedAlbumTrack.save
-        S.notice(msg)
-        S.redirectTo(path)
-      }
-      case errors: List[FieldError] => {
-        errors(0).field match {
-          case null => S.error(errors(0).msg)
-          case _ => S.error(errors)
-        }
-        S.redirectTo(path)
-      }
-    }
   }
 
   def updateProcess(function1: ((Long, Long) => Target, Long => Binder,String => List[Target]) => (Long, Long, String) => Result, function2: (Long, Long) => Target, function3: Long => Binder, function4: String => List[Target], trackTitle: String, seq: Long, upload: Box[FileParamHolder], album: Album, albumTrcId: Long, msg: String, errMsgTrack: String, errMsgAttach: String, path: String) {
@@ -250,6 +224,6 @@ class TrackView {
     def getTrack(albumid: Long, albumtrcid: Long): Track = Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.id == albumtrcid}.head.getTrack
 //    def getExistTrack(tracktitle: String): List[Target] = Track.findAll(By(Track.tracktitle, tracktitle))
     def getExistTrack(tracktitle: String): List[Track] = Track.findAll(By(Track.tracktitle, tracktitle))
-    def duplicateKeyCheck(track: Target): Boolean = Album.findAll(By(Album.id, album.id.get)).head.tracks.toList.contains(track)
+    def duplicateKeyCheck(track: Target, album: Binder): Boolean = Album.findAll(By(Album.id, album.getId)).head.tracks.toList.contains(track)
     def getExistAttach(fileName: String) = Attach.findAll(By(Attach.filename, fileName))
 }

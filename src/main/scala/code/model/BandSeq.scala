@@ -10,6 +10,7 @@ object BandSeq extends BandSeq with LongKeyedMetaMapper[BandSeq] {
 }
 
 class BandSeq extends Binder with LongKeyedMapper[BandSeq] with IdPK with ManyToMany with OneToMany[Long, BandSeq] {
+  type SuitableTarget = Player
   def this(bandSeqStartAt: Date, bandSeqEndAt: Date, seq: Int) = {
     this()
     this.bandSeqStartAt(bandSeqStartAt)
@@ -24,6 +25,7 @@ class BandSeq extends Binder with LongKeyedMapper[BandSeq] with IdPK with ManyTo
   }
 
   def getSingleton = BandSeq
+  override def getId = id.get
   override def getTargets = players.toList
   override def getRelation = bandseqPlayers.asInstanceOf[scala.collection.mutable.Buffer[Relation]]
 

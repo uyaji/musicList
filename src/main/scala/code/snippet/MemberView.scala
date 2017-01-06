@@ -59,7 +59,7 @@ class MemberView {
       val updateMsg = "updated member " + name
       val errMsgMember = "Duplicate member!"
       Logic.select(duplicateSeqCheck, changeSeqCheck)(bandSeq.id.get, seq.toLong, bandseqplayerid.toLong, errMsg, path) match {
-        case "add" => registerMember(Logic.registTarget, duplicateKeyCheck, name, seq.toLong, bandSeq, addMsg, errMsgMember, path)
+        case "add" => Process.add(Logic.registTarget, duplicateKeyCheck, getExistPlayer, name, bandSeq, Player.create.name(name), BandSeqPlayers.create.bandseq(bandSeq.id.get).seq(seq.toLong), None, addMsg, errMsgMember, path)
         case "update" => updateMember(Logic.updateTarget, getPlayer, getBinder, getExistPlayer, name, seq.toLong, bandSeq, updateMsg, errMsgMember, path)
       }
     } catch {
@@ -70,32 +70,10 @@ class MemberView {
     }
   }
 
-  def registerMember(function1: (Target => Boolean) => (Target, Relation, Binder, String) => List[FieldError], function2: Target => Boolean, name: String, seq: Long, bandSeq: BandSeq, msg: String, errMsg: String, path: String) {
-    val generatedPlayer = Player.create.name(name)
-    val generatedBandSeqPlayer = BandSeqPlayers.create.bandseq(bandSeq.id.get).seq(seq)
-    val player = getExistPlayer(name) match {
-      case Nil => generatedPlayer
-      case players: List[Player] => players.head
-    }
-    function1(function2)(player, generatedBandSeqPlayer, bandSeq, errMsg) match {
-      case Nil => {
-        player.save
-        generatedBandSeqPlayer.player(player.id.get)
-        generatedBandSeqPlayer.save
-        S.notice(msg)
-        S.redirectTo(path)
-      }
-      case errors: List[FieldError] => {
-        errors(0).field match {
-          case null => S.error(errors(0).msg)
-          case _ => S.error(errors)
-        }
-        S.redirectTo(path)
-      }
-    }
-  }
-
   def updateMember(function1: ((Long, Long) => Target, Long => Binder, String => List[Target]) => (Long, Long, String) => Result, function2: (Long, Long) => Target, function3: Long => Binder, function4: String => List[Target], name: String, seq: Long, bandSeq: BandSeq, msg: String, errMsg: String, path: String) {
+    val player = getPlayer(bandSeq.id.get, bandseqplayerid.toLong)
+    val bandSeqPlayer = player.getRelation(bandseqplayerid.toLong)
+    val existPlayers = getExistPlayer(name)
     val result = function1(function2, function3, function4)(bandSeq.id.get, bandseqplayerid.toLong, name)
     result.error match {
       case true => {
@@ -104,9 +82,6 @@ class MemberView {
       }
       case flase => ()
     }
-    val player = getPlayer(bandSeq.id.get, bandseqplayerid.toLong)
-    val bandSeqPlayer = player.getRelation(bandseqplayerid.toLong)
-    val existPlayers = getExistPlayer(name)
     result.changeContent match {
       case "name" => {
         player.name(name)
@@ -162,5 +137,5 @@ class MemberView {
     def getBinder(bandseqid: Long): Binder = BandSeq.findAll(By(BandSeq.id, bandseqid)).head
     def getPlayer(bandseqid: Long, banseqplayrid: Long): Player =   BandSeq.findAll(By(BandSeq.id, bandseqid)).head.bandseqPlayers.filter{ bsp => bsp.id.get.toLong == bandseqplayerid.toLong}.head.getPlayer
     def getExistPlayer(name: String): List[Player] = Player.findAll(By(Player.name, name))
-    def duplicateKeyCheck(player: Target): Boolean = BandSeq.findAll(By(BandSeq.id, bandSeq.id.get)).head.players.toList.contains(player)
+    def duplicateKeyCheck(player: Target, bandSeq: Binder): Boolean = BandSeq.findAll(By(BandSeq.id, bandSeq.getId)).head.getTargets.contains(player)
 }

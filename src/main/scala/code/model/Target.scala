@@ -1,10 +1,10 @@
 package code.model
 
 trait Target {
-//  type SuitableObject <: LargeObject
+  type SuitableObject <: LargeObject
   def getName: String
   def getId: Long
-//  def setLob(attach: SuitableObject): Unit
+  def setLob(attach: SuitableObject): Unit
 //  def getLobs: List[SuitableObject]
   def getRelation(ralationId: Long): Relation
   def save: Boolean
