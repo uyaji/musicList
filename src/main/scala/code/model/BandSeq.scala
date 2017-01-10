@@ -9,7 +9,7 @@ object BandSeq extends BandSeq with LongKeyedMetaMapper[BandSeq] {
   override def dbTableName = "bandseqs"
 }
 
-class BandSeq extends Binder with LongKeyedMapper[BandSeq] with IdPK with ManyToMany with OneToMany[Long, BandSeq] {
+class BandSeq extends Binder with Target with LongKeyedMapper[BandSeq] with IdPK with ManyToMany with OneToMany[Long, BandSeq] {
   type SuitableTarget = Player
   def this(bandSeqStartAt: Date, bandSeqEndAt: Date, seq: Int) = {
     this()
@@ -27,7 +27,11 @@ class BandSeq extends Binder with LongKeyedMapper[BandSeq] with IdPK with ManyTo
   def getSingleton = BandSeq
   override def getId = id.get
   override def getTargets = players.toList
-  override def getRelation = bandseqPlayers.asInstanceOf[scala.collection.mutable.Buffer[Relation]]
+
+  override def getName = ""
+  override def setLob(attach: SuitableObject) = () => ()
+  override def getRelation(id: Long) = null
+  override def validates = Nil
 
   object bandSeqStartAt extends MappedDateTime(this)
   object bandSeqEndAt extends MappedDateTime(this)
