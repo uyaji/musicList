@@ -59,7 +59,7 @@ class MemberView {
       val updateMsg = "updated member " + name
       val errMsgMember = "Duplicate member!"
       Logic.select(duplicateSeqCheck, changeSeqCheck)(bandSeq.id.get, seq.toLong, bandseqplayerid.toLong, errMsg, path) match {
-        case "add" => Process.add(Logic.registTarget, duplicateKeyCheck, getExistPlayer, name, bandSeq, Player.create.name(name), BandSeqPlayers.create.bandseq(bandSeq.id.get).seq(seq.toLong), None, addMsg, errMsgMember, path)
+        case "add" => Process.add(Logic.registTarget, duplicateKeyCheck, getExistPlayer, name, bandSeq, Player.create.name(name), BandSeqPlayers.create.bandseq(bandSeq.id.get).seq(seq.toLong), None, 0, addMsg, errMsgMember, path)
         case "update" => updateMember(Logic.updateTarget, getPlayer, getBinder, getExistPlayer, name, seq.toLong, bandSeq, updateMsg, errMsgMember, path)
       }
     } catch {

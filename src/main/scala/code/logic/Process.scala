@@ -7,7 +7,7 @@ import SHtml._
 import net.liftweb.util._
 
 object Process {
-  def add(function1: ((Target, Binder) => Boolean) => (Target, Relation, Binder, String) => List[FieldError], function2: (Target, Binder) => Boolean, function3: String => List[Target], key: String, binder: Binder, generatedTarget: Target, generatedRelation: Relation, largeObject: Option[LargeObject], msg: String, errMsg: String, path: String) {
+  def add(function1: ((Target, Binder) => Boolean) => (Target, Relation, Binder, String) => List[FieldError], function2: (Target, Binder) => Boolean, function3: String => List[Target], key: String, binder: Binder, generatedTarget: Target, generatedRelation: Relation, largeObject: Option[LargeObject], seq: Int, msg: String, errMsg: String, path: String) {
     val target = function3(key) match {
       case Nil => generatedTarget
       case targets: List[Target] => targets.head
@@ -20,7 +20,16 @@ object Process {
       case Nil => {
         target.save
         generatedRelation match {
-          case null => ()
+          case null => {
+            key match {
+              case "" => ()
+              case _ => {
+                target.setTarget(binder.getTargets.filter{bsq => bsq.getSeq == seq}.head.getId)
+                target.save
+                binder.save
+              }
+            }
+          }
           case _ => {
             generatedRelation.setTarget(target.getId)
             generatedRelation.save

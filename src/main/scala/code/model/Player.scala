@@ -21,6 +21,8 @@ class Player extends Target with LongKeyedMapper[Player] with IdPK with ManyToMa
   override def getId = id.get 
 //  override def getLobs = Nil
   override def setLob(attach: SuitableObject) = () => () 
+  override def setTarget(id: Long) = () => () 
+  override def getSeq = 0 
   override def getRelation(relationId: Long) = this.bandSeqPlayers.filter{bsp => bsp.id == relationId}.head
   override def validates = this.validate
 //

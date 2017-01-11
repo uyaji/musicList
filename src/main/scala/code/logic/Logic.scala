@@ -105,12 +105,19 @@ object Logic {
             List(FieldError(null, <li>{errMsg}</li>))
           }
           case false => {
-            generatedRelation.validate match {
-              case Nil => {
+            generatedRelation match {
+              case null => {
                 Nil
               }
-              case errors => {
-                errors
+              case _ => {
+                generatedRelation.validate match {
+                  case Nil => {
+                    Nil
+                  }
+                  case errors => {
+                    errors
+                  }
+                }
               }
             }
           }

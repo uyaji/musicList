@@ -4,7 +4,9 @@ trait Target {
   type SuitableObject <: LargeObject
   def getName: String
   def getId: Long
+  def getSeq: Int
   def setLob(attach: SuitableObject): Unit
+  def setTarget(targetId: Long): Unit
 //  def getLobs: List[SuitableObject]
   def getRelation(ralationId: Long): Relation
   def save: Boolean

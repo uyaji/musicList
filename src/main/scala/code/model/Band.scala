@@ -8,13 +8,17 @@ object Band extends Band with LongKeyedMetaMapper[Band] {
   override def dbTableName = "bands"
 }
 
-class Band extends LongKeyedMapper[Band] with IdPK with OneToMany[Long, Band] {
+class Band extends Binder with LongKeyedMapper[Band] with IdPK with OneToMany[Long, Band] {
   def this(bandname: String) = {
     this()
     this.bandname(bandname)
   }
 
+  type SuitableTarget = BandSeq
   def getSingleton = Band
+  override def getId = id.get
+  override def getTargets = bandSeqs.toList
+  override def getTarget2s = Nil
 
   object bandname extends MappedString(this, 100) {
     override def validations =

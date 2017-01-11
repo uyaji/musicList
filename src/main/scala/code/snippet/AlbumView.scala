@@ -4,9 +4,7 @@ import scala.xml.{NodeSeq, Text}
 import net.liftweb.util._
 import Helpers._
 
-import code.model.Album
-import code.model.Band
-import code.model.BandSeq
+import code.model._
 import code.logic._
 import net.liftweb.mapper._
 import net.liftweb.http._
@@ -44,21 +42,27 @@ class AlbumView {
     def albumProcess() {
       val errorMsg = "Can not register. Already exist Album. Please update"
       val path = "/"
+      val regSeq = Util.isAllDigits(artistseq) match {
+        case true => artistseq.toInt
+        case _ => 1
+      }
       val process = Logic.select(duplicateAlbumCheck, _==_ )(albumid, albumid, albumid, errorMsg, path)
       process match {
-        case "add" => albumToDataBase(title => new Album(title), albumtitle, artistname, artistseq, albumtitle, process, errorMsg)
+        case "add" => {
+          Process.add(Logic.registTarget, duplicateKeyCheck, title => Nil, albumtitle, generateBand(artistname, regSeq), new Album(albumtitle).bandseq(generateBand(artistname, regSeq).bandSeqs.filter{bsq => bsq.seq==regSeq}.head.id.get), null, None, regSeq, "added " + albumtitle, errorMsg, path)
+        }
         case "update" => albumToDataBase(id => Album.findAll(By(Album.id, id.toLong)).head, albumid.toString, artistname, artistseq, albumtitle, process, errorMsg)
       }
       S.mapSnippet("AlbumView.add", doBind)
     }
 
     def albumToDataBase(f: String => Album, key: String, artistName: String, artistSeq: String, albumTitle: String, process: String, errorMsg: String) = {
-      val band: Band = generateBand(artistName)
       val regSeq = Util.isAllDigits(artistSeq) match {
         case true => artistSeq.toInt
         case _ => 1
       }
-      val bandSeq = generateBandSeq(band, regSeq)
+      val band: Band = generateBand2(artistName, regSeq)
+      val bandSeq = generateBand2Seq(band, regSeq)
 
       band.validate match {
         case Nil => ()
@@ -126,7 +130,19 @@ class AlbumView {
     })
   }          
 
-  private def generateBand(artistName: String): Band = {
+  private def generateBand(artistName: String, regSeq: Int): Band = {
+    val bands = Band.findAll(By(Band.bandname,artistName)) 
+    var band = bands match {
+      case Nil => {
+        new Band(artistName)
+      }
+      case _ => bands.head
+    }
+    band = generateBandSeq(band, regSeq)
+    band
+  }
+
+  private def generateBand2(artistName: String, regSeq: Int): Band = {
     val bands = Band.findAll(By(Band.bandname,artistName)) 
     bands match {
       case Nil => {
@@ -134,10 +150,20 @@ class AlbumView {
       }
       case _ => bands.head
     }
-    
   }
 
-  private def generateBandSeq(band: Band, seq: Int): BandSeq = {
+  private def generateBandSeq(band: Band, seq: Int): Band = {
+    val bandSeqs = BandSeq.findAll(By(BandSeq.band, band.id.get), By(BandSeq.seq, seq))
+    bandSeqs match {
+      case Nil => {
+        band.bandSeqs += new BandSeq(new Date(0), new Date(0), seq)
+        band
+      }
+      case _ => band
+    }
+  }
+
+  private def generateBand2Seq(band: Band, seq: Int): BandSeq = {
     val bandSeqs = BandSeq.findAll(By(BandSeq.band, band.id.get), By(BandSeq.seq, seq))
     bandSeqs match {
       case Nil => {
@@ -149,4 +175,7 @@ class AlbumView {
 
   private def duplicateAlbumCheck(albumid: Long, seq: Long):Boolean =
     Album.findAll(By(Album.id, albumid)).size.equals(0)
+
+  private def duplicateKeyCheck(album: Target, band: Binder):Boolean =
+    !band.getTargets.forall(bseq => bseq.asInstanceOf[BandSeq].getTarget2s.forall(alb => alb.albumtitle != album.getName))
 }

@@ -8,7 +8,7 @@ object Album extends Album with LongKeyedMetaMapper[Album] {
   override def dbTableName = "albums"
 }
 
-class Album extends Binder with LongKeyedMapper[Album] with IdPK with ManyToMany with OneToMany[Long, Album] {
+class Album extends Binder with Target with LongKeyedMapper[Album] with IdPK with ManyToMany with OneToMany[Long, Album] {
   type SuitableTarget = Track
   def this(albumtitle: String) = {
     this()
@@ -17,7 +17,14 @@ class Album extends Binder with LongKeyedMapper[Album] with IdPK with ManyToMany
  
   def getSingleton = Album
   override def getId = id.get
+  override def getSeq = 0
   override def getTargets = tracks.toList
+  override def getTarget2s = Nil
+  override def getName = albumtitle.get
+  override def getRelation(relationId: Long) = null
+  override def setLob(attach: SuitableObject) = () => ()
+  override def setTarget(id: Long) = this.bandseq(id)
+  override def validates = this.validate
 
   object albumtitle extends MappedString(this, 100) {
     override def validations =
