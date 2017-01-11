@@ -24,9 +24,9 @@ object Process {
             key match {
               case "" => ()
               case _ => {
+                binder.save
                 target.setTarget(binder.getTargets.filter{bsq => bsq.getSeq == seq}.head.getId)
                 target.save
-                binder.save
               }
             }
           }
