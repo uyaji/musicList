@@ -18,6 +18,7 @@ class Player extends Target with LongKeyedMapper[Player] with IdPK with ManyToMa
   def getSingleton = Player
 //
   override def getName = name.get
+  override def setName(name: String) = this.name(name)
   override def getId = id.get 
 //  override def getLobs = Nil
   override def setLob(attach: SuitableObject) = () => () 

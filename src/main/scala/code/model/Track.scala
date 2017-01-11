@@ -17,6 +17,7 @@ class Track extends Target with LongKeyedMapper[Track] with IdPK with ManyToMany
 
   def getSingleton = Track
   override def getName = tracktitle.get
+  override def setName(name: String) = this.tracktitle(name)
   override def getId = id.get
 //  override def getLobs = attaches.toList
   override def setTarget(id: Long) = () => ()

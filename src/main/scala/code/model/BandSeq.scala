@@ -32,6 +32,7 @@ class BandSeq extends Binder with Target with LongKeyedMapper[BandSeq] with IdPK
   override def getTarget2s = albums.toList
 
   override def getName = ""
+  override def setName(name: String) = () => ()
   override def setLob(attach: SuitableObject) = () => ()
   override def getRelation(id: Long) = null
   override def setTarget(id: Long) = () => ()

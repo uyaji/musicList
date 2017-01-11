@@ -21,6 +21,7 @@ class Album extends Binder with Target with LongKeyedMapper[Album] with IdPK wit
   override def getTargets = tracks.toList
   override def getTarget2s = Nil
   override def getName = albumtitle.get
+  override def setName(name: String) = this.albumtitle(name)
   override def getRelation(relationId: Long) = null
   override def setLob(attach: SuitableObject) = () => ()
   override def setTarget(id: Long) = this.bandseq(id)
