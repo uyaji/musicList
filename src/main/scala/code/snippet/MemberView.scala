@@ -60,7 +60,7 @@ class MemberView {
       val errMsgMember = "Duplicate member!"
       Logic.select(duplicateSeqCheck, changeSeqCheck)(bandSeq.id.get, seq.toLong, bandseqplayerid.toLong, errMsg, path) match {
         case "add" => Process.add(Logic.registTarget, duplicateKeyCheck, getExistPlayer, name, bandSeq, Player.create.name(name), BandSeqPlayers.create.bandseq(bandSeq.id.get).seq(seq.toLong), None, 0, addMsg, errMsgMember, path)
-        case "update" => updateMember(Logic.updateTarget, getPlayer, getBinder, getExistPlayer, name, seq.toLong, bandSeq, bandseqplayerid.toLong, updateMsg, errMsgMember, path)
+        case "update" => Process.update(Logic.updateTarget, getPlayer, getBinder, getExistPlayer, name, seq.toLong, bandSeq, bandseqplayerid.toLong, updateMsg, errMsgMember, path)
       }
     } catch {
       case e: java.lang.NumberFormatException => {
@@ -68,33 +68,6 @@ class MemberView {
         S.redirectTo("/member?bandid=" + bandid + "&seq=" + bandseq)
       }
     }
-  }
-
-  def updateMember(function1: ((Long, Long) => Target, Long => Binder, String => List[Target]) => (Long, Long, String) => Result, function2: (Long, Long) => Target, function3: Long => Binder, function4: String => List[Target], name: String, seq: Long, bandSeq: BandSeq, relationId: Long, msg: String, errMsg: String, path: String) {
-    val target = function2(bandSeq.id.get, relationId)
-    val relation = target.getRelation(relationId)
-    val existTargets = function4(name)
-    val result = function1(function2, function3, function4)(bandSeq.id.get, relationId, name)
-    result.error match {
-      case true => {
-        S.error(errMsg)
-        S.redirectTo(path)
-      }
-      case flase => ()
-    }
-    result.changeContent match {
-      case "name" => {
-        target.setName(name)
-      }
-      case _ => {
-        relation.setTarget(existTargets.head.getId)
-      }
-    }
-    relation.setSeq(seq.toLong)
-    relation.save
-    target.save
-    S.notice(msg)
-    S.redirectTo(path)
   }
 
   private

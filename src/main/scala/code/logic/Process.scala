@@ -48,4 +48,31 @@ object Process {
       case _ => ()
     }
   }
+
+  def update(function1: ((Long, Long) => Target, Long => Binder, String => List[Target]) => (Long, Long, String) => Result, function2: (Long, Long) => Target, function3: Long => Binder, function4: String => List[Target], key: String, seq: Long, bandSeq: Binder, relationId: Long, msg: String, errorMsg: String, path: String) {
+    val target = function2(bandSeq.getId, relationId)
+    val relation = target.getRelation(relationId)
+    val existTargets = function4(key)
+    val result = function1(function2, function3, function4)(bandSeq.getId, relationId, key)
+    result.error match {
+      case true => {
+        S.error(errorMsg)
+        S.redirectTo(path)
+      }
+      case false => ()
+    }
+    result.changeContent match {
+      case "name" => {
+        target.setName(key)
+      }
+      case _ => {
+        relation.setTarget(existTargets.head.getId)
+      }
+    }
+    relation.setSeq(seq)
+    relation.save
+    target.save
+    S.notice(msg)
+    S.redirectTo(path)
+  }
 }
