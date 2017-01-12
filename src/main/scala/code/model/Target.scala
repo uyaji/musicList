@@ -8,7 +8,7 @@ trait Target {
   def getSeq: Int
   def setLob(attach: SuitableObject): Unit
   def setTarget(targetId: Long): Unit
-//  def getLobs: List[SuitableObject]
+  def getLobs: List[SuitableObject]
   def getRelation(ralationId: Long): Relation
   def save: Boolean
   def validates: List[net.liftweb.util.FieldError]

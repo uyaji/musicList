@@ -65,7 +65,9 @@ class TrackView {
         case "add" => {
           Process.add(Logic.registTarget, duplicateKeyCheck, getExistTrack, tracktitle, album, Track.create.tracktitle(tracktitle), AlbumTracks.create.album(album.id.get).seq(seq.toLong), attach, 0, "Added " + tracktitle, "Duplicate track!", path)
         }
-        case "update" => updateProcess(Logic.updateTarget, getTrack, getBinder, getExistTrack, tracktitle, seq.toLong, upload, album, albumtrcid.toLong, "updated " + tracktitle, "Duplicate track!", "Duplicate attach!", path)
+        case "update" => {
+          Process.update(Logic.updateTarget, getTrack, getBinder, getExistTrack, isAttachFileExist, getExistAttach, tracktitle, seq.toLong, upload, album, albumtrcid.toLong, attach, "updated " + tracktitle, "Duplicate track!", "Duplicate attach!", path)
+        }
       }
     } catch {
       case e: java.lang.NumberFormatException => {
@@ -82,52 +84,6 @@ class TrackView {
   def isAttachFileExist(upload: Box[FileParamHolder]):Boolean = upload match {
     case Full(FileParamHolder(name, mime, fileName, data)) => true
     case _ => false
-  }
-
-  def updateProcess(function1: ((Long, Long) => Target, Long => Binder,String => List[Target]) => (Long, Long, String) => Result, function2: (Long, Long) => Target, function3: Long => Binder, function4: String => List[Target], trackTitle: String, seq: Long, upload: Box[FileParamHolder], album: Album, albumTrcId: Long, msg: String, errMsgTrack: String, errMsgAttach: String, path: String) {
-    val attach = isAttachFileExist(upload) match {
-      case true => getExistAttach(getFileParamHolder(upload).fileName) match {
-        case Nil => new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file)
-        case attaches: List[Attach] => attaches.head
-      }
-      case false => null
-    }
-    val result = function1(function2, function3, function4)(album.id.get, albumTrcId, trackTitle)
-    result.error match {
-      case true => {
-        S.error(errMsgTrack)
-        S.redirectTo(path)
-      }
-      case false => ()
-    }
-    val track = getTrack(album.id.get, albumTrcId)
-    val albumTrack = track.getRelation(albumTrcId)
-    val existTracks = getExistTrack(trackTitle)
-    result.changeContent match {
-      case "name" => {
-        track.tracktitle(trackTitle)
-      }
-      case _ => {
-        albumTrack.track(existTracks.head.getId)
-      }
-    }
-    if(isAttachFileExist(upload)) {
-      track.getLobs.contains(attach) match {
-        // attachの重複エラー
-        case true => {
-          S.error(errMsgAttach)
-          S.redirectTo(path)
-        }
-        case false => {
-          track.setLob(attach)
-        }
-      }
-    }
-    albumTrack.seq(seq.toLong)
-    albumTrack.save
-    track.save
-    S.notice(msg)
-    S.redirectTo(path)
   }
 
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {

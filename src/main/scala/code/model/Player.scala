@@ -20,7 +20,7 @@ class Player extends Target with LongKeyedMapper[Player] with IdPK with ManyToMa
   override def getName = name.get
   override def setName(name: String) = this.name(name)
   override def getId = id.get 
-//  override def getLobs = Nil
+  override def getLobs: List[SuitableObject] = Nil
   override def setLob(attach: SuitableObject) = () => () 
   override def setTarget(id: Long) = () => () 
   override def getSeq = 0 
