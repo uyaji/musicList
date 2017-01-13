@@ -57,7 +57,11 @@ class BandView {
     val path = "/band?bandid=" + bandid
     val process = Logic.select(duplicateSeqCheck, _==_ )(bandid.toLong, initSeq.toLong, initSeq.toLong, msg, path)
     process match {
-      case "add" => Process.add((f: (Target, Binder) => Boolean) => (Target, Relation, Binder, String) => Nil, (Target, Binder) => true, String => Nil, "", null, new BandSeq(Util.stringToDate(startat), Util.stringToDate(endat), seq.toInt).band(band.id.get), null, None, 0, "added seq " + seq, "", path)
+      case "add" => {
+        val msg = Process.add((f: (Target, Binder) => Boolean) => (Target, Relation, Binder, String) => Nil, (Target, Binder) => true, String => Nil, "", null, new BandSeq(Util.stringToDate(startat), Util.stringToDate(endat), seq.toInt).band(band.id.get), null, None, 0, "added seq " + seq, "")
+        S.error(msg)
+        S.redirectTo(path)
+      }
       case "update" => seqToDataBase(band: Band, (start, end, seq) => band.bandSeqs.filter{ bs => bs.seq == seq }.head.bandSeqStartAt(Util.stringToDate(start)).bandSeqEndAt(Util.stringToDate(end)), startat, endat, seq, process)
     }
   }

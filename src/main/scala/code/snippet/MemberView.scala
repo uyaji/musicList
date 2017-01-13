@@ -59,8 +59,16 @@ class MemberView {
       val updateMsg = "updated member " + name
       val errMsgMember = "Duplicate member!"
       Logic.select(duplicateSeqCheck, changeSeqCheck)(bandSeq.id.get, seq.toLong, bandseqplayerid.toLong, errMsg, path) match {
-        case "add" => Process.add(Logic.registTarget, duplicateKeyCheck, getExistPlayer, name, bandSeq, Player.create.name(name), BandSeqPlayers.create.bandseq(bandSeq.id.get).seq(seq.toLong), None, 0, addMsg, errMsgMember, path)
-        case "update" => Process.update(Logic.updateTarget, getPlayer, getBinder, getExistPlayer, upload => false, name => Nil, name, seq.toLong, null, bandSeq, bandseqplayerid.toLong, None, updateMsg, errMsgMember, "", path)
+        case "add" => {
+          val msg = Process.add(Logic.registTarget, duplicateKeyCheck, getExistPlayer, name, bandSeq, Player.create.name(name), BandSeqPlayers.create.bandseq(bandSeq.id.get).seq(seq.toLong), None, 0, addMsg, errMsgMember)
+          S.error(msg)
+          S.redirectTo(path)
+        }
+        case "update" => {
+          val msg = Process.update(Logic.updateTarget, getPlayer, getBinder, getExistPlayer, upload => false, name => Nil, name, seq.toLong, null, bandSeq, bandseqplayerid.toLong, None, updateMsg, errMsgMember, "")
+          S.error(msg)
+          S.redirectTo(path)
+        }
       }
     } catch {
       case e: java.lang.NumberFormatException => {

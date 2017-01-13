@@ -49,7 +49,9 @@ class AlbumView {
       val process = Logic.select(duplicateAlbumCheck, _==_ )(albumid, albumid, albumid, errorMsg, path)
       process match {
         case "add" => {
-          Process.add(Logic.registTarget, duplicateKeyCheck, title => Nil, albumtitle, generateBand(artistname, regSeq), new Album(albumtitle).bandseq(generateBand(artistname, regSeq).bandSeqs.filter{bsq => bsq.seq==regSeq}.head.id.get), null, None, regSeq, "added " + albumtitle, errorMsg, path)
+          val msg = Process.add(Logic.registTarget, duplicateKeyCheck, title => Nil, albumtitle, generateBand(artistname, regSeq), new Album(albumtitle).bandseq(generateBand(artistname, regSeq).bandSeqs.filter{bsq => bsq.seq==regSeq}.head.id.get), null, None, regSeq, "added " + albumtitle, errorMsg)
+          S.error(msg)
+          S.redirectTo(path)
         }
         case "update" => albumToDataBase(id => Album.findAll(By(Album.id, id.toLong)).head, albumid.toString, artistname, artistseq, albumtitle, process, errorMsg)
       }

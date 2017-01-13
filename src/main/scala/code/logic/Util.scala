@@ -25,8 +25,12 @@ object Util {
   }
 
   def stringToDate(strDate: String): Date = {
-    val sdf = new SimpleDateFormat("yyyy");
-    sdf.parse(strDate.substring(0,4))
+    try {
+      val sdf = new SimpleDateFormat("yyyy");
+      sdf.parse(strDate.substring(0,4))
+    } catch {
+       case e: Exception => new Date(0)
+    }
   }
 
   def dateToString(date: Date): String = {
