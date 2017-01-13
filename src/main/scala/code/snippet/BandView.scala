@@ -62,23 +62,12 @@ class BandView {
         S.error(msg)
         S.redirectTo(path)
       }
-      case "update" => seqToDataBase(band: Band, (start, end, seq) => band.bandSeqs.filter{ bs => bs.seq == seq }.head.bandSeqStartAt(Util.stringToDate(start)).bandSeqEndAt(Util.stringToDate(end)), startat, endat, seq, process)
-    }
-  }
-
-  def seqToDataBase(band: Band, f: (String, String, Int) => BandSeq, start: String, end: String, seq: String, process: String) {
-    val bandSeq = f(start, end, seq.toInt)
-    process match {
-      case "add" => {
-        band.bandSeqs += bandSeq
-        band.save
-      }
-      case _ => {
-        bandSeq.save
+      case "update" => {
+        val msg = Process.update((f2: (Long, Long) => Target, f3: Long => Binder,  f4: String => List[Target]) => (a, b, c) => new Result(false, ""), (a, b) => band.bandSeqs.filter{ bs => bs.seq == seq.toLong }.head.bandSeqStartAt(Util.stringToDate(startat)).bandSeqEndAt(Util.stringToDate(endat)), a => null, c => Nil, upload => false, c => Nil, "", 0L, null, band, 0L, None, "updated seq " + seq, "", "")
+        S.error(msg)
+        S.redirectTo(path)
       }
     }
-    S.notice(process + "ed Seq " + seq)
-    S.redirectTo("/band?bandid=" + band.id)
   }
 
   private 

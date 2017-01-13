@@ -70,9 +70,10 @@ object Process {
       case "name" => {
         target.setName(key)
       }
-      case _ => {
+      case "relation" => {
         relation.setTarget(existTargets.head.getId)
       }
+      case _ => ()
     }
     if(function5(upload)) {
       target.getLobs.contains(largeObject) match {
@@ -85,8 +86,10 @@ object Process {
         }
       }
     }
-    relation.setSeq(seq)
-    relation.save
+    if(!result.changeContent.equals("")) {
+      relation.setSeq(seq)
+      relation.save
+    }
     target.save
     scala.xml.XML.loadString("<li>" + msg + "</li>")
   }
