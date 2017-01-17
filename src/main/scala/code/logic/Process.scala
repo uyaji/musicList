@@ -22,28 +22,28 @@ object Process {
         target.validates match {
           case Nil => {
             target.save
-            generatedRelation.validates match {
-              case Nil => {
-                generatedRelation match {
-                  case null => {
-                    key match {
-                      case "" => ()
-                      case _ => {
-                        binder.save
-                        target.setTarget(binder.getTargets.filter{bsq => bsq.getSeq == seq}.head.getId)
-                        target.save
-                      }
-                    }
-                  }
+            generatedRelation match {
+              case null => {
+                key match {
+                  case "" => ()
                   case _ => {
+                    binder.save
+                    target.setTarget(binder.getTargets.filter{bsq => bsq.getSeq == seq}.head.getId)
+                    target.save
+                  }
+                }
+              }
+              case _ => {
+                generatedRelation.validates match {
+                  case Nil => {
                     generatedRelation.setTarget(target.getId)
                     generatedRelation.save
                   }
+                  case errors => errors(0).msg
                 }
-                scala.xml.XML.loadString("<li>" + msg + "</li>")
               }
-              case errors => errors(0).msg
             }
+            scala.xml.XML.loadString("<li>" + msg + "</li>")
           }
           case errors =>
             errors(0).msg
