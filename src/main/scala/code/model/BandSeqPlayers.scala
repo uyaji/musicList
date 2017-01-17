@@ -19,6 +19,7 @@ class BandSeqPlayers extends Relation with LongKeyedMapper[BandSeqPlayers] with 
   override def getTarget() = {
     this.player.obj.getOrElse(null)
   }
+  override def validates = this.validate
 //
   object bandseq extends LongMappedMapper(this, BandSeq)
   object player extends LongMappedMapper(this, Player)

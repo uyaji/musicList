@@ -65,14 +65,13 @@ class TrackView {
         case "add" => {
           val msg = Process.add(Logic.registTarget, duplicateKeyCheck, getExistTrack, tracktitle, album, Track.create.tracktitle(tracktitle), AlbumTracks.create.album(album.id.get).seq(seq.toLong), attach, 0, "Added " + tracktitle, "Duplicate track!")
           S.error(msg)
-          S.redirectTo(path)
         }
         case "update" => {
           val msg = Process.update(Logic.updateTarget, getTrack, getBinder, getExistTrack, isAttachFileExist, getExistAttach, tracktitle, seq.toLong, upload, album, albumtrcid.toLong, attach, "updated " + tracktitle, "Duplicate track!", "Duplicate attach!")
           S.error(msg)
-          S.redirectTo(path)
         }
       }
+      S.redirectTo(path)
     } catch {
       case e: java.lang.NumberFormatException => {
         S.error("SEQ must be the number!")

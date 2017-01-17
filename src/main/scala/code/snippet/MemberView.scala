@@ -62,14 +62,13 @@ class MemberView {
         case "add" => {
           val msg = Process.add(Logic.registTarget, duplicateKeyCheck, getExistPlayer, name, bandSeq, Player.create.name(name), BandSeqPlayers.create.bandseq(bandSeq.id.get).seq(seq.toLong), None, 0, addMsg, errMsgMember)
           S.error(msg)
-          S.redirectTo(path)
         }
         case "update" => {
           val msg = Process.update(Logic.updateTarget, getPlayer, getBinder, getExistPlayer, upload => false, name => Nil, name, seq.toLong, null, bandSeq, bandseqplayerid.toLong, None, updateMsg, errMsgMember, "")
           S.error(msg)
-          S.redirectTo(path)
         }
       }
+      S.redirectTo(path)
     } catch {
       case e: java.lang.NumberFormatException => {
         S.error("SEQ must be the number!")

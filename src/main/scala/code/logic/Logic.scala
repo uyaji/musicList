@@ -48,8 +48,8 @@ object Logic {
     }
   }
 
-  def updateTarget(getTarget: (Long, Long) => Target, getBinder: Long => Binder, getExistTarget: String => List[Target])(binderId: Long, relationId: Long, name: String): Result = {
-    val result = new Result( false, "")
+  def updateTarget(getTarget: (Long, Long) => Target, getBinder: Long => Binder, getExistTarget: String => List[Target])(binderId: Long, relationId: Long, name: String, errMsg: String): Result = {
+    val result = new Result(Nil, "")
     val target = getTarget(binderId, relationId)
     var relation = target.getRelation(relationId)
 //    val relation = target.getRelations.filter{bsp => bsp.getId == relationId}.head
@@ -84,7 +84,7 @@ object Logic {
         binder.getTargets.contains(existTargets.head) match {
           // 重複あり
           case true => {
-            result.error = true
+            result.errors = List(FieldError(null, <li>{errMsg}</li>))
           }
           // 重複がないので、アソシエーションの変更。
           case false => {
@@ -97,158 +97,17 @@ object Logic {
   }
 
   def registTarget(duplicateKeyCheck: (Target, Binder) => Boolean)(target: Target, generatedRelation: Relation, binder: Binder, errMsg: String): List[FieldError] = {
-    target.validates match {
-      case Nil => {
-        // 登録時にターゲットの重複がないかチェック
-        duplicateKeyCheck(target, binder) match {
-          case true => {
-            List(FieldError(null, <li>{errMsg}</li>))
-          }
-          case false => {
-            generatedRelation match {
-              case null => {
-                Nil
-              }
-              case _ => {
-                generatedRelation.validate match {
-                  case Nil => {
-                    Nil
-                  }
-                  case errors => {
-                    errors
-                  }
-                }
-              }
-            }
-          }
-        }
+    // 登録時にターゲットの重複がないかチェック
+    duplicateKeyCheck(target, binder) match {
+      case true => {
+        List(FieldError(null, <li>{errMsg}</li>))
       }
-      case errors => {
-        errors
-      }
+      case false => Nil
     }
   }
 }
 
 case class Result (
-  var error: Boolean,
+  var errors: List[FieldError],
   var changeContent: String
 )
-
-/*  def updateTarget(getTarget: (Long, Long) => Target, getBinder: Long => Binder, getExistTarget: String => List[Target], isAtachFileExist: Box[FileParamHolder] => Boolean)(binderId: Long, relationId: Long, name: String, path: String, msg: String, errorMsgTarget: String, errorMsgLob: String, seq: Long, upload: Box[FileParamHolder], attach: LargeObject): Unit = {
-    val target = getTarget(binderId, relationId)
-    var relation = target.getRelation(relationId)
-    // 指定されたtargetが既存かどうかチェック。
-    //   既存: relationのアソシエーションの変更
-    //   未存: targetのnameの更新
-    var exist = false
-    // 入力されたnameで、targetオブジェクトをインスタンス化
-    val existTargets = getExistTarget(name)
-    // nameの変更を確認
-    target.getName.equals(name) match {
-      // 変更が無ければ、重複問題なし
-      case true => exist = true
-      // 変更の場合、重複の可能性あり
-      case _ => {
-        // 入力targetオブジェクトの有無確認
-        existTargets.size match {
-          case 0 => exist = true
-          case _ => exist = false
-        }
-      }
-    }
-    exist match {
-      // 重複の問題がないので、nameの変更。
-      case true => {
-        // targetのname変更
-        target.setName(name)
-      }
-      // 重複の恐れあり。binder内のtargetをチェック
-      case _ => {
-        val binder = getBinder(binderId)
-        binder.getTargets.contains(existTargets.head) match {
-          // 重複あり
-          case true => {
-            S.error(errorMsgTarget)
-            S.redirectTo(path)
-          }
-          // 重複がないので、アソシエーションの変更。
-          case false => {
-            relation.setTarget(existTargets.head.getId)
-          }
-        }
-      }
-    }
-    if(isAtachFileExist(upload)) {
-      target.getLobs.contains(attach) match {
-        // attachの重複エラー
-        case true => {
-          S.error(errorMsgLob)
-          S.redirectTo(path)
-        }
-        case false => {
-          target.setLob(attach.asInstanceOf[target.SuitableObject])
-        }
-      }
-    }
-    relation.setSeq(seq)
-    relation.save
-    target.save
-    S.notice(msg)
-    S.redirectTo(path)
-  }
-
-  def registTarget(getTarget: String => List[Target], duplicateKeyCheck: Target => Boolean, isAtachFileExist: Box[FileParamHolder] => Boolean, getExistAttach: String => List[LargeObject])(uniqueKey: String, generatedTarget: Target, generatedRelation: Relation, binder: Binder, msg: String, errMsg: String, path: String, upload: Box[FileParamHolder], transferAttach: LargeObject): Unit = {
-    val target: Target = isAtachFileExist(upload) match {
-      case true => {
-        val attaches = getExistAttach(transferAttach.getFileName)
-        val attach: LargeObject = attaches match {
-          case Nil => transferAttach
-          case _ => attaches.head
-        }
-        val target = getTarget(uniqueKey) match {
-          case Nil => generatedTarget
-          case _ => getTarget(uniqueKey).head
-        }
-//        target.setLob(attach.asInstanceOf[target.SuitableObject])
-        target
-      }
-      case false => {
-        getTarget(uniqueKey) match {
-          case Nil => generatedTarget
-          case _ => getTarget(uniqueKey).head
-        }
-      }
-    }
-    target.validates match {
-      case Nil => {
-        // 登録時にターゲットの重複がないかチェック
-        duplicateKeyCheck(target) match {
-          case true => {
-            S.error(errMsg)
-            S.redirectTo(path)
-          }
-          case false => {
-            binder.getRelation += generatedRelation
-            generatedRelation.validate match {
-              case Nil => {
-                target.save
-                generatedRelation.setTarget(target.getId)
-                generatedRelation.save
-                S.notice(msg)
-                S.redirectTo(path)
-              }
-              case errors => {
-                S.error(errors)
-                S.redirectTo(path)
-              }
-            }
-          }
-        }
-      }
-      case errors => {
-        S.error(errors)
-        S.redirectTo(path)
-      }
-    }
-  }*/

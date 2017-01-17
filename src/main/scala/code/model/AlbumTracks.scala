@@ -19,6 +19,7 @@ class AlbumTracks extends Relation with LongKeyedMapper[AlbumTracks] with IdPK {
   override def setSeq(seq: Long) = this.seq(seq)
   override def setTarget(trackid: Long) = this.track(trackid)
   override def getTarget() = this.track.asInstanceOf[Target]
+  override def validates = this.validate
 
   object album extends LongMappedMapper(this, Album)
   object track extends LongMappedMapper(this, Track)

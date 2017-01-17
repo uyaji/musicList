@@ -60,14 +60,13 @@ class BandView {
       case "add" => {
         val msg = Process.add((f: (Target, Binder) => Boolean) => (Target, Relation, Binder, String) => Nil, (Target, Binder) => true, String => Nil, "", null, new BandSeq(Util.stringToDate(startat), Util.stringToDate(endat), seq.toInt).band(band.id.get), null, None, 0, "added seq " + seq, "")
         S.error(msg)
-        S.redirectTo(path)
       }
       case "update" => {
-        val msg = Process.update((f2: (Long, Long) => Target, f3: Long => Binder,  f4: String => List[Target]) => (a, b, c) => new Result(false, ""), (a, b) => band.bandSeqs.filter{ bs => bs.seq == seq.toLong }.head.bandSeqStartAt(Util.stringToDate(startat)).bandSeqEndAt(Util.stringToDate(endat)), a => null, c => Nil, upload => false, c => Nil, "", 0L, null, band, 0L, None, "updated seq " + seq, "", "")
+        val msg = Process.update((f2: (Long, Long) => Target, f3: Long => Binder,  f4: String => List[Target]) => (a, b, c, d) => new Result(Nil, ""), (a, b) => band.bandSeqs.filter{ bs => bs.seq == seq.toLong }.head.bandSeqStartAt(Util.stringToDate(startat)).bandSeqEndAt(Util.stringToDate(endat)), a => null, c => Nil, upload => false, c => Nil, "", 0L, null, band, 0L, None, "updated seq " + seq, "", "")
         S.error(msg)
-        S.redirectTo(path)
       }
     }
+    S.redirectTo(path)
   }
 
   private 

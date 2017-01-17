@@ -19,24 +19,35 @@ object Process {
     }
     function1(function2)(target, generatedRelation, binder, errMsg) match {
       case Nil => {
-        target.save
-        generatedRelation match {
-          case null => {
-            key match {
-              case "" => ()
-              case _ => {
-                binder.save
-                target.setTarget(binder.getTargets.filter{bsq => bsq.getSeq == seq}.head.getId)
-                target.save
+        target.validates match {
+          case Nil => {
+            target.save
+            generatedRelation.validates match {
+              case Nil => {
+                generatedRelation match {
+                  case null => {
+                    key match {
+                      case "" => ()
+                      case _ => {
+                        binder.save
+                        target.setTarget(binder.getTargets.filter{bsq => bsq.getSeq == seq}.head.getId)
+                        target.save
+                      }
+                    }
+                  }
+                  case _ => {
+                    generatedRelation.setTarget(target.getId)
+                    generatedRelation.save
+                  }
+                }
+                scala.xml.XML.loadString("<li>" + msg + "</li>")
               }
+              case errors => errors(0).msg
             }
           }
-          case _ => {
-            generatedRelation.setTarget(target.getId)
-            generatedRelation.save
-          }
+          case errors =>
+            errors(0).msg
         }
-        scala.xml.XML.loadString("<li>" + msg + "</li>")
       }
       case errors: List[FieldError] => {
         errors(0).field match {
@@ -48,7 +59,7 @@ object Process {
     }
   }
 
-  def update(function1: ((Long, Long) => Target, Long => Binder, String => List[Target]) => (Long, Long, String) => Result, function2: (Long, Long) => Target, function3: Long => Binder, function4: String => List[Target], function5: Box[FileParamHolder] => Boolean, function6: String => List[LargeObject], key: String, seq: Long, upload: Box[FileParamHolder], binder: Binder, relationId: Long, generateLargeObject: Option[LargeObject], msg: String, errorMsgTarget: String, errorMsgLargeObject: String): scala.xml.NodeSeq = {
+  def update(function1: ((Long, Long) => Target, Long => Binder, String => List[Target]) => (Long, Long, String, String) => Result, function2: (Long, Long) => Target, function3: Long => Binder, function4: String => List[Target], function5: Box[FileParamHolder] => Boolean, function6: String => List[LargeObject], key: String, seq: Long, upload: Box[FileParamHolder], binder: Binder, relationId: Long, generateLargeObject: Option[LargeObject], msg: String, errorMsgTarget: String, errorMsgLargeObject: String): scala.xml.NodeSeq = {
     val largeObject = function5(upload) match {
       case true => function6(generateLargeObject.get.getFileName) match {
         case Nil => generateLargeObject.get
@@ -59,12 +70,15 @@ object Process {
     val target = function2(binder.getId, relationId)
     val relation = target.getRelation(relationId)
     val existTargets = function4(key)
-    val result = function1(function2, function3, function4)(binder.getId, relationId, key)
-    result.error match {
-      case true => {
-        return scala.xml.XML.loadString("<li>" + errorMsgTarget + "</li>")
+    val result = function1(function2, function3, function4)(binder.getId, relationId, key, errorMsgTarget)
+    result.errors match {
+      case Nil => ()
+      case errors: List[FieldError] => {
+        errors(0).field match {
+          case null => return errors(0).msg
+          case _ => return errors(0).msg
+        }
       }
-      case false => ()
     }
     result.changeContent match {
       case "name" => {
@@ -88,9 +102,19 @@ object Process {
     }
     if(!result.changeContent.equals("")) {
       relation.setSeq(seq)
-      relation.save
+      relation.validates match {
+        case Nil => relation.save
+        case errors => return errors(0).msg
+      }
     }
-    target.save
-    scala.xml.XML.loadString("<li>" + msg + "</li>")
+    target.validates match {
+      case Nil => {
+        target.save
+        scala.xml.XML.loadString("<li>" + msg + "</li>")
+      }
+      case errors => {
+        errors(0).msg
+      }
+    }
   }
 }
