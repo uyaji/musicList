@@ -25,7 +25,7 @@ class Album extends Binder with Target with LongKeyedMapper[Album] with IdPK wit
   override def getRelation(relationId: Long) = null
   override def setLob(attach: SuitableObject) = () => ()
   override def getLobs: List[SuitableObject] = Nil
-  override def setTarget(id: Long) = this.bandseq(id)
+  override def setBinder(id: Long) = this.bandseq(id)
   override def validates = this.validate
 
   object albumtitle extends MappedString(this, 100) {

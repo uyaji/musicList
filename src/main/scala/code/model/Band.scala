@@ -19,6 +19,7 @@ class Band extends Binder with LongKeyedMapper[Band] with IdPK with OneToMany[Lo
   override def getId = id.get
   override def getTargets = bandSeqs.toList
   override def getTarget2s = Nil
+  override def validates = this.validate
 
   object bandname extends MappedString(this, 100) {
     override def validations =

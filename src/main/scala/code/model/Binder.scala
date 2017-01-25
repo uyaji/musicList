@@ -7,6 +7,6 @@ trait Binder {
 //  def getTargets: List[Target]
   def getTargets: List[SuitableTarget]
   def getTarget2s: List[SuitableTarget2]
-  def validate: List[net.liftweb.util.FieldError]
+  def validates: List[net.liftweb.util.FieldError]
   def save: Boolean
 }

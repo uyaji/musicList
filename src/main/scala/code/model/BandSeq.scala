@@ -36,13 +36,18 @@ class BandSeq extends Binder with Target with LongKeyedMapper[BandSeq] with IdPK
   override def setLob(attach: SuitableObject) = () => ()
   override def getLobs: List[SuitableObject] = Nil
   override def getRelation(id: Long) = null
-  override def setTarget(id: Long) = () => ()
-  override def validates = Nil
+  override def setBinder(id: Long) = () => ()
+  override def validates = this.validate
 
   object bandSeqStartAt extends MappedDateTime(this)
   object bandSeqEndAt extends MappedDateTime(this)
   object seq extends MappedInt(this) {
     override def defaultValue = 1
+    override def validations =
+      minVal _ :: super.validations
+    def minVal(in: Int): List[FieldError] =
+      if (in > 0 ) Nil
+      else List(FieldError(this, <li>Seq must be over 1</li>))
   }
 
   def getBand(): Band = Band.findAll(By(Band.id, band.get)).head

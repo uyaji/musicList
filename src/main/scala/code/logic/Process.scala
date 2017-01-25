@@ -21,14 +21,24 @@ object Process {
       case Nil => {
         target.validates match {
           case Nil => {
-            target.save
+//            target.save
             generatedRelation match {
               case null => {
                 key match {
                   case "" => ()
                   case _ => {
+                    binder.validates match {
+                      case Nil => ()
+                      case errors =>
+                        return errors(0).msg
+                    }
+                    binder.getTargets.map {bsq => bsq.validates match {
+                      case Nil => ()
+                      case errors =>
+                        return errors(0).msg
+                    }}
                     binder.save
-                    target.setTarget(binder.getTargets.filter{bsq => bsq.getSeq == seq}.head.getId)
+                    target.setBinder(binder.getTargets.filter{bsq => bsq.getSeq == seq}.head.getId)
                     target.save
                   }
                 }
@@ -36,10 +46,11 @@ object Process {
               case _ => {
                 generatedRelation.validates match {
                   case Nil => {
+                    target.save
                     generatedRelation.setTarget(target.getId)
                     generatedRelation.save
                   }
-                  case errors => errors(0).msg
+                  case errors => return errors(0).msg
                 }
               }
             }
@@ -68,7 +79,7 @@ object Process {
       case false => null
     }
     val target = function2(binder.getId, relationId)
-    val relation = target.getRelation(relationId)
+    val relation = if(relationId.equals(0)) null else target.getRelation(relationId)
     val existTargets = function4(key)
     val result = function1(function2, function3, function4)(binder.getId, relationId, key, errorMsgTarget)
     result.errors match {
@@ -83,6 +94,17 @@ object Process {
     result.changeContent match {
       case "name" => {
         target.setName(key)
+        if(target.isInstanceOf[code.model.Album]) {
+          binder.validates match {
+            case Nil => ()
+            case errors => return errors(0).msg
+          }
+          binder.getTargets.map{bps => bps.validates match {
+            case Nil => ()
+            case errors => return errors(0).msg
+          }}
+          binder.save
+        }
       }
       case "relation" => {
         relation.setTarget(existTargets.head.getId)
@@ -101,16 +123,30 @@ object Process {
       }
     }
     if(!result.changeContent.equals("")) {
-      relation.setSeq(seq)
-      relation.validates match {
-        case Nil => relation.save
-        case errors => return errors(0).msg
+      if(!target.isInstanceOf[code.model.Album]) {
+        relation.setSeq(seq)
+        relation.validates match {
+          case Nil => relation.save
+          case errors => return errors(0).msg
+        }
+      } else {
+        target.setBinder(binder.getTargets.filter {bsq => bsq.getSeq == seq}.head.getId)
       }
     }
     target.validates match {
       case Nil => {
-        target.save
-        scala.xml.XML.loadString("<li>" + msg + "</li>")
+        result.changeContent match {
+          case "name" => {
+            target.save
+            scala.xml.XML.loadString("<li>" + msg + "</li>")
+          }
+          case "relation" => {
+            if(target.isInstanceOf[code.model.Album]) {
+              existTargets.head.save
+            }
+            scala.xml.XML.loadString("<li>" + msg + "</li>")
+          }
+        }
       }
       case errors => {
         errors(0).msg

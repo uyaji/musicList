@@ -28,13 +28,15 @@ class AlbumView {
     var artistname = ""
     var albumtitle = ""
     var artistseq = ""
+    var band: Band = null
+    var bandseq: BandSeq = null
     albumid match {
       case 0 => ()
       case aid => {
         val album = Album.findAll(By(Album.id, aid.toLong)).head
         albumtitle = album.albumtitle.get
-        val bandseq = BandSeq.findAll(By(BandSeq.id, album.bandseq.get)).head
-        val band = Band.findAll(By(Band.id, bandseq.band.get)).head
+        bandseq = BandSeq.findAll(By(BandSeq.id, album.bandseq.get)).head
+        band = Band.findAll(By(Band.id, bandseq.band.get)).head
         artistname = band.bandname.get
         artistseq = bandseq.seq.get.toString
       }
@@ -51,58 +53,14 @@ class AlbumView {
         case "add" => {
           val msg = Process.add(Logic.registTarget, duplicateKeyCheck, title => Nil, albumtitle, generateBand(artistname, regSeq), new Album(albumtitle).bandseq(generateBand(artistname, regSeq).bandSeqs.filter{bsq => bsq.seq==regSeq}.head.id.get), null, None, regSeq, "added " + albumtitle, errorMsg)
           S.error(msg)
-          S.redirectTo(path)
         }
-        case "update" => albumToDataBase(id => Album.findAll(By(Album.id, id.toLong)).head, albumid.toString, artistname, artistseq, albumtitle, process, errorMsg)
-      }
-      S.mapSnippet("AlbumView.add", doBind)
-    }
-
-    def albumToDataBase(f: String => Album, key: String, artistName: String, artistSeq: String, albumTitle: String, process: String, errorMsg: String) = {
-      val regSeq = Util.isAllDigits(artistSeq) match {
-        case true => artistSeq.toInt
-        case _ => 1
-      }
-      val band: Band = generateBand2(artistName, regSeq)
-      val bandSeq = generateBand2Seq(band, regSeq)
-
-      band.validate match {
-        case Nil => ()
-        case errors => {
-          S.error(errors)
-          S.redirectTo("/")
+        case "update" => {
+          val band = generateBand(artistname, regSeq)
+          val msg = Process.update(Logic.updateTarget, (id, id2) => Album.findAll(By(Album.id, id2.toLong)).head, id => Band.findAll(By(Band.id, id.toLong)).head, key => Album.findAll(By(Album.albumtitle, key)), upload => false, name => Nil, albumtitle, regSeq, null, band, albumid, None, "updated " + albumtitle, errorMsg, "")
+          S.error(msg)
         }
       }
-      bandSeq.validate match {
-        case Nil => ()
-        case errors => {
-          S.error(errors)
-          S.redirectTo("/")
-        }
-      }
-
-      var album: Album = f(key)
-      album.validate match{
-        case Nil => ()
-        case errors => S.error(errors); S.redirectTo("/")
-      }
-      if(!band.bandSeqs.forall(bseq => bseq.albums.forall(alb => alb.albumtitle != albumTitle))) {
-        if(process.equals("update")) {
-          if(!album.albumtitle.equals(albumTitle) || !album.getBandSeq().getBand().bandname.equals(artistName)) {
-            S.error(errorMsg); S.redirectTo("/")
-          }
-        } else {
-          S.error(errorMsg); S.redirectTo("/")
-        }
-      }
-      band.bandSeqs += bandSeq
-      band.save
-      if(process.equals("update")) album.getBandSeq().albums -= album
-      bandSeq.albums += album
-      if(process.equals("update")) album.albumtitle(albumTitle)
-      bandSeq.save()
-      S.notice(process + "ed " + albumTitle)
-      S.redirectTo("/")
+      S.redirectTo(path)
     }
 
     def doBind(from: NodeSeq): NodeSeq = {
@@ -144,16 +102,6 @@ class AlbumView {
     band
   }
 
-  private def generateBand2(artistName: String, regSeq: Int): Band = {
-    val bands = Band.findAll(By(Band.bandname,artistName)) 
-    bands match {
-      case Nil => {
-        new Band(artistName)
-      }
-      case _ => bands.head
-    }
-  }
-
   private def generateBandSeq(band: Band, seq: Int): Band = {
     val bandSeqs = BandSeq.findAll(By(BandSeq.band, band.id.get), By(BandSeq.seq, seq))
     bandSeqs match {
@@ -162,16 +110,6 @@ class AlbumView {
         band
       }
       case _ => band
-    }
-  }
-
-  private def generateBand2Seq(band: Band, seq: Int): BandSeq = {
-    val bandSeqs = BandSeq.findAll(By(BandSeq.band, band.id.get), By(BandSeq.seq, seq))
-    bandSeqs match {
-      case Nil => {
-        new BandSeq(new Date(0), new Date(0), seq)
-      }
-      case _ => bandSeqs.head
     }
   }
 

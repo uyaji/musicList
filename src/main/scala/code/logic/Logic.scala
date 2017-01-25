@@ -51,8 +51,6 @@ object Logic {
   def updateTarget(getTarget: (Long, Long) => Target, getBinder: Long => Binder, getExistTarget: String => List[Target])(binderId: Long, relationId: Long, name: String, errMsg: String): Result = {
     val result = new Result(Nil, "")
     val target = getTarget(binderId, relationId)
-    var relation = target.getRelation(relationId)
-//    val relation = target.getRelations.filter{bsp => bsp.getId == relationId}.head
     // 指定されたtargetが既存かどうかチェック。
     //   既存: relationのアソシエーションの変更
     //   未存: targetのnameの更新
@@ -80,15 +78,27 @@ object Logic {
       }
       // 重複の恐れあり。binder内のtargetをチェック
       case _ => {
-        val binder = getBinder(binderId)
-        binder.getTargets.contains(existTargets.head) match {
-          // 重複あり
-          case true => {
-            result.errors = List(FieldError(null, <li>{errMsg}</li>))
-          }
-          // 重複がないので、アソシエーションの変更。
-          case false => {
-            result.changeContent="relation"
+        if(target.isInstanceOf[code.model.Album]) {
+/*          binder.getTargets.forall{ bsq => !bsq.getTarget2s.contains(existTargets.head)} match {
+            case false => {*/
+              result.errors = List(FieldError(null, <li>{errMsg}</li>))
+/*            }
+            // 重複がないので、アソシエーションの変更。
+            case true => {
+              result.changeContent="relation"
+            }
+          }*/
+        } else {
+          val binder = getBinder(binderId)
+          binder.getTargets.contains(existTargets.head) match {
+            // 重複あり
+            case true => {
+              result.errors = List(FieldError(null, <li>{errMsg}</li>))
+            }
+            // 重複がないので、アソシエーションの変更。
+            case false => {
+              result.changeContent="relation"
+            }
           }
         }
       }
