@@ -13,7 +13,16 @@ import SHtml._
 import net.liftweb.http.js.{JsCmd, JsCmds}
 import java.util.Date
 
+import java.net.URL
+import scala.util.parsing.combinator.RegexParsers
+
 class AlbumView {
+
+  var searchAlbumtitle = Util.paramGet("searchAlbumtitle") match {
+    case "0" => ""
+    case key => key
+  }
+
   def list(html: NodeSeq): NodeSeq = {
     def renderRow(): NodeSeq = {
       def reDraw() = JsCmds.Replace("all_albums",renderRow())
@@ -75,9 +84,25 @@ class AlbumView {
     doBind(from)
   }
 
+  def search(from : NodeSeq): NodeSeq = {
+
+    def doBind(from: NodeSeq): NodeSeq = {
+      var sel =
+        "name=searchAlbumtitle" #> SHtml.text(searchAlbumtitle, searchAlbumtitle = _) &
+        "type=submit" #> SHtml.onSubmitUnit(searchAlbum);
+      return sel(from)
+    }
+
+    def searchAlbum() {
+      S.redirectTo("/?searchAlbumtitle="+urlEncode(searchAlbumtitle))
+    }
+
+    doBind(from)
+  }
+
   
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
-    var albums:List[Album] = Album.findAll(OrderBy(Album.albumtitle, Ascending))
+    var albums:List[Album] = Album.findAll(Like(Album.albumtitle, searchAlbumtitle + "%"), OrderBy(Album.albumtitle, Ascending))
     var seq: Int = 0
     albums.flatMap(alb => {
       seq = seq + 1
