@@ -14,17 +14,21 @@
       <lift:Util.in>
         <h2>Welcome your Music collection!</h2>
         <form class="lift:AlbumView.add?form=post">
-          <label for="albumtitle">album title</label><br />
+          <label for="albumtitle">album title&nbsp&nbsp</label>
           <input name="albumtitle" id="albumtitle"><br />
-          <label for="artisname">artist name</label><br />
+          <label for="artisname">artist name</label>
           <input name="artistname"><br />
-          <label for="artistseq">artist seq</label><br />
-          <input name="artistseq"><br />
+          <label for="artistseq">artist seq&nbsp&nbsp&nbsp&nbsp</label>
+          <input name="artistseq">
           <input type="submit" value="Add Album!"/>
         </form>
+        <hr />
         <form class="lift:AlbumView.search?form=post">
-          <label for="searchAlbumtitle">search album</label><br />
-          <input name="searchAlbumtitle" id="searchAlbumtitle"><br />
+          <label>search filter</label><br />
+          <label for="searchAlbumtitle">album title</label>
+          <input name="searchAlbumtitle" id="searchAlbumtitle" size="10">
+          <label for="searchArtist">artist name</label>
+          <input name="searchArtist" id="searchArtist" size="10">
           <input type="submit" value="Search Album!"/>
         </form>
         <div>

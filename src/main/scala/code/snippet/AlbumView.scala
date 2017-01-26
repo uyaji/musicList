@@ -22,6 +22,10 @@ class AlbumView {
     case "0" => ""
     case key => key
   }
+  var searchArtist = Util.paramGet("searchArtist") match {
+    case "0" => ""
+    case key => key
+  }
 
   def list(html: NodeSeq): NodeSeq = {
     def renderRow(): NodeSeq = {
@@ -89,12 +93,13 @@ class AlbumView {
     def doBind(from: NodeSeq): NodeSeq = {
       var sel =
         "name=searchAlbumtitle" #> SHtml.text(searchAlbumtitle, searchAlbumtitle = _) &
+        "name=searchArtist" #> SHtml.text(searchArtist, searchArtist = _) &
         "type=submit" #> SHtml.onSubmitUnit(searchAlbum);
       return sel(from)
     }
 
     def searchAlbum() {
-      S.redirectTo("/?searchAlbumtitle="+urlEncode(searchAlbumtitle))
+      S.redirectTo("/?searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist))
     }
 
     doBind(from)
@@ -102,7 +107,21 @@ class AlbumView {
 
   
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
-    var albums:List[Album] = Album.findAll(Like(Album.albumtitle, searchAlbumtitle + "%"), OrderBy(Album.albumtitle, Ascending))
+    val albums: List[Album] = searchAlbumtitle match {
+      case "" => {
+        searchArtist match {
+//          case "" => Album.findAll(OrderBy(Album.albumtitle, Ascending))
+          case "" => Nil
+          case artist: String => Band.findAll(Like(Band.bandname, "%" + searchArtist + "%")).flatMap { bd => bd.getBandSeq}.flatMap { bsq => bsq.getAlbum}
+        }
+      }
+      case title: String => {
+        searchArtist match {
+          case "" => Album.findAll(Like(Album.albumtitle, "%" +searchAlbumtitle + "%"), OrderBy(Album.albumtitle, Ascending))
+          case artist: String => Album.findAll(Like(Album.albumtitle, searchAlbumtitle + "%"), OrderBy(Album.albumtitle, Ascending)).withFilter(alb => (alb.getBandSeq.getBand.bandname.get indexOf artist) >= 0).map(alb => alb)
+        }
+      }
+    }
     var seq: Int = 0
     albums.flatMap(alb => {
       seq = seq + 1

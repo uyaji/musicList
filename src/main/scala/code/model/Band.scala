@@ -16,6 +16,7 @@ class Band extends Binder with LongKeyedMapper[Band] with IdPK with OneToMany[Lo
 
   type SuitableTarget = BandSeq
   def getSingleton = Band
+  def getBandSeq: List[BandSeq] = BandSeq.findAll(By(BandSeq.band, id.get))
   override def getId = id.get
   override def getTargets = bandSeqs.toList
   override def getTarget2s = Nil
