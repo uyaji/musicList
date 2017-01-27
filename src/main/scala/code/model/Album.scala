@@ -3,12 +3,14 @@ package code.model
 import net.liftweb.mapper._
 import net.liftweb.util._
 import net.liftweb.common._
+import scala.math.Ordered
 
 object Album extends Album with LongKeyedMetaMapper[Album] {
   override def dbTableName = "albums"
 }
 
 class Album extends Binder with Target with LongKeyedMapper[Album] with IdPK with ManyToMany with OneToMany[Long, Album] {
+  import scala.math.Ordered._
   type SuitableTarget = Track
   def this(albumtitle: String) = {
     this()

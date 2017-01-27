@@ -107,12 +107,12 @@ class AlbumView {
 
   
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
+    import scala.math.Ordering.Implicits._
     val albums: List[Album] = searchAlbumtitle match {
       case "" => {
         searchArtist match {
-//          case "" => Album.findAll(OrderBy(Album.albumtitle, Ascending))
           case "" => Nil
-          case artist: String => Band.findAll(Like(Band.bandname, "%" + searchArtist + "%")).flatMap { bd => bd.getBandSeq}.flatMap { bsq => bsq.getAlbum}
+          case artist: String => Band.findAll(Like(Band.bandname, "%" + searchArtist + "%")).flatMap { bd => bd.getBandSeq}.flatMap { bsq => bsq.getAlbum}.sortWith((alb1, alb2) => alb1.albumtitle.get.compareToIgnoreCase(alb2.albumtitle.get) < 0)
         }
       }
       case title: String => {
