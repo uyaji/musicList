@@ -118,7 +118,7 @@ class AlbumView {
       case title: String => {
         searchArtist match {
           case "" => Album.findAll(Like(Album.albumtitle, "%" +searchAlbumtitle + "%"), OrderBy(Album.albumtitle, Ascending))
-          case artist: String => Album.findAll(Like(Album.albumtitle, searchAlbumtitle + "%"), OrderBy(Album.albumtitle, Ascending)).withFilter(alb => (alb.getBandSeq.getBand.bandname.get indexOf artist) >= 0).map(alb => alb)
+          case artist: String => Album.findAll(Like(Album.albumtitle, searchAlbumtitle + "%"), OrderBy(Album.albumtitle, Ascending)).withFilter(alb => (alb.getBandSeq.getBand.bandname.get.toUpperCase indexOf artist.toUpperCase) >= 0).map(alb => alb)
         }
       }
     }
