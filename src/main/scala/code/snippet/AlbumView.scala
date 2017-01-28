@@ -112,7 +112,7 @@ class AlbumView {
       case "" => {
         searchArtist match {
           case "" => Nil
-          case artist: String => Band.findAll(Like(Band.bandname, "%" + searchArtist + "%")).flatMap { bd => bd.getBandSeq}.flatMap { bsq => bsq.getAlbum}.sortWith((alb1, alb2) => alb1.albumtitle.get.compareToIgnoreCase(alb2.albumtitle.get) < 0)
+          case artist: String => Band.findAll(Like(Band.bandname, "%" + searchArtist + "%")).flatMap { bd => bd.getBandSeq}.flatMap { bsq => bsq.getAlbum}.sorted
         }
       }
       case title: String => {

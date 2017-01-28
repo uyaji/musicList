@@ -9,7 +9,7 @@ object Album extends Album with LongKeyedMetaMapper[Album] {
   override def dbTableName = "albums"
 }
 
-class Album extends Binder with Target with LongKeyedMapper[Album] with IdPK with ManyToMany with OneToMany[Long, Album] {
+class Album extends Binder with Target with LongKeyedMapper[Album] with IdPK with ManyToMany with OneToMany[Long, Album] with Ordered[Album] {
   import scala.math.Ordered._
   type SuitableTarget = Track
   def this(albumtitle: String) = {
@@ -17,6 +17,9 @@ class Album extends Binder with Target with LongKeyedMapper[Album] with IdPK wit
     this.albumtitle(albumtitle)
   }
  
+  def compare(that: Album) = {
+    albumtitle.get.compareToIgnoreCase(that.albumtitle.get)
+  }
   def getSingleton = Album
   override def getId = id.get
   override def getSeq = 0
