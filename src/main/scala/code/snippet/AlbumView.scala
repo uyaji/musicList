@@ -56,7 +56,7 @@ class AlbumView {
     }
     def albumProcess() {
       val errorMsg = "Can not register. Already exist Album. Please update"
-      val path = "/"
+      var path = "/?searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist)
       val regSeq = Util.isAllDigits(artistseq) match {
         case true => artistseq.toInt
         case _ => 1
@@ -72,6 +72,10 @@ class AlbumView {
           val msg = Process.update(Logic.updateTarget, (id, id2) => Album.findAll(By(Album.id, id2.toLong)).head, id => Band.findAll(By(Band.id, id.toLong)).head, key => Album.findAll(By(Album.albumtitle, key)), upload => false, name => Nil, albumtitle, regSeq, null, band, albumid, None, "updated " + albumtitle, errorMsg, "")
           S.error(msg)
         }
+      }
+      path = (searchAlbumtitle, searchArtist) match {
+        case ("", "") => "/?searchAlbumtitle=" + urlEncode(albumtitle) + "&searchArtist=" + urlEncode(artistname)
+        case _ => path
       }
       S.redirectTo(path)
     }
@@ -99,7 +103,9 @@ class AlbumView {
     }
 
     def searchAlbum() {
-      S.redirectTo("/?searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist))
+      S.redirectTo("/?searchAlbumtitle=" + urlEncode(searchAlbumtitle)
+      + "&searchArtist=" + urlEncode(searchArtist)
+      )
     }
 
     doBind(from)
@@ -126,7 +132,7 @@ class AlbumView {
     albums.flatMap(alb => {
       seq = seq + 1
       bind("album", html, AttrBindParam("id", alb.id.toString, "id"),
-                          "seq" -> <span>{link("/?albumid=" + alb.id.toString, () => (), Text(seq.toString))}</span>,
+                          "seq" -> <span>{link("/?albumid=" + alb.id.toString + "&searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist), () => (), Text(seq.toString))}</span>,
                           "albumtitle" -> <span>{link("track?albumid=" + alb.id.toString, () => (), Text(alb.albumtitle.get))}</span>,
                           "artistname" -> <span>{link("band?bandid="+ alb.getBandSeq().getBand().id.toString, () => (), Text(alb.getBandSeq().getBand().bandname.get))}</span>,
                           "artistseq" -> <span>{link("member?bandid="+ alb.getBandSeq().getBand().id.toString + "&seq=" + alb.getBandSeq().seq.toString, () => (), Text(alb.getBandSeq().seq.toString))}</span>
