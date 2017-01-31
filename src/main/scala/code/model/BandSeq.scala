@@ -55,5 +55,5 @@ class BandSeq extends Binder with Target with LongKeyedMapper[BandSeq] with IdPK
   object players extends MappedManyToMany(BandSeqPlayers, BandSeqPlayers.bandseq, BandSeqPlayers.player, Player, OrderBy(BandSeqPlayers.seq, Ascending))
   object band extends LongMappedMapper(this, Band)
   object bandseqPlayers extends MappedOneToMany(BandSeqPlayers, BandSeqPlayers.bandseq, OrderBy(BandSeqPlayers.seq, Ascending))
-  object albums extends MappedOneToMany(Album, Album.bandseq, OrderBy(Album.id, Ascending))
+  object albums extends MappedOneToMany(Album, Album.bandseq, OrderBy(Album.albumtitle, Ascending))
 }

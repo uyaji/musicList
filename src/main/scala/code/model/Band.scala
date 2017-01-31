@@ -30,5 +30,4 @@ class Band extends Binder with LongKeyedMapper[Band] with IdPK with OneToMany[Lo
   }
 
   object bandSeqs extends MappedOneToMany(BandSeq, BandSeq.band, OrderBy(BandSeq.seq, Ascending))
-//  object albums extends MappedOneToMany(Album, Album.band, OrderBy(Album.id, Ascending))
 }
