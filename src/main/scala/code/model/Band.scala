@@ -8,10 +8,13 @@ object Band extends Band with LongKeyedMetaMapper[Band] {
   override def dbTableName = "bands"
 }
 
-class Band extends Binder with LongKeyedMapper[Band] with IdPK with OneToMany[Long, Band] {
+class Band extends Binder with LongKeyedMapper[Band] with IdPK with OneToMany[Long, Band] with Ordered[Band] {
   def this(bandname: String) = {
     this()
     this.bandname(bandname)
+  }
+  def compare(that: Band) = {
+    bandname.get.compareToIgnoreCase(that.bandname.get)
   }
 
   type SuitableTarget = BandSeq

@@ -132,8 +132,9 @@ class AlbumView {
       case "" => albumsFilterTitle
       case artist: String => {
         albumsFilterTitle match {
-          case Nil => Band.findAll(Like(Band.bandname, "%" + searchArtist + "%")).flatMap { bd => bd.getBandSeq}.flatMap { bsq => bsq.getAlbum}.sorted
-          case albums: List[Album] => albums.withFilter(alb => (alb.getBandSeq.getBand.bandname.get.toUpperCase indexOf artist.toUpperCase) >= 0).map(alb => alb)
+//          case Nil => Band.findAll(Like(Band.bandname, "%" + searchArtist + "%")).flatMap { bd => bd.getBandSeq}.flatMap { bsq => bsq.getAlbum}.sorted
+          case Nil => Band.findAll(Like(Band.bandname, "%" + searchArtist + "%")).flatMap { bd => bd.getBandSeq}.flatMap { bsq => bsq.getAlbum}
+          case albums: List[Album] => albums.withFilter(alb => (alb.getBandSeq.getBand.bandname.get.toUpperCase indexOf artist.replace("%","").toUpperCase) >= 0).map(alb => alb)
           case _ => Nil
         }
       }
@@ -144,7 +145,7 @@ class AlbumView {
       case track: String => {
         albumsFilterArtist match {
           case Nil => Track.findAll(Like(Track.tracktitle, "%" + searchTrack + "%")).flatMap { trc => trc.albums }
-          case albums: List[Album] => albums.withFilter(alb => (alb.tracks.withFilter(trc => (trc.tracktitle.get.toUpperCase indexOf track.toUpperCase) >= 0).map(trc => trc).size > 0)).map(alb => alb)
+          case albums: List[Album] => albums.withFilter(alb => (alb.tracks.withFilter(trc => (trc.tracktitle.get.toUpperCase indexOf track.replace("%","").toUpperCase) >= 0).map(trc => trc).size > 0)).map(alb => alb)
           case _ => Nil
         }
       }
@@ -155,14 +156,14 @@ class AlbumView {
       case player: String => {
         albumsFilterTrack match {
           case Nil => Player.findAll(Like(Player.name, "%" + searchPlayer + "%")).flatMap { pl => pl.bandseqs}.flatMap { bsq => bsq.getAlbum}.sorted
-          case albums: List[Album] => albums.withFilter(alb => (alb.getBandSeq.players.withFilter(pl => (pl.name.get.toUpperCase indexOf player.toUpperCase) >= 0).map(trc => trc).size > 0)).map(alb => alb)
+          case albums: List[Album] => albums.withFilter(alb => (alb.getBandSeq.players.withFilter(pl => (pl.name.get.toUpperCase indexOf player.replace("%", "").toUpperCase) >= 0).map(trc => trc).size > 0)).map(alb => alb)
           case _ => Nil
         }
       }
       case _ => Nil
     }
     var seq: Int = 0
-    albums.distinct.flatMap(alb => {
+    albums.distinct.sorted.flatMap(alb => {
       seq = seq + 1
       bind ("album", html, AttrBindParam("id", alb.id.toString, "id"),
                           "seq" -> <span>{link("/?albumid=" + alb.id.toString + "&searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer), () => (), Text(seq.toString))}</span>,
