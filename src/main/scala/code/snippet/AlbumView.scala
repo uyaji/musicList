@@ -118,25 +118,34 @@ class AlbumView {
 
   
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
-    var albums: List[Album] = searchAlbumtitle match {
-      case "" => {
-        searchArtist match {
-          case "" => Nil
-          case artist: String => Band.findAll(Like(Band.bandname, "%" + searchArtist + "%")).flatMap { bd => bd.getBandSeq}.flatMap { bsq => bsq.getAlbum}.sorted
-//          case artist: String => Band.findAll(Like(Band.bandname, "%" + searchArtist + "%")).flatMap { bd => bd.getBandSeq}.flatMap { bsq => bsq.getAlbum}.sortWith{ (alb1, alb2) => alb1.albumtitle.get.compareToIgnoreCase(alb2.albumtitle.get) >= 0}
+    val albumsFilterTitle: List[Album] = searchAlbumtitle match {
+      case "" => Nil
+      case title: String => Album.findAll(Like(Album.albumtitle, "%" +searchAlbumtitle + "%"), OrderBy(Album.albumtitle, Ascending))
+      case _ => Nil
+    }
+    val albumsFilterArtist: List[Album] = searchArtist match {
+      case "" => albumsFilterTitle
+      case artist: String => {
+        albumsFilterTitle match {
+          case Nil => Band.findAll(Like(Band.bandname, "%" + searchArtist + "%")).flatMap { bd => bd.getBandSeq}.flatMap { bsq => bsq.getAlbum}.sorted
+          case albums: List[Album] => albums.withFilter(alb => (alb.getBandSeq.getBand.bandname.get.toUpperCase indexOf artist.toUpperCase) >= 0).map(alb => alb)
+          case _ => Nil
         }
       }
-      case title: String => {
-        searchArtist match {
-          case "" => Album.findAll(Like(Album.albumtitle, "%" +searchAlbumtitle + "%"), OrderBy(Album.albumtitle, Ascending))
-          case artist: String => Album.findAll(Like(Album.albumtitle, "%" + searchAlbumtitle + "%"), OrderBy(Album.albumtitle, Ascending)).withFilter(alb => (alb.getBandSeq.getBand.bandname.get.toUpperCase indexOf artist.toUpperCase) >= 0).map(alb => alb)
+      case _ => albumsFilterTitle
+    }
+    val albums = searchTrack match {
+      case "" => albumsFilterArtist
+      case track: String => {
+        albumsFilterArtist match {
+          case Nil => Track.findAll(Like(Track.tracktitle, "%" + searchTrack + "%")).flatMap { trc => trc.albums }
+          case albums: List[Album] => albums.withFilter(alb => (alb.tracks.withFilter(trc => (trc.tracktitle.get.toUpperCase indexOf track.toUpperCase) >= 0).map(trc => trc).size > 0)).map(alb => alb)
+          case _ => Nil
         }
       }
+      case _ => albumsFilterArtist
     }
-    albums = searchTrack match {
-      case "" => albums
-      case track: String => Track.findAll(Like(Track.tracktitle, "%" + searchTrack + "%")).flatMap { trc => trc.albums }
-    }
+
     var seq: Int = 0
     albums.flatMap(alb => {
       seq = seq + 1
