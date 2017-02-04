@@ -18,9 +18,7 @@ class Album extends Binder with Target with LongKeyedMapper[Album] with IdPK wit
   }
  
   def compare(that: Album) = {
-//    getBandSeq.getBand.bandname.get.compareToIgnoreCase(that.getBandSeq.getBand.bandname.get)
-    getBandSeq.getBand.bandname.get.compareToIgnoreCase(that.getBandSeq.getBand.bandname.get) +
-    albumtitle.get.compareToIgnoreCase(that.albumtitle.get)
+    (getBandSeq.getBand.bandname.get + albumtitle.get).compareToIgnoreCase(that.getBandSeq.getBand.bandname.get + that.albumtitle.get)
   }
   def getSingleton = Album
   override def getId = id.get
