@@ -14,6 +14,7 @@ import mapper._
 import code.model._
 import code.snippet._
 import net.liftmodules.JQueryModule
+import net.liftmodules.widgets.autocomplete.AutoComplete
 
 
 /**
@@ -89,6 +90,7 @@ class Boot {
     LiftRules.jsArtifacts = JQueryArtifacts
     JQueryModule.InitParam.JQuery=JQueryModule.JQuery191
     JQueryModule.init()
+    AutoComplete.init()
 
     //Show the spinny image when an Ajax call starts
     LiftRules.ajaxStart =

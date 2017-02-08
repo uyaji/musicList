@@ -7,6 +7,7 @@ import Helpers._
 import code.model._
 import code.logic._
 import net.liftweb.mapper._
+import net.liftweb.common._
 import net.liftweb.http._
 import S._
 import SHtml._
@@ -15,6 +16,8 @@ import java.util.Date
 
 import java.net.URL
 import scala.util.parsing.combinator.RegexParsers
+
+import net.liftmodules.widgets.autocomplete.AutoComplete
 
 class AlbumView {
 
@@ -91,6 +94,7 @@ class AlbumView {
     def doBind(from: NodeSeq): NodeSeq = {
       var sel =
         "name=albumtitle" #> SHtml.text(albumtitle, albumtitle = _) &
+//        "name=albumtitle" #> SHtml.select(List(("%", "%"), ("Let There Be Rock", "Let There Be Rock")), Empty, albumtitle = _) &
         "name=artistname" #> SHtml.text(artistname, artistname = _) &
         "name=artistseq"  #> SHtml.text(artistseq, artistseq = _) &
         "type=submit" #> SHtml.onSubmitUnit(albumProcess);
@@ -102,9 +106,17 @@ class AlbumView {
 
   def search(from : NodeSeq): NodeSeq = {
 
+    val titles = Album.findAll().map( alb => alb.albumtitle.get).toList
     def doBind(from: NodeSeq): NodeSeq = {
+/*      val choice = ("", "")::(("%", "%")::Album.findAll().map(alb =>(alb.albumtitle.get, alb.albumtitle.get)).toList)
       var sel =
-        "name=searchAlbumtitle" #> SHtml.text(searchAlbumtitle, searchAlbumtitle = _) &
+        "name=searchAlbumtitle" #> SHtml.select(choice, Empty, searchAlbumtitle = _) &*/
+      val default = ""
+      def suggest(value: String, limit: Int) =
+        titles.filter(_.toLowerCase.startsWith(value))
+      def submit(value: String): Unit = {searchAlbumtitle = value}
+      var sel =
+        "name=searchAlbumtitle" #> AutoComplete(default, suggest, submit) &
         "name=searchArtist" #> SHtml.text(searchArtist, searchArtist = _) &
         "name=searchTrack" #> SHtml.text(searchTrack, searchTrack = _) &
         "name=searchPlayer" #> SHtml.text(searchPlayer, searchPlayer = _) &
