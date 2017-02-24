@@ -94,6 +94,7 @@ class AlbumView {
     def doBind(from: NodeSeq): NodeSeq = {
       var sel =
         "name=albumtitle" #> SHtml.text(albumtitle, albumtitle = _) &
+//        "name=albumtitle" #> SHtml.select(List(("%", "%"), ("Let There Be Rock", "Let There Be Rock")), Empty, albumtitle = _) &
         "name=artistname" #> SHtml.text(artistname, artistname = _) &
         "name=artistseq"  #> SHtml.text(artistseq, artistseq = _) &
         "type=submit" #> SHtml.onSubmitUnit(albumProcess);
@@ -103,23 +104,20 @@ class AlbumView {
     doBind(from)
   }
 
-  def test = {
-    "type=submit" #> SHtml.onSubmitUnit(run);
-  }
-
-  def run() = {
-    var query = S.param("testAlbumtitle") match {
-      case Full(p) => p
-      case _ => ""
-    }
-    println("OKOK=" + query)
-    S.redirectTo("/")
-  }
-
   def search(from : NodeSeq): NodeSeq = {
+
+    val titles = "%" :: Album.findAll().map( alb => alb.albumtitle.get).toList
     def doBind(from: NodeSeq): NodeSeq = {
+/*      val choice = ("", "")::(("%", "%")::Album.findAll().map(alb =>(alb.albumtitle.get, alb.albumtitle.get)).toList)
       var sel =
-//        "name=searchAlbumtitle" #> SHtml.text(searchAlbumtitle, searchAlbumtitle = _) &
+        "name=searchAlbumtitle" #> SHtml.select(choice, Empty, searchAlbumtitle = _) &*/
+      val default = ""
+      def suggest(value: String, limit: Int) = {
+        titles.filter(_.toLowerCase.startsWith(value))
+      }
+      def submit(value: String): Unit = {searchAlbumtitle = value}
+      var sel =
+        "name=searchAlbumtitle" #> AutoComplete(default, suggest, submit) &
         "name=searchArtist" #> SHtml.text(searchArtist, searchArtist = _) &
         "name=searchTrack" #> SHtml.text(searchTrack, searchTrack = _) &
         "name=searchPlayer" #> SHtml.text(searchPlayer, searchPlayer = _) &
@@ -128,10 +126,6 @@ class AlbumView {
     }
 
     def searchAlbum() {
-      searchAlbumtitle = S.param("searchAlbumtitle") match {
-        case Full(title) => title.toString
-        case _ => ""
-      }
       S.redirectTo("/?searchAlbumtitle=" + urlEncode(searchAlbumtitle)
       + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer)
       )
@@ -223,4 +217,3 @@ class AlbumView {
   private def duplicateKeyCheck(album: Target, band: Binder):Boolean =
     !band.getTargets.forall(bseq => bseq.asInstanceOf[BandSeq].getTarget2s.forall(alb => alb.albumtitle != album.getName))
 }
-

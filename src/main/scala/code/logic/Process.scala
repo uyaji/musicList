@@ -21,7 +21,8 @@ object Process {
       case Nil => {
         target.validates match {
           case Nil => {
-//            target.save
+            // OneToManyの場合、この時点でtargetをsave
+            target.save
             generatedRelation match {
               case null => {
                 key match {
@@ -144,6 +145,11 @@ object Process {
             if(target.isInstanceOf[code.model.Album]) {
               existTargets.head.save
             }
+            scala.xml.XML.loadString("<li>" + msg + "</li>")
+          }
+          // OneToManyの場合、resultの戻り値はnullとなる。
+          case "" => {
+            target.save
             scala.xml.XML.loadString("<li>" + msg + "</li>")
           }
         }

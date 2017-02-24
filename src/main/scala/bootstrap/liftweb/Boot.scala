@@ -61,6 +61,8 @@ class Boot {
     LiftRules.statelessDispatch.append{
       case Req( "lob" :: id :: Nil, _, _ ) =>
         () => TrackDownload.download(id.toLong)
+      case Req( "suggest" :: key :: Nil, _, _ ) =>
+        () => Suggest.suggestion(key)
     }
     // where to search snippet
     LiftRules.addToPackages("code")
