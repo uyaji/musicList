@@ -68,7 +68,7 @@
           $('#searchAlbumtitle').autocomplete( {
             source: function( req, res ) {
               $.ajax({
-                url: "/suggest/" + encodeURIComponent(req.term),
+                url: "suggest/" + encodeURIComponent(req.term),
                 dataType: "json",
                 success: function( data ) {
                   res(data);
