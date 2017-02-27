@@ -26,9 +26,9 @@
         <form data-lift="AlbumView.search?form=post" class="lift:AlbumView.search?form=post">
           <label>search filter</label><br />
           <label for="searchAlbumtitle">album title</label>
-          <input name="searchAlbumtitle" class="search" type="text" size="10"/>
+          <input name="searchAlbumtitle" id="searchAlbumtitle" type="text" size="10"/>
           <label for="searchArtist">&nbsp&nbspartist name&nbsp&nbsp</label>
-          <input name="searchArtist" class="search" type="text" size="10"><br/>
+          <input name="searchArtist" id="searchArtist" size="10"><br/>
           <label for="searchTrack">track title&nbsp&nbsp</label>
           <input name="searchTrack" id="searchTrack" size="10">
           <label for="searchPlayer">&nbsp&nbspplayer name</label>
@@ -62,7 +62,23 @@
         <link type="text/css" href="css/jquery-ui.min.css" rel="stylesheet" />
         <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
         <script type="text/javascript" src="js/jquery-ui.min.js"></script>
-        <script type="text/javascript" src="js/suggest.js"></script>
+        <script type="text/javascript">
+        // <![CDATA[
+        $(function() {
+          $('#searchAlbumtitle').autocomplete( {
+            source: function( req, res ) {
+              $.ajax({
+                url: "suggest/" + encodeURIComponent(req.term),
+                dataType: "json",
+                success: function( data ) {
+                  res(data);
+                }
+              });
+            }
+            ,autoFocus:true,delay: 500,minLength: 0});
+        });
+        // ]]>
+        </script>
       </lift:Util.in>
     </div>
   </body>

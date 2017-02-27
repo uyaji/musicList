@@ -107,7 +107,7 @@ class AlbumView {
     val titles = Album.findAll().map( alb => alb.albumtitle.get).toList
     def doBind(from: NodeSeq): NodeSeq = {
       var sel =
-        "name=searchArtist" #> SHtml.text(searchArtist, searchArtist = _) &
+//        "name=searchArtist" #> SHtml.text(searchArtist, searchArtist = _) &
         "name=searchTrack" #> SHtml.text(searchTrack, searchTrack = _) &
         "name=searchPlayer" #> SHtml.text(searchPlayer, searchPlayer = _) &
         "type=submit" #> SHtml.onSubmitUnit(searchAlbum);
