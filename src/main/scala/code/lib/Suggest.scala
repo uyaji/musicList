@@ -10,11 +10,13 @@ import code.logic._
 
 object Suggest {
 
-  def suggestion(key: String, key2: String): Box[LiftResponse] = {
+  def suggestion(key: String, fieldName: String): Box[LiftResponse] = {
     implicit val formats = DefaultFormats
-    val titles = key2 match {
+    val titles = fieldName match {
       case "searchAlbumtitle" =>Album.findAll().map(a => a.albumtitle.get).toList
       case "searchArtist" =>Band.findAll().map(b=> b.bandname.get).toList
+      case "searchTrack" =>Track.findAll().map(t=> t.tracktitle.get).toList
+      case "searchPlayer" =>Player.findAll().map(p=> p.name.get).toList
       case _ => List()
     }
     val json = Extraction.decompose(titles.filter(_.toLowerCase.startsWith(key.toLowerCase)))
