@@ -107,7 +107,6 @@ class AlbumView {
     val titles = Album.findAll().map( alb => alb.albumtitle.get).toList
     def doBind(from: NodeSeq): NodeSeq = {
       var sel =
-//        "name=searchArtist" #> SHtml.text(searchArtist, searchArtist = _) &
         "name=searchTrack" #> SHtml.text(searchTrack, searchTrack = _) &
         "name=searchPlayer" #> SHtml.text(searchPlayer, searchPlayer = _) &
         "type=submit" #> SHtml.onSubmitUnit(searchAlbum);
@@ -115,10 +114,8 @@ class AlbumView {
     }
 
     def searchAlbum() {
-      searchAlbumtitle = S.param("searchAlbumtitle") match {
-        case Full(title) => title.toString
-        case _ => ""
-      }
+      searchAlbumtitle = Util.paramGet("searchAlbumtitle")
+      searchArtist = Util.paramGet("searchArtist")
       S.redirectTo("/?searchAlbumtitle=" + urlEncode(searchAlbumtitle)
       + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer)
       )
