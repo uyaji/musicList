@@ -44,7 +44,7 @@ class MemberView {
         "name=memberseq" #> SHtml.hidden( () => memberseq) &
         "name=bandseqplayerid" #> SHtml.hidden( () => bandseqplayerid) &
         "name=seq" #> SHtml.text( seq, seq = _) &
-        "name=name" #> SHtml.text( name, name = _) &
+        "name=name" #> SHtml.text( name, name = _, "class" -> "search column span-10") &
         "type=submit" #> SHtml.onSubmitUnit(process);
       return sel(form)
     }

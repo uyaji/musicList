@@ -22,7 +22,7 @@
           <label for="seq" class="column span-10">seq</label><br />
           <input type="text" name="seq" class="column span-10"/><br />
           <label for="name" class="column span-10">name</label><br />
-          <input type="text" name="name" class="column span-10"/><br />
+          <input id="membername" type="text" name="name" /><br />
           <input type="submit" value="Add member!" style="margin-top:5px;"/>
         </form>
         <div>
@@ -43,6 +43,10 @@
             </tbody>
           </table>
         </div>
+        <link type="text/css" href="css/jquery-ui.min.css" rel="stylesheet" />
+        <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+        <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="js/suggest.js"></script>
       </lift:Util.in>
     </div>
   </body>

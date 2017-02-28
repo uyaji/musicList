@@ -16,7 +16,7 @@ object Suggest {
       case "searchAlbumtitle" =>Album.findAll().map(a => a.albumtitle.get).toList
       case "searchArtist" | "artistname" =>Band.findAll().map(b=> b.bandname.get).toList
       case "searchTrack" =>Track.findAll().map(t=> t.tracktitle.get).toList
-      case "searchPlayer" =>Player.findAll().map(p=> p.name.get).toList
+      case "searchPlayer" | "membername" =>Player.findAll().map(p=> p.name.get).toList
       case _ => List()
     }
     val json = Extraction.decompose(titles.filter(_.toLowerCase.startsWith(key.toLowerCase)))
