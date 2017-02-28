@@ -17,7 +17,7 @@
           <label for="albumtitle">album title&nbsp&nbsp</label>
           <input name="albumtitle" id="albumtitle"><br />
           <label for="artisname">artist name</label>
-          <input name="artistname"><br />
+          <input name="artistname" id="artistname"><br />
           <label for="artistseq">artist seq&nbsp&nbsp&nbsp&nbsp</label>
           <input name="artistseq">
           <input type="submit" value="Add Album!"/>
@@ -26,13 +26,13 @@
         <form data-lift="AlbumView.search?form=post" class="lift:AlbumView.search?form=post">
           <label>search filter</label><br />
           <label for="searchAlbumtitle">album title</label>
-          <input name="searchAlbumtitle" class="search" type="text" size="10"/>
+          <input name="searchAlbumtitle" id="searchAlbumtitle" size="10"/>
           <label for="searchArtist">&nbsp&nbspartist name&nbsp&nbsp</label>
-          <input name="searchArtist" class="search" type="text" size="10"><br/>
+          <input name="searchArtist" id="searchArtist" size="10"><br/>
           <label for="searchTrack">track title&nbsp&nbsp</label>
-          <input name="searchTrack" class="search" type="text" size="10">
+          <input name="searchTrack" id="searchTrack" size="10">
           <label for="searchPlayer">&nbsp&nbspplayer name</label>
-          <input name="searchPlayer" class="search" type="text" size="10">
+          <input name="searchPlayer" id="searchPlayer" size="10">
           <input type="submit" value="Search Album!"/>
         </form>
         <div>

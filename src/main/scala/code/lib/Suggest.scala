@@ -15,6 +15,7 @@ object Suggest {
     val titles = fieldName match {
       case "searchAlbumtitle" =>Album.findAll().map(a => a.albumtitle.get).toList
       case "searchArtist" =>Band.findAll().map(b=> b.bandname.get).toList
+      case "artistname" =>Band.findAll().map(b=> b.bandname.get).toList
       case "searchTrack" =>Track.findAll().map(t=> t.tracktitle.get).toList
       case "searchPlayer" =>Player.findAll().map(p=> p.name.get).toList
       case _ => List()

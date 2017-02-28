@@ -93,7 +93,7 @@ class AlbumView {
       var sel =
         "name=albumtitle" #> SHtml.text(albumtitle, albumtitle = _) &
 //        "name=albumtitle" #> SHtml.select(List(("%", "%"), ("Let There Be Rock", "Let There Be Rock")), Empty, albumtitle = _) &
-        "name=artistname" #> SHtml.text(artistname, artistname = _) &
+        "name=artistname" #> SHtml.text(artistname, artistname = _, "class" -> "search") &
         "name=artistseq"  #> SHtml.text(artistseq, artistseq = _) &
         "type=submit" #> SHtml.onSubmitUnit(albumProcess);
       return sel(from)
@@ -107,15 +107,15 @@ class AlbumView {
     val titles = Album.findAll().map( alb => alb.albumtitle.get).toList
     def doBind(from: NodeSeq): NodeSeq = {
       var sel =
+        "name=searchAlbumtitle" #> SHtml.text(searchAlbumtitle, searchAlbumtitle = _, "class" -> "search") &
+        "name=searchArtist" #> SHtml.text(searchArtist, searchArtist = _, "class" -> "search") &
+        "name=searchTrack" #> SHtml.text(searchTrack, searchTrack = _, "class" -> "search") &
+        "name=searchPlayer" #> SHtml.text(searchPlayer, searchPlayer = _, "class" -> "search") &
         "type=submit" #> SHtml.onSubmitUnit(searchAlbum);
       return sel(from)
     }
 
     def searchAlbum() {
-      searchAlbumtitle = Util.paramGet("searchAlbumtitle")
-      searchArtist = Util.paramGet("searchArtist")
-      searchTrack = Util.paramGet("searchTrack")
-      searchPlayer = Util.paramGet("searchPlayer")
       S.redirectTo("/?searchAlbumtitle=" + urlEncode(searchAlbumtitle)
       + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer)
       )

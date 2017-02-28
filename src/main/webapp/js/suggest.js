@@ -2,7 +2,7 @@ $(function() {
   $('.search').autocomplete( {
     source: function( req, res ) {
       $.ajax({
-        url: "suggest/" + encodeURIComponent(req.term) + "/" + this.element.attr("name"),
+        url: "suggest/" + encodeURIComponent(req.term) + "/" + this.element.attr("id"),
         dataType: "json",
         success: function( data ) {
           res(data);
