@@ -64,6 +64,7 @@ class AlbumView {
       }
     }
     def albumProcess() {
+      artistseq = Util.paramGet("artistseq")
       val errorMsg = "Can not register. Already exist Album. Please update"
       var path = "/?searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer)
       val regSeq = Util.isAllDigits(artistseq) match {
@@ -94,7 +95,7 @@ class AlbumView {
         "name=albumtitle" #> SHtml.text(albumtitle, albumtitle = _) &
 //        "name=albumtitle" #> SHtml.select(List(("%", "%"), ("Let There Be Rock", "Let There Be Rock")), Empty, albumtitle = _) &
         "name=artistname" #> SHtml.text(artistname, artistname = _, "class" -> "search") &
-        "name=artistseq"  #> SHtml.text(artistseq, artistseq = _) &
+//        "name=artistseq"  #> SHtml.text(artistseq, artistseq = _) &
         "type=submit" #> SHtml.onSubmitUnit(albumProcess);
       return sel(from)
     }
@@ -104,7 +105,6 @@ class AlbumView {
 
   def search(from : NodeSeq): NodeSeq = {
 
-    val titles = Album.findAll().map( alb => alb.albumtitle.get).toList
     def doBind(from: NodeSeq): NodeSeq = {
       var sel =
         "name=searchAlbumtitle" #> SHtml.text(searchAlbumtitle, searchAlbumtitle = _, "class" -> "search") &

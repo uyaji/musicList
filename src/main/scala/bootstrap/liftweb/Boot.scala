@@ -62,6 +62,9 @@ class Boot {
         () => TrackDownload.download(id.toLong)
       case Req( "suggest" :: key :: key2 :: Nil, _, _ ) =>
         () => Suggest.suggestion(key, key2)
+      case Req( "select" :: key :: Nil, _, _ ) =>
+        () => Select.rtnOptionList(key)
+
     }
     // where to search snippet
     LiftRules.addToPackages("code")
