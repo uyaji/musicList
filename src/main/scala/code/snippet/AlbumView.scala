@@ -64,9 +64,9 @@ class AlbumView {
       }
     }
     def albumProcess() {
-      artistseq = artistseq match {
-        case "" => Util.paramGet("artistseq")
-        case _ => artistseq
+      artistseq = Util.paramGet("artistseq") match {
+        case "0" => artistseq
+        case _ => Util.paramGet("artistseq")
       }
       val errorMsg = "Can not register. Already exist Album. Please update"
       var path = "/?searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer)
@@ -94,12 +94,28 @@ class AlbumView {
     }
 
     def doBind(from: NodeSeq): NodeSeq = {
-      var sel =
-        "name=albumtitle" #> SHtml.text(albumtitle, albumtitle = _) &
-//        "name=albumtitle" #> SHtml.select(List(("%", "%"), ("Let There Be Rock", "Let There Be Rock")), Empty, albumtitle = _) &
-        "name=artistname" #> SHtml.text(artistname, artistname = _, "class" -> "search") &
-        "name=artistseq"  #> SHtml.text(artistseq, artistseq = _) &
-        "type=submit" #> SHtml.onSubmitUnit(albumProcess);
+      val options: List[(String, String)] = band match {
+        case null => List(("",""))
+        case _ => band.bandSeqs.map { bs => (bs.seq.get.toString, bs.seq.get.toString) }.toList
+      }
+      val default = band match {
+        case null => Empty
+        case _ => Full(bandseq.seq.get.toString)
+      }
+      var sel = bandseq match {
+        case null => {
+          "name=albumtitle" #> SHtml.text(albumtitle, albumtitle = _) &
+          "name=artistname" #> SHtml.text(artistname, artistname = _, "class" -> "search") &
+          "name=artistseq"  #> SHtml.text(artistseq, artistseq = _) &
+          "type=submit" #> SHtml.onSubmitUnit(albumProcess);
+        }
+        case _ => {
+          "name=albumtitle" #> SHtml.text(albumtitle, albumtitle = _) &
+          "name=artistname" #> SHtml.text(artistname, artistname = _, "class" -> "search") &
+          "name=artistseq"  #> SHtml.select(options, default, artistseq = _) &
+          "type=submit" #> SHtml.onSubmitUnit(albumProcess);
+        }
+      }
       return sel(from)
     }
 
