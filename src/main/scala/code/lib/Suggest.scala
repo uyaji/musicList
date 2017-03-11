@@ -1,5 +1,6 @@
 package code.lib
 
+import scala.collection.mutable._
 import scala.xml.NodeSeq
 import net.liftweb.util.Helpers._
 import net.liftweb.common._
@@ -13,12 +14,22 @@ object Suggest {
     implicit val formats = DefaultFormats
     val titles = fieldName match {
       case "searchAlbumtitle" =>Album.findAll().map(a => a.albumtitle.get).toList
-      case "searchArtist" | "artistname" =>Band.findAll().map(b=> b.bandname.get).toList
+      case "searchArtist" | "artistname" => {
+        val newTitles = new ListBuffer[BandJson]()
+        for(band <- Band.findAll().filter(_.bandname.get.toLowerCase.startsWith(key.toLowerCase))) {
+          val bandJson = BandJson(band.bandname.get, band.bandname.get, band.id.get)
+          newTitles += bandJson
+        }
+          newTitles.sortWith(_.label < _.label)
+      }
       case "searchTrack" =>Track.findAll().map(t=> t.tracktitle.get).toList
       case "searchPlayer" | "membername" =>Player.findAll().map(p=> p.name.get).toList
       case _ => List()
     }
-    val json = Extraction.decompose(titles.filter(_.toLowerCase.startsWith(key.toLowerCase)))
+    val json = fieldName match {
+      case "searchArtist" | "artistname" => parse(Serialization.write(titles.asInstanceOf[ListBuffer[BandJson]]))
+      case _ => Extraction.decompose(titles.asInstanceOf[List[String]].filter(_.toLowerCase.startsWith(key.toLowerCase)))
+    }
     val headerContentType = "Content-Type"
     val headerJsonContentValue = "application/json"
     val jsonHeader = List((headerContentType, headerJsonContentValue))
@@ -27,3 +38,5 @@ object Suggest {
   }
 
 }
+
+case class BandJson(label: String, value: String, id: Long)

@@ -12,7 +12,7 @@ object Select {
 
   def rtnOptionList(key: String): Box[LiftResponse] = {
     implicit val formats = DefaultFormats
-    val options = Band.findAll(By(Band.bandname, key)).head.bandSeqs.map(bs => bs.seq.get).toList
+    val options = Band.findAll(By(Band.id, key.toLong)).head.bandSeqs.map(bs => bs.seq.get).toList
     val json = Extraction.decompose(options)
     val headerContentType = "Content-Type"
     val headerJsonContentValue = "application/json"
