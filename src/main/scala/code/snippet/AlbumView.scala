@@ -192,7 +192,8 @@ class AlbumView {
                           "artistname" -> <span>{link("band?bandid="+ alb.getBandSeq().getBand().id.toString, () => (), Text(alb.getBandSeq().getBand().bandname.get))}</span>,
                           "artistseq" -> <span>{link("member?bandid="+ alb.getBandSeq().getBand().id.toString + "&seq=" + alb.getBandSeq().seq.toString, () => (), Text(alb.getBandSeq().seq.toString))}</span>,
                           "tracktitle" -> <span>{Text(if(searchTrack.equals("")) "" else alb.tracks.withFilter(trc => (trc.tracktitle.get.toUpperCase indexOf searchTrack.replace("%","").toUpperCase) >= 0).map(trc =>trc).toList.head.tracktitle.get)}</span>,
-                          "player" -> <span>{Text(if(searchPlayer.equals("")) "" else alb.getBandSeq.players.withFilter(pl => (pl.name.get.toUpperCase indexOf searchPlayer.replace("%","").toUpperCase) >= 0).map(pl =>pl).toList.head.name.get)}</span>
+                          "player" -> <span>{Text(if(searchPlayer.equals("")) "" else alb.getBandSeq.players.withFilter(pl => (pl.name.get.toUpperCase indexOf searchPlayer.replace("%","").toUpperCase) >= 0).map(pl =>pl).toList.head.name.get)}</span>,
+                          "players" -> <span class="players">{Text(if(searchPlayer.equals("")) "" else { if(alb.getBandSeq.players.withFilter(pl => (pl.name.get.toUpperCase indexOf searchPlayer.replace("%","").toUpperCase) >= 0).map(pl => pl).toList.size>1) "+" else ""})}</span>
       )
     })
   }          

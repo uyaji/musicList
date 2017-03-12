@@ -64,6 +64,8 @@ class Boot {
         () => Suggest.suggestion(key, key2)
       case Req( "select" :: key :: Nil, _, _ ) =>
         () => Select.rtnOptionList(key)
+      case Req( "selectPlayers" :: key1 :: key2 :: Nil, _, _ ) =>
+        () => Select.rtnPlayerList(key1, key2)
 
     }
     // where to search snippet
