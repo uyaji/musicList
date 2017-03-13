@@ -66,6 +66,8 @@ class Boot {
         () => Select.rtnOptionList(key)
       case Req( "selectPlayers" :: key1 :: key2 :: Nil, _, _ ) =>
         () => Select.rtnPlayerList(key1, key2)
+      case Req( "selectTracks" :: key1 :: key2 :: Nil, _, _ ) =>
+        () => Select.rtnTrackList(key1, key2)
 
     }
     // where to search snippet
