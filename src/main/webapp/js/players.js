@@ -1,4 +1,4 @@
-$('.players').hover(function() {
+$('.players').hover(function () {
   $.ajax({
     url : "selectPlayers/" + $(this).parent().parent().attr('id') + "/" + $('#searchPlayer').val(),
     dataType: "json",
@@ -7,7 +7,6 @@ $('.players').hover(function() {
       datas.forEach( function( data ) {
         $(".inner").append(data + "<br/>");
       });
-      $(".inner").append('<a href="" class="modalClose">Close</a>');
       var navClass = $(".modalOpen").attr("class"),
       href = $(".modalOpen").attr("href");
             
@@ -16,11 +15,9 @@ $('.players').hover(function() {
       return false;
     }
   });},
-  function(){}
+  function () {
+    $(".modalClose").parents(".modal").fadeOut();
+    $(".modalOpen").removeClass("open");
+    return false;
+  }
 );
-
-$(".modalClose").click(function(){
-  $(this).parents(".modal").fadeOut();
-  $(".modalOpen").removeClass("open");
-  return false;
-});

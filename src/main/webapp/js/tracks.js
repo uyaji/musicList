@@ -7,7 +7,6 @@ $('.tracktitles').hover(function() {
       datas.forEach( function( data ) {
         $(".inner").append(data + "<br/>");
       });
-      $(".inner").append('<a href="" class="modalClose">Close</a>');
       var navClass = $(".modalOpen").attr("class"),
       href = $(".modalOpen").attr("href");
             
@@ -16,5 +15,9 @@ $('.tracktitles').hover(function() {
       return false;
     }
   });},
-  function(){}
+  function(){
+    $(".modalClose").parents(".modal").fadeOut();
+    $(".modalOpen").removeClass("open");
+    return false;
+  }
 );
