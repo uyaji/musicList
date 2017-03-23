@@ -5,7 +5,7 @@ import net.liftweb.util._
 import net.liftweb.common._
 import java.util.Date
 
-object BandSeq extends BandSeq with LongKeyedMetaMapper[BandSeq] {
+object BandSeq extends BandSeq with LongKeyedMetaMapper[BandSeq] with CRUDify[Long, BandSeq] {
   override def dbTableName = "bandseqs"
 }
 

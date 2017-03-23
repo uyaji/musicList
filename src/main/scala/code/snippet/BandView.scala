@@ -1,6 +1,7 @@
 package code.snippet
 
 import scala.xml.{NodeSeq, Text}
+import net.liftweb._
 import net.liftweb.common._
 import net.liftweb.util._
 import Helpers._
@@ -15,7 +16,7 @@ import code.logic._
 import java.util.Date
 import java.text.SimpleDateFormat
 
-class BandView {
+class BandView extends PaginatorSnippet[BandSeq] {
   val bandid = Util.paramGet("bandid")
   val band = Band.findAll(By(Band.id, bandid.toLong)).head
   var initSeq = Util.paramGet("seq")
@@ -29,9 +30,19 @@ class BandView {
   var startat = bandSeq.bandSeqStartAt.get
   var endat = bandSeq.bandSeqEndAt.get
 
+  override val itemsPerPage = 5
+  override def pageUrl(offset: Long): String = appendParams( super.pageUrl(offset), List("bandid" -> bandid))
+  override def count = BandSeq.findAll(By(BandSeq.band, bandid.toLong)).size
+  override def page = BandSeq.findAll(By(BandSeq.band, bandid.toLong), OrderBy(BandSeq.seq, Ascending), StartAt(curPage * itemsPerPage), MaxRows(itemsPerPage))
+  override def prevXml: NodeSeq = Text(?("<"))
+  override def nextXml: NodeSeq = Text(?(">"))
+  override def firstXml: NodeSeq = Text(?("<<"))
+  override def lastXml: NodeSeq = Text(?(">>"))
+  override def currentXml: NodeSeq = Text("Displaying records " + (first+1) + "-" + (first+itemsPerPage min count) + " of  "+count)
+
   def list(html: NodeSeq): NodeSeq = {
     def renderRow(): NodeSeq = {
-      def reDraw() = JsCmds.Replace("bad_history", renderRow())
+      def reDraw() = JsCmds.Replace("band_history", renderRow())
       var render = "#band_history * " #>((n: NodeSeq) => doList(reDraw)(n))
       render(html)
     }
@@ -86,9 +97,8 @@ class BandView {
 
   private 
     def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
-//      var bandseqs: List[BandSeq] = BandSeq.findAll(By(BandSeq.band, bandid.toLong), OrderBy(BandSeq.seq, Ascending))
       val seqSize = band.bandSeqs.size
-      band.bandSeqs.flatMap(bds =>
+      page.flatMap(bds =>
         bds.seq.equals(seqSize) match {
           case true => relationNonExisti(findAlbum)(bds.id.get) && relationNonExisti(findBandSeqPlayers)(bds.id.get) match {
             case true => 
