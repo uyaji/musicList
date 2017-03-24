@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat
 
 class BandView extends PaginatorSnippet[BandSeq] {
   val bandid = Util.paramGet("bandid")
+  val offset = Util.paramGet("offset")
   val band = Band.findAll(By(Band.id, bandid.toLong)).head
   var initSeq = Util.paramGet("seq")
   var seq = Util.generateSeq(band.bandSeqs.size,
@@ -80,7 +81,7 @@ class BandView extends PaginatorSnippet[BandSeq] {
 
   def registerSeq() {
     val msg = "Can not register.Already exsist Band Seq. Please update"
-    val path = "/band?bandid=" + bandid
+    val path = "/band?bandid=" + bandid + "&offset=" + offset
     val process = Logic.select(duplicateSeqCheck, _==_ )(bandid.toLong, initSeq.toLong, initSeq.toLong, msg, path)
     process match {
       case "add" => {
@@ -104,16 +105,16 @@ class BandView extends PaginatorSnippet[BandSeq] {
             case true => 
                           bind("band", html,
                           "seq" -> <span>{
-                             link("band?bandid=" + Util.paramGet("bandid") + "&seq=" + bds.seq.toString , () => (), Text(bds.seq.get.toString))
+                             link("band?bandid=" + Util.paramGet("bandid") + "&seq=" + bds.seq.toString + "&offset=" + offset , () => (), Text(bds.seq.get.toString))
                           }</span>,
                           "startat" -> <span>{link("member?bandid=" + bds.band.toString + "&seq=" + bds.seq.toString, () => (), Text(bds.bandSeqStartAt.get.toString.substring(0,4)))}</span>,
                           "endat" -> <span>{bds.bandSeqEndAt.get.toString.substring(0, 4)}</span>,
-                          "delete" -> <span>{link("band?bandid=" + bandid, () => delete(bandid.toLong, bds.seq.get), Text("delete"))}</span>
+                          "delete" -> <span>{link("band?bandid=" + Util.paramGet("bandid") + "&offset=" + offset , () => delete(bandid.toLong, bds.seq.get), Text("delete"))}</span>
                           )
             case _ => 
                           bind("band", html,
                           "seq" -> <span>{
-                             link("band?bandid=" + Util.paramGet("bandid") + "&seq=" + bds.seq.toString , () => (), Text(bds.seq.get.toString))
+                             link("band?bandid=" + Util.paramGet("bandid") + "&seq=" + bds.seq.toString + "&offset=" + offset , () => (), Text(bds.seq.get.toString))
                           }</span>,
                           "startat" -> <span>{link("member?bandid=" + bds.band.toString + "&seq=" + bds.seq.toString, () => (), Text(bds.bandSeqStartAt.get.toString.substring(0,4)))}</span>,
                           "endat" -> <span>{bds.bandSeqEndAt.get.toString.substring(0, 4)}</span>,
@@ -123,7 +124,7 @@ class BandView extends PaginatorSnippet[BandSeq] {
           case _ => 
                           bind("band", html,
                           "seq" -> <span>{
-                             link("band?bandid=" + Util.paramGet("bandid") + "&seq=" + bds.seq.toString , () => (), Text(bds.seq.get.toString))
+                             link("band?bandid=" + Util.paramGet("bandid") + "&seq=" + bds.seq.toString + "&offset=" + offset , () => (), Text(bds.seq.get.toString))
                           }</span>,
                           "startat" -> <span>{link("member?bandid=" + bds.band.toString + "&seq=" + bds.seq.toString, () => (), Text(bds.bandSeqStartAt.get.toString.substring(0,4)))}</span>,
                           "endat" -> <span>{bds.bandSeqEndAt.get.toString.substring(0, 4)}</span>,
