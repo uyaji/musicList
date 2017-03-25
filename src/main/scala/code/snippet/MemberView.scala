@@ -11,13 +11,20 @@ import SHtml._
 import code.model._
 import code.logic._
 
-class MemberView {
+class MemberView extends PaginatorSnippet[BandSeqPlayers] {
   val bandid = Util.paramGet("bandid")
   val bandseq = Util.paramGet("seq")
+  val offset = Util.paramGet("offset")
   val memberseq = Util.paramGet("memberseq")
   val bandseqplayerid = Util.paramGet("bandseqplayerid")
   val band = Band.findAll(By(Band.id, bandid.toLong)).head
-  val bandSeq = band.bandSeqs.filter{ bs => bs.seq == bandseq.toLong }.head
+  val bandSeq = BandSeq.findAll(By(BandSeq.band, bandid.toLong), By(BandSeq.seq, bandseq.toInt)).head
+
+  override val itemsPerPage = 5
+  override def pageUrl(offset: Long): String = appendParams( super.pageUrl(offset), List("bandid" -> bandid, "seq" -> bandseq))
+  override def count = BandSeqPlayers.findAll(By(BandSeqPlayers.bandseq, bandSeq.id.get)).size
+  override def page = BandSeqPlayers.findAll(By(BandSeqPlayers.bandseq, bandSeq.id.get), OrderBy(BandSeqPlayers.seq, Ascending), StartAt(curPage * itemsPerPage), MaxRows(itemsPerPage))
+
   var name: String = memberseq match {
                case "0" => ""
                case _   => bandSeq.bandseqPlayers.filter{bsp => bsp.seq == memberseq.toLong}.head.getPlayer.name.get
@@ -54,7 +61,7 @@ class MemberView {
   def process() {
     try {
       val errMsg = "Can not register.Already exsist member. Please update"
-      val path = "/member?bandid=" + bandid + "&seq=" + bandseq
+      val path = "/member?bandid=" + bandid + "&seq=" + bandseq + "&offset=" +offset
       val addMsg = "Added member " + name
       val updateMsg = "updated member " + name
       val errMsgMember = "Duplicate member!"
@@ -79,19 +86,23 @@ class MemberView {
 
   private
     def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
-      bandSeq.players.flatMap(pl => {
-        val bsp = pl.bandSeqPlayers.filter{bsp => bsp.bandseq.get.equals(bandSeq.id.get)}
-        val memberseq = bsp.isEmpty match {
-          case true => "0"
-          case false => bsp.head.seq.toString
+      def prevXml: NodeSeq = Text(?("<"))
+      def nextXml: NodeSeq = Text(?(">"))
+      def firstXml: NodeSeq = Text(?("<<"))
+      def lastXml: NodeSeq = Text(?(">>"))
+      def currentXml: NodeSeq = Text("Displaying records " + (first+1) + "-" + (first+itemsPerPage min count) + " of  " + count)
+      page.flatMap(bsp => {
+        val memberseq = bsp match {
+          case null => "0"
+          case _ => bsp.seq.toString
         }
-        val bandseqplayerid: String = pl.bandSeqPlayers.filter{bsp => bsp.bandseq == bandSeq.id.get}.head.id.get.toString
+        val bandseqplayerid: String = bsp.id.get.toString
         bind("member", html,
           "seq" -> <span>{
-            link("member?bandid=" + bandid + "&seq=" + bandseq + "&memberseq=" + memberseq + "&bandseqplayerid=" + bandseqplayerid, () => (), Text(memberseq))
+            link("member?bandid=" + bandid + "&seq=" + bandseq + "&memberseq=" + memberseq + "&bandseqplayerid=" + bandseqplayerid + "&offset=" + offset, () => (), Text(memberseq))
           }</span>,
-          "name" -> <span>{pl.name}</span>,
-          "delete" -> <span>{link("member?bandid=" + bandid + "&seq=" + bandseq, () => delete(bandSeq.id.get, pl.id.get), Text("delete"))}</span>
+          "name" -> <span>{Player.findAll(By(Player.id, bsp.player.get)).head.name}</span>,
+          "delete" -> <span>{link("member?bandid=" + bandid + "&seq=" + bandseq + "&offset=" + offset, () => delete(bandSeq.id.get, bsp.player.get), Text("delete"))}</span>
         )
       })
     }

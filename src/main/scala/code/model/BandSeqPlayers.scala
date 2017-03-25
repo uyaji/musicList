@@ -4,7 +4,7 @@ import net.liftweb.mapper._
 import net.liftweb.util._
 import net.liftweb.common._
 
-object BandSeqPlayers extends BandSeqPlayers with LongKeyedMetaMapper[BandSeqPlayers] 
+object BandSeqPlayers extends BandSeqPlayers with LongKeyedMetaMapper[BandSeqPlayers] with CRUDify[Long, BandSeqPlayers]
 
 class BandSeqPlayers extends Relation with LongKeyedMapper[BandSeqPlayers] with IdPK with OneToMany[Long, BandSeqPlayers] {
   def getSingleton = BandSeqPlayers

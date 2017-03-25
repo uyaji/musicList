@@ -35,11 +35,6 @@ class BandView extends PaginatorSnippet[BandSeq] {
   override def pageUrl(offset: Long): String = appendParams( super.pageUrl(offset), List("bandid" -> bandid))
   override def count = BandSeq.findAll(By(BandSeq.band, bandid.toLong)).size
   override def page = BandSeq.findAll(By(BandSeq.band, bandid.toLong), OrderBy(BandSeq.seq, Ascending), StartAt(curPage * itemsPerPage), MaxRows(itemsPerPage))
-  override def prevXml: NodeSeq = Text(?("<"))
-  override def nextXml: NodeSeq = Text(?(">"))
-  override def firstXml: NodeSeq = Text(?("<<"))
-  override def lastXml: NodeSeq = Text(?(">>"))
-  override def currentXml: NodeSeq = Text("Displaying records " + (first+1) + "-" + (first+itemsPerPage min count) + " of  "+count)
 
   def list(html: NodeSeq): NodeSeq = {
     def renderRow(): NodeSeq = {
@@ -98,6 +93,11 @@ class BandView extends PaginatorSnippet[BandSeq] {
 
   private 
     def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
+      def prevXml: NodeSeq = Text(?("<"))
+      def nextXml: NodeSeq = Text(?(">"))
+      def firstXml: NodeSeq = Text(?("<<"))
+      def lastXml: NodeSeq = Text(?(">>"))
+      def currentXml: NodeSeq = Text("Displaying records " + (first+1) + "-" + (first+itemsPerPage min count) + " of  " + count)
       val seqSize = band.bandSeqs.size
       page.flatMap(bds =>
         bds.seq.equals(seqSize) match {
