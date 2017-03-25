@@ -14,8 +14,9 @@ import S._
 import SHtml._
 import net.liftweb.http.js.{JsCmd, JsCmds}
 
-class TrackView {
+class TrackView extends PaginatorSnippet[AlbumTracks] {
   val albumid = Util.paramGet("albumid")
+  val offset = Util.paramGet("offset")
   val album = Album.findAll(By(Album.id, albumid.toLong)).head
   var seq = Util.generateSeq(album.albumTracks.size, 
               () => album.albumTracks.reduceLeft((at1, at2) => if(at1.seq.get > at2.seq.get) at1 else at2).seq.get + 1,
@@ -27,6 +28,12 @@ class TrackView {
                    }
   var upload: Box[FileParamHolder] = Empty
   val id = 0
+
+  override val itemsPerPage = 5
+  override def pageUrl(offset: Long): String = appendParams( super.pageUrl(offset), List("albumid" -> albumid))
+  override def count = AlbumTracks.findAll(By(AlbumTracks.album, album.id.get)).size
+  override def page = AlbumTracks.findAll(By(AlbumTracks.album, album.id.get), OrderBy(AlbumTracks.seq, Ascending), StartAt(curPage * itemsPerPage), MaxRows(itemsPerPage))
+
   def list(html: NodeSeq): NodeSeq = {
     def renderRow(): NodeSeq = {
       def reDraw() = JsCmds.Replace("all_tracks",renderRow())
@@ -53,7 +60,7 @@ class TrackView {
     try {
       val msg = "Can not register.Already exsist track. Please update"
       val errMsgTrack = "Duplicate track!"
-      val path = "/track?albumid=" + albumid
+      val path = "/track?albumid=" + albumid + "&offset=" + offset
       val attach = isAttachFileExist(upload) match {
         case true => getExistAttach(getFileParamHolder(upload).fileName) match {
           case Nil => Some(new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file))
@@ -90,36 +97,42 @@ class TrackView {
   }
 
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
+    def prevXml: NodeSeq = Text(?("<"))
+    def nextXml: NodeSeq = Text(?(">"))
+    def firstXml: NodeSeq = Text(?("<<"))
+    def lastXml: NodeSeq = Text(?(">>"))
+    def currentXml: NodeSeq = Text("Displaying records " + (first+1) + "-" + (first+itemsPerPage min count) + " of  " + count)
     bind("track", html, "albumid" -> <input type="text" name="albumid" class="column span-10"/>)
-    album.tracks.flatMap(trk => {
-      val trkSeq: String = trk.albumTracks.filter{atr => atr.album == Util.paramGet("albumid").toLong }.head.seq.get.toString
-      val albumtrcid: String = trk.albumTracks.filter{atr => atr.album == Util.paramGet("albumid").toLong }.head.id.get.toString
-      trk.attaches.size match {
+    page.flatMap(albmtrack => {
+      val trkSeq: String = albmtrack.seq.get.toString
+      val albumtrcid: String = albmtrack.id.get.toString
+      val track = Track.findAll(By(Track.id, albmtrack.track.get)).head
+      track.attaches.size match {
         case 0 => {
-          bind("track", html, AttrBindParam("id", trk.id.toString, "id"),
+          bind("track", html, AttrBindParam("id", albmtrack.track.get.toString, "id"),
              "seq" -> <span>{
-                   link("track?albumid=" + Util.paramGet("albumid") + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid, () => (), Text(trkSeq))
+                   link("track?albumid=" + Util.paramGet("albumid") + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid + "&offset=" + offset, () => (), Text(trkSeq))
              }</span>,
              "tracktitle" -> <span>{
-                   trk.tracktitle.toString
+                   track.tracktitle.toString
              }</span>,
              "filename" -> <span>{
                  Text(" ")
              }</span>,
              "delete" -> <span>{
-                   link("track?albumid=" + Util.paramGet("albumid"), () => delete(trk.id.get,0), Text("delete"))
+                   link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => delete(track.id.get,0), Text("delete"))
              }</span>
           );
         }
         case _ => {
           var i = 0
-          trk.attaches.flatMap(atc => {
+          track.attaches.flatMap(atc => {
             i = i + 1
-            bind("track", html, AttrBindParam("id", trk.id.toString, "id"),
+            bind("track", html, AttrBindParam("id", track.id.toString, "id"),
              "seq" -> <span>{
                i match {
                  case 1 =>
-                   link("track?albumid=" + Util.paramGet("albumid") + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid, () => (), Text(trkSeq))
+                   link("track?albumid=" + Util.paramGet("albumid") + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid + "&offset=" +  offset, () => (), Text(trkSeq))
                  case _ =>
                    Text("")
                }
@@ -127,19 +140,19 @@ class TrackView {
              "tracktitle" -> <span>{
                i match {
                  case 1 =>
-                   trk.tracktitle.toString
+                   track.tracktitle.toString
                  case _ =>
                    Text("")
                }
              }</span>,
              "filename" -> <span>{
-               trk.attaches.size match {
+               track.attaches.size match {
                  case 0 => Text(" ")
                  case _ => link("lob/" + atc.id.get.toString, () => (), Text(atc.filename.toString))
                }
              }</span>,
              "delete" -> <span>{
-               link("track?albumid=" + Util.paramGet("albumid"), () => delete(trk.id.get, atc.id.get), Text("delete"))
+               link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => delete(track.id.get, atc.id.get), Text("delete"))
              }</span>
             );
           })

@@ -4,7 +4,7 @@ import net.liftweb.mapper._
 import net.liftweb.util._
 import net.liftweb.common._
 
-object AlbumTracks extends AlbumTracks with LongKeyedMetaMapper[AlbumTracks]
+object AlbumTracks extends AlbumTracks with LongKeyedMetaMapper[AlbumTracks] with CRUDify[Long, AlbumTracks]
 
 class AlbumTracks extends Relation with LongKeyedMapper[AlbumTracks] with IdPK {
   def this(album: Long, track: Long, seq: Long) = {
