@@ -17,8 +17,8 @@ import java.util.Date
 import java.net.URL
 import scala.util.parsing.combinator.RegexParsers
 
-class AlbumView {
-
+class AlbumView extends PaginatorSnippet[Album]{
+  val offset = Util.paramGet("offset")
   var searchAlbumtitle = Util.paramGet("searchAlbumtitle") match {
     case "0" => ""
     case key => key
@@ -35,6 +35,11 @@ class AlbumView {
     case "0" => ""
     case key => key
   }
+
+  override val itemsPerPage = 5
+  override def page = genList
+  override def count = page.size
+  override def pageUrl(offset: Long): String = appendParams(super.pageUrl(offset), List("searchAlbumtitle" -> searchAlbumtitle, "searchArtist" -> searchArtist, "searchTrack" -> searchTrack, "searchPlayer" -> searchPlayer))
 
   def list(html: NodeSeq): NodeSeq = {
     def renderRow(): NodeSeq = {
@@ -63,13 +68,14 @@ class AlbumView {
         artistseq = bandseq.seq.get.toString
       }
     }
+
     def albumProcess() {
       artistseq = Util.paramGet("artistseq") match {
         case "0" => artistseq
         case _ => Util.paramGet("artistseq")
       }
       val errorMsg = "Can not register. Already exist Album. Please update"
-      var path = "/?searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer)
+      var path = "/?searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer) + "&offset=" + offset
       val regSeq = Util.isAllDigits(artistseq) match {
         case true => artistseq.toInt
         case _ => 1
@@ -87,7 +93,7 @@ class AlbumView {
         }
       }
       path = (searchAlbumtitle, searchArtist, searchTrack, searchPlayer) match {
-        case ("", "", "", "") => "/?searchAlbumtitle=" + urlEncode(albumtitle) + "&searchArtist=" + urlEncode(artistname) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer)
+        case ("", "", "", "") => "/?searchAlbumtitle=" + urlEncode(albumtitle) + "&searchArtist=" + urlEncode(artistname) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer) + "&offset=" + offset
         case _ => path
       }
       S.redirectTo(path)
@@ -144,7 +150,7 @@ class AlbumView {
   }
 
   
-  private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
+  private def genList = {
     val albumsFilterTitle: List[Album] = searchAlbumtitle match {
       case "" => Nil
       case title: String => Album.findAll(Like(Album.albumtitle, "%" +searchAlbumtitle + "%"), OrderBy(Album.albumtitle, Ascending))
@@ -183,11 +189,15 @@ class AlbumView {
       }
       case _ => Nil
     }
-    var seq: Int = 0
-    albums.distinct.sorted.flatMap(alb => {
-      seq = seq + 1
+    albums.distinct
+  }
+
+  private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
+    var seq: Int = offset.toInt
+    page.toList.sorted.drop(curPage * itemsPerPage).take(itemsPerPage).flatMap(alb => {
+      seq = seq + 1 
       bind ("album", html, AttrBindParam("id", alb.id.toString, "id"),
-                          "seq" -> <span>{link("/?albumid=" + alb.id.toString + "&searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer), () => (), Text(seq.toString))}</span>,
+                          "seq" -> <span>{link("/?albumid=" + alb.id.toString + "&searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer) + "&offset=" + offset, () => (), Text(seq.toString))}</span>,
                           "albumtitle" -> <span>{link("track?albumid=" + alb.id.toString, () => (), Text(alb.albumtitle.get))}</span>,
                           "artistname" -> <span>{link("band?bandid="+ alb.getBandSeq().getBand().id.toString, () => (), Text(alb.getBandSeq().getBand().bandname.get))}</span>,
                           "artistseq" -> <span>{link("member?bandid="+ alb.getBandSeq().getBand().id.toString + "&seq=" + alb.getBandSeq().seq.toString, () => (), Text(alb.getBandSeq().seq.toString))}</span>,

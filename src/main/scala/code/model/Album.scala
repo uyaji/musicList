@@ -5,7 +5,7 @@ import net.liftweb.util._
 import net.liftweb.common._
 import scala.math.Ordered
 
-object Album extends Album with LongKeyedMetaMapper[Album] {
+object Album extends Album with LongKeyedMetaMapper[Album] with CRUDify[Long, Album] {
   override def dbTableName = "albums"
 }
 
