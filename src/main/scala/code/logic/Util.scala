@@ -6,6 +6,8 @@ import S._
 import java.text.SimpleDateFormat
 import java.util.Date
 
+import code.model._
+
 object Util {
   def generateSeq(rowCount: Long, getMaxSeq: () => Long, paramSeq: String): String = {
     paramSeq match {
@@ -41,5 +43,9 @@ object Util {
   def isAllDigits(s: String) = s match {
     case "" => false
     case p: String => p forall Character.isDigit
+  }
+
+  def isSuperUser(): Boolean  = {
+    User.currentUser.head.superUser.get
   }
 }

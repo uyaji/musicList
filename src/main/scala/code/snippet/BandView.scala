@@ -1,5 +1,4 @@
 package code.snippet
-
 import scala.xml.{NodeSeq, Text}
 import net.liftweb._
 import net.liftweb.common._
@@ -135,11 +134,14 @@ class BandView extends PaginatorSnippet[BandSeq] {
     }
     
     def delete(bandid: Long, seq: Long): Unit = {
-      val bandSeq = BandSeq.findAll(By(BandSeq.band, bandid), By(BandSeq.seq, seq.toInt)).head
-      bandSeq.players --= bandSeq.players
-//      bandSeq.players.map{ p => bandSeq.players -= p }
-      bandSeq.save
-      bandSeq.delete_!
+      if(Util.isSuperUser) {
+        val bandSeq = BandSeq.findAll(By(BandSeq.band, bandid), By(BandSeq.seq, seq.toInt)).head
+        bandSeq.players --= bandSeq.players
+        bandSeq.save
+        bandSeq.delete_!
+     } else {
+        S.error("You are not the super user.")
+     }
    }
 
    def relationNonExisti(findTable: Long => Boolean)(id: Long): Boolean = findTable(id)

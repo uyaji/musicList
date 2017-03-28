@@ -28,6 +28,7 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
                    }
   var upload: Box[FileParamHolder] = Empty
   val id = 0
+  val authorityErrorMsg = "You are not the super user."
 
   override val itemsPerPage = 5
   override def pageUrl(offset: Long): String = appendParams( super.pageUrl(offset), List("albumid" -> albumid))
@@ -70,12 +71,20 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
       }
       Logic.select(duplicateSeqCheck, changeSeqCheck)(albumid.toLong, seq.toLong, albumtrcid.toLong, msg, path) match {
         case "add" => {
-          val msg = Process.add(Logic.registTarget, duplicateKeyCheck, getExistTrack, tracktitle, album, Track.create.tracktitle(tracktitle), AlbumTracks.create.album(album.id.get).seq(seq.toLong), attach, 0, "Added " + tracktitle, "Duplicate track!")
-          S.error(msg)
+          if(Util.isSuperUser || !isAttachFileExist(upload)) {
+            val msg = Process.add(Logic.registTarget, duplicateKeyCheck, getExistTrack, tracktitle, album, Track.create.tracktitle(tracktitle), AlbumTracks.create.album(album.id.get).seq(seq.toLong), attach, 0, "Added " + tracktitle, "Duplicate track!")
+            S.error(msg)
+          } else {
+            S.error(authorityErrorMsg)
+          }
         }
         case "update" => {
-          val msg = Process.update(Logic.updateTarget, getTrack, getBinder, getExistTrack, isAttachFileExist, getExistAttach, tracktitle, seq.toLong, upload, album, albumtrcid.toLong, attach, "updated " + tracktitle, "Duplicate track!", "Duplicate attach!")
-          S.error(msg)
+          if(Util.isSuperUser || !isAttachFileExist(upload)) {
+            val msg = Process.update(Logic.updateTarget, getTrack, getBinder, getExistTrack, isAttachFileExist, getExistAttach, tracktitle, seq.toLong, upload, album, albumtrcid.toLong, attach, "updated " + tracktitle, "Duplicate track!", "Duplicate attach!")
+            S.error(msg)
+          } else {
+            S.error(authorityErrorMsg)
+          }
         }
       }
       S.redirectTo(path)
@@ -163,29 +172,33 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
   
   private 
     def delete(trackid: Long, attachid: Long): Unit ={
-      // attchを削除した結果、attach recordが存在しなければ、trackを削除
-      val attaches: List[Attach] = Attach.findAll(By(Attach.id, attachid))
-      attaches.size match {
-        case 0 =>
-        case _ => attaches.head.delete_!
-      }
-      val comAttaches: List[Attach] = Attach.findAll(By(Attach.track, trackid))
-      val track: Track = Track.findAll(By(Track.id, trackid)).head
-      comAttaches.size match {
-        case 0 => {
-          track.albums.size match {
-            case 1 => {
-              track.delete_!
-            }
-            case _ => ()
-          }
-          val album = Album.findAll(By(Album.id, Util.paramGet("albumid").toLong)).head
-          album.tracks -= track
-          album.save
+      if(Util.isSuperUser) {
+        // attchを削除した結果、attach recordが存在しなければ、trackを削除
+        val attaches: List[Attach] = Attach.findAll(By(Attach.id, attachid))
+        attaches.size match {
+          case 0 =>
+          case _ => attaches.head.delete_!
         }
-        case _ => ()
+        val comAttaches: List[Attach] = Attach.findAll(By(Attach.track, trackid))
+        val track: Track = Track.findAll(By(Track.id, trackid)).head
+        comAttaches.size match {
+          case 0 => {
+            track.albums.size match {
+              case 1 => {
+                track.delete_!
+              }
+              case _ => ()
+            }
+            val album = Album.findAll(By(Album.id, Util.paramGet("albumid").toLong)).head
+            album.tracks -= track
+            album.save
+          }
+          case _ => ()
+        }
+        S.notice("Deleted " + track.tracktitle)
+      } else {
+        S.error(authorityErrorMsg)
       }
-      S.notice("Deleted " + track.tracktitle)
     }
 
     def duplicateSeqCheck(albumid: Long, seq: Long): Boolean =

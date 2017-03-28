@@ -108,15 +108,19 @@ class MemberView extends PaginatorSnippet[BandSeqPlayers] {
     }
 
     def delete(bandseqid: Long, playerid: Long): Unit = {
-      val player = Player.findAll(By(Player.id, playerid)).head
-      player.bandseqs.size match {
-        case 1 => player.delete_!
-        case _ => ()
+      if(Util.isSuperUser) {
+        val player = Player.findAll(By(Player.id, playerid)).head
+        player.bandseqs.size match {
+          case 1 => player.delete_!
+          case _ => ()
+        }
+        val bandSeq = BandSeq.findAll(By(BandSeq.id, bandseqid)).head
+        bandSeq.players -= player
+        bandSeq.save
+        S.notice("Deleted " + player.name)
+      } else {
+        S.error("You are not the super user.")
       }
-      val bandSeq = BandSeq.findAll(By(BandSeq.id, bandseqid)).head
-      bandSeq.players -= player
-      bandSeq.save
-      S.notice("Deleted " + player.name)
     }
 
     def duplicateSeqCheck(bandseqid: Long, seq: Long): Boolean = {
