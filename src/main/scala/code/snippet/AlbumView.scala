@@ -41,6 +41,17 @@ class AlbumView extends PaginatorSnippet[Album]{
   override def count = page.size
   override def pageUrl(offset: Long): String = appendParams(super.pageUrl(offset), List("searchAlbumtitle" -> searchAlbumtitle, "searchArtist" -> searchArtist, "searchTrack" -> searchTrack, "searchPlayer" -> searchPlayer))
 
+  def showMode(html: NodeSeq): NodeSeq = {
+    val userMode = Util.isSuperUser match {
+      case true => "super user"
+      case false => "general user"
+    }
+    bind ("application", html, AttrBindParam("id", "1", "id"),
+                          "mode" -> <span>run mode : {Props.mode}</span>,
+                          "usermode" -> <span> / user type : {userMode}</span>
+    )
+  }
+
   def list(html: NodeSeq): NodeSeq = {
     def renderRow(): NodeSeq = {
       def reDraw() = JsCmds.Replace("all_albums",renderRow())
