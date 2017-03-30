@@ -14,13 +14,14 @@ import mapper._
 import code.model._
 import code.snippet._
 import net.liftmodules.JQueryModule
+import java.io._
 
 
 /**
  * A class that's instantiated early and run.  It allows the application
  * to modify lift's environment
  */
-class Boot {
+class Boot extends Logger {
   def boot {
     if (!DB.jndiJdbcConnAvailable_?) {
       sys.props.put("h2.implicitRelativePath", "true")
@@ -73,6 +74,28 @@ class Boot {
     // where to search snippet
     LiftRules.addToPackages("code")
 
+    // Custom Error page
+    LiftRules.exceptionHandler.prepend {
+      case (Props.RunModes.Production, Req(path, "", GetRequest), e) => {
+        error("Unexpected Exception")
+        error(e.fillInStackTrace)
+//        RedirectResponse("/static/error")
+        sendErrorPage
+      }
+    }
+
+    def sendErrorPage = {
+      val file = new File("error.html")
+      val fis = new FileInputStream(file)
+      StreamingResponse(
+        fis,
+        () => { fis.close },
+        file.length,
+        ("Content-Type" -> "text/html") :: Nil,
+        Nil,
+        503
+      )
+    }
     // Build SiteMap
     def sitemap = SiteMap(
       Menu.i("Home") / "index" >> User.AddUserMenusAfter, // the simple way to declare a menu

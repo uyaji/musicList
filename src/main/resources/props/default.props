@@ -6,4 +6,3 @@ db.url_prefix =
 db.host       =
 db.port       =
 db.database   =
-run.mode      = production
