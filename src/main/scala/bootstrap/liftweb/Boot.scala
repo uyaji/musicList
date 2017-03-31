@@ -79,8 +79,9 @@ class Boot extends Logger {
       case (Props.RunModes.Production, Req(path, "", GetRequest), e) => {
         error("Unexpected Exception")
         error(e.fillInStackTrace)
-//        RedirectResponse("/static/error")
-        sendErrorPage
+//        println("path = " + new File(".").getAbsoluteFile().getParent())
+        RedirectResponse("/static/error")
+//        sendErrorPage
       }
     }
 
