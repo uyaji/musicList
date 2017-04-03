@@ -64,19 +64,19 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
       val path = "/track?albumid=" + albumid + "&offset=" + offset
       val attach = isAttachFileExist(upload) match {
         case true => getExistAttach(getFileParamHolder(upload).fileName) match {
-          case Nil => Some(new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file))
+          case Nil => Some(new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file, Util.isSuperUser ))
           case attaches: List[Attach] => Some(attaches.head)
         }
         case false => None
       }
       Logic.select(duplicateSeqCheck, changeSeqCheck)(albumid.toLong, seq.toLong, albumtrcid.toLong, msg, path) match {
         case "add" => {
-          if(Util.isSuperUser || !isAttachFileExist(upload)) {
+//          if(Util.isSuperUser || !isAttachFileExist(upload)) {
             val msg = Process.add(Logic.registTarget, duplicateKeyCheck, getExistTrack, tracktitle, album, Track.create.tracktitle(tracktitle), AlbumTracks.create.album(album.id.get).seq(seq.toLong), attach, 0, "Added " + tracktitle, "Duplicate track!")
             S.error(msg)
-          } else {
+/*          } else {
             S.error(authorityErrorMsg)
-          }
+          }*/
         }
         case "update" => {
           if(Util.isSuperUser || !isAttachFileExist(upload)) {
@@ -157,11 +157,18 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
              "filename" -> <span>{
                track.attaches.size match {
                  case 0 => Text(" ")
-                 case _ => link("lob/" + atc.id.get.toString, () => (), Text(atc.filename.toString))
+                 case _ => if(atc.valid.get || Util.isSuperUser) link("lob/" + atc.id.get.toString, () => (), Text(atc.filename.toString)) else Text(" ")
                }
              }</span>,
              "delete" -> <span>{
                link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => delete(track.id.get, atc.id.get), Text("delete"))
+             }</span>,
+             "valid" -> <span>{
+               if(Util.isSuperUser) {
+                 link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => switchShow(atc.id.get, !(atc.valid.get)), Text(if(atc.valid.get) "valid" else "invalid"))
+               } else {
+                 Text(" ")
+               }
              }</span>
             );
           })
@@ -201,6 +208,11 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
       }
     }
 
+    def switchShow(id: Long, valid: Boolean) {
+      val attach = Attach.findAll(By(Attach.id, id)).head
+      attach.valid(valid)
+      attach.save
+    }
     def duplicateSeqCheck(albumid: Long, seq: Long): Boolean =
           Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.seq == seq }.size.equals(0)
     def changeSeqCheck(albumTrackId: Long, seq: Long): Boolean =
