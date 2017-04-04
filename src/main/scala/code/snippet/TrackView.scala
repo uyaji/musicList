@@ -71,20 +71,12 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
       }
       Logic.select(duplicateSeqCheck, changeSeqCheck)(albumid.toLong, seq.toLong, albumtrcid.toLong, msg, path) match {
         case "add" => {
-//          if(Util.isSuperUser || !isAttachFileExist(upload)) {
-            val msg = Process.add(Logic.registTarget, duplicateKeyCheck, getExistTrack, tracktitle, album, Track.create.tracktitle(tracktitle), AlbumTracks.create.album(album.id.get).seq(seq.toLong), attach, 0, "Added " + tracktitle, "Duplicate track!")
-            S.error(msg)
-/*          } else {
-            S.error(authorityErrorMsg)
-          }*/
+          val msg = Process.add(Logic.registTarget, duplicateKeyCheck, getExistTrack, tracktitle, album, Track.create.tracktitle(tracktitle), AlbumTracks.create.album(album.id.get).seq(seq.toLong), attach, 0, if(isAttachFileExist(upload) && !Util.isSuperUser) "we accept your upload request. please wait a moment." else "Added " + tracktitle, "Duplicate track!")
+          S.error(msg)
         }
         case "update" => {
-          if(Util.isSuperUser || !isAttachFileExist(upload)) {
-            val msg = Process.update(Logic.updateTarget, getTrack, getBinder, getExistTrack, isAttachFileExist, getExistAttach, tracktitle, seq.toLong, upload, album, albumtrcid.toLong, attach, "updated " + tracktitle, "Duplicate track!", "Duplicate attach!")
-            S.error(msg)
-          } else {
-            S.error(authorityErrorMsg)
-          }
+          val msg = Process.update(Logic.updateTarget, getTrack, getBinder, getExistTrack, isAttachFileExist, getExistAttach, tracktitle, seq.toLong, upload, album, albumtrcid.toLong, attach, if(isAttachFileExist(upload) && !Util.isSuperUser) "we accept your upload request. please wait a moment." else "Updated " + tracktitle, "Duplicate track!", "Duplicate attach!")
+          S.error(msg)
         }
       }
       S.redirectTo(path)

@@ -35,11 +35,16 @@ class AlbumView extends PaginatorSnippet[Album]{
     case "0" => ""
     case key => key
   }
+  var searchInvalid = Util.paramGet("searchInvalid") match {
+    case "0" => false
+    case "true" => true
+    case _ => false
+  }
 
   override val itemsPerPage = 5
   override def page = genList
   override def count = page.size
-  override def pageUrl(offset: Long): String = appendParams(super.pageUrl(offset), List("searchAlbumtitle" -> searchAlbumtitle, "searchArtist" -> searchArtist, "searchTrack" -> searchTrack, "searchPlayer" -> searchPlayer))
+  override def pageUrl(offset: Long): String = appendParams(super.pageUrl(offset), List("searchAlbumtitle" -> searchAlbumtitle, "searchArtist" -> searchArtist, "searchTrack" -> searchTrack, "searchPlayer" -> searchPlayer, "searchInvalid" -> searchInvalid.toString))
 
   def showMode(html: NodeSeq): NodeSeq = {
     val userMode = Util.isSuperUser match {
@@ -86,7 +91,7 @@ class AlbumView extends PaginatorSnippet[Album]{
         case _ => Util.paramGet("artistseq")
       }
       val errorMsg = "Can not register. Already exist Album. Please update"
-      var path = "/?searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer) + "&offset=" + offset
+      var path = "/?searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer) + "&searchInvali=" + urlEncode(searchInvalid.toString) + "&offset=" + offset
       val regSeq = Util.isAllDigits(artistseq) match {
         case true => artistseq.toInt
         case _ => 1
@@ -104,7 +109,7 @@ class AlbumView extends PaginatorSnippet[Album]{
         }
       }
       path = (searchAlbumtitle, searchArtist, searchTrack, searchPlayer) match {
-        case ("", "", "", "") => "/?searchAlbumtitle=" + urlEncode(albumtitle) + "&searchArtist=" + urlEncode(artistname) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer) + "&offset=" + offset
+        case ("", "", "", "") => "/?searchAlbumtitle=" + urlEncode(albumtitle) + "&searchArtist=" + urlEncode(artistname) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer) + "&searchInvalid=" + urlEncode(searchInvalid.toString) + "&offset=" + offset
         case _ => path
       }
       S.redirectTo(path)
@@ -142,18 +147,26 @@ class AlbumView extends PaginatorSnippet[Album]{
   def search(from : NodeSeq): NodeSeq = {
 
     def doBind(from: NodeSeq): NodeSeq = {
-      var sel =
+      var sel = if(Util.isSuperUser) {
+        "name=searchAlbumtitle" #> SHtml.text(searchAlbumtitle, searchAlbumtitle = _, "class" -> "search") &
+        "name=searchArtist" #> SHtml.text(searchArtist, searchArtist = _, "class" -> "search") &
+        "name=searchTrack" #> SHtml.text(searchTrack, searchTrack = _, "class" -> "search") &
+        "name=searchPlayer" #> SHtml.text(searchPlayer, searchPlayer = _, "class" -> "search") &
+        "name=searchInvalid" #> {<span>invalid</span> ++ SHtml.checkbox(searchInvalid, searchInvalid = _, "class" -> "search") }&
+        "type=submit" #> SHtml.onSubmitUnit(searchAlbum);
+      } else {
         "name=searchAlbumtitle" #> SHtml.text(searchAlbumtitle, searchAlbumtitle = _, "class" -> "search") &
         "name=searchArtist" #> SHtml.text(searchArtist, searchArtist = _, "class" -> "search") &
         "name=searchTrack" #> SHtml.text(searchTrack, searchTrack = _, "class" -> "search") &
         "name=searchPlayer" #> SHtml.text(searchPlayer, searchPlayer = _, "class" -> "search") &
         "type=submit" #> SHtml.onSubmitUnit(searchAlbum);
+      }
       return sel(from)
     }
 
     def searchAlbum() {
       S.redirectTo("/?searchAlbumtitle=" + urlEncode(searchAlbumtitle)
-      + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer)
+      + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer) + "&searchInvalid=" + urlEncode(searchInvalid.toString)
       )
     }
 
@@ -162,45 +175,49 @@ class AlbumView extends PaginatorSnippet[Album]{
 
   
   private def genList = {
-    val albumsFilterTitle: List[Album] = searchAlbumtitle match {
-      case "" => Nil
-      case title: String => Album.findAll(Like(Album.albumtitle, "%" +searchAlbumtitle + "%"), OrderBy(Album.albumtitle, Ascending))
-      case _ => Nil
-    }
-    val albumsFilterArtist: List[Album] = searchArtist match {
-      case "" => albumsFilterTitle
-      case artist: String => {
-        albumsFilterTitle match {
-          case Nil => Band.findAll(Like(Band.bandname, "%" + searchArtist + "%")).flatMap { bd => bd.getBandSeq}.flatMap { bsq => bsq.getAlbum}
-          case albums: List[Album] => albums.withFilter(alb => (alb.getBandSeq.getBand.bandname.get.toUpperCase indexOf artist.replace("%","").toUpperCase) >= 0).map(alb => alb)
-          case _ => Nil
-        }
+    if(searchInvalid) {
+      Attach.findAll(By(Attach.valid, false)).flatMap { atc => atc.getTrack.albums }.distinct
+    } else {
+      val albumsFilterTitle: List[Album] = searchAlbumtitle match {
+        case "" => Nil
+        case title: String => Album.findAll(Like(Album.albumtitle, "%" +searchAlbumtitle + "%"), OrderBy(Album.albumtitle, Ascending))
+        case _ => Nil
       }
-      case _ => albumsFilterTitle
-    }
-    val albumsFilterTrack: List[Album] = searchTrack match {
-      case "" => albumsFilterArtist.map(alb => alb)
-      case track: String => {
-        albumsFilterArtist match {
-          case Nil => Track.findAll(Like(Track.tracktitle, "%" + searchTrack + "%")).flatMap { trc => trc.albums }
-          case albums: List[Album] => albums.withFilter(alb => (alb.tracks.withFilter(trc => (trc.tracktitle.get.toUpperCase indexOf track.replace("%","").toUpperCase) >= 0).map(trc => trc).size > 0)).map(alb => alb)
-          case _ => Nil
+      val albumsFilterArtist: List[Album] = searchArtist match {
+        case "" => albumsFilterTitle
+        case artist: String => {
+          albumsFilterTitle match {
+            case Nil => Band.findAll(Like(Band.bandname, "%" + searchArtist + "%")).flatMap { bd => bd.getBandSeq}.flatMap { bsq => bsq.getAlbum}
+            case albums: List[Album] => albums.withFilter(alb => (alb.getBandSeq.getBand.bandname.get.toUpperCase indexOf artist.replace("%","").toUpperCase) >= 0).map(alb => alb)
+            case _ => Nil
+          }
         }
+        case _ => albumsFilterTitle
       }
-      case _ => albumsFilterArtist
-    }
-    val albums = searchPlayer match {
-      case "" => albumsFilterTrack
-      case player: String => {
-        albumsFilterTrack match {
-          case Nil => Player.findAll(Like(Player.name, "%" + searchPlayer + "%")).flatMap { pl => pl.bandseqs}.flatMap { bsq => bsq.getAlbum}
-          case albums: List[Album] => albums.withFilter(alb => (alb.getBandSeq.players.withFilter(pl => (pl.name.get.toUpperCase indexOf player.replace("%", "").toUpperCase) >= 0).map(trc => trc).size > 0)).map(alb => alb)
-          case _ => Nil
+      val albumsFilterTrack: List[Album] = searchTrack match {
+        case "" => albumsFilterArtist.map(alb => alb)
+        case track: String => {
+          albumsFilterArtist match {
+            case Nil => Track.findAll(Like(Track.tracktitle, "%" + searchTrack + "%")).flatMap { trc => trc.albums }
+            case albums: List[Album] => albums.withFilter(alb => (alb.tracks.withFilter(trc => (trc.tracktitle.get.toUpperCase indexOf track.replace("%","").toUpperCase) >= 0).map(trc => trc).size > 0)).map(alb => alb)
+            case _ => Nil
+          }
         }
+        case _ => albumsFilterArtist
       }
-      case _ => Nil
+      val albums = searchPlayer match {
+        case "" => albumsFilterTrack
+        case player: String => {
+          albumsFilterTrack match {
+            case Nil => Player.findAll(Like(Player.name, "%" + searchPlayer + "%")).flatMap { pl => pl.bandseqs}.flatMap { bsq => bsq.getAlbum}
+            case albums: List[Album] => albums.withFilter(alb => (alb.getBandSeq.players.withFilter(pl => (pl.name.get.toUpperCase indexOf player.replace("%", "").toUpperCase) >= 0).map(trc => trc).size > 0)).map(alb => alb)
+            case _ => Nil
+          }
+        }
+        case _ => Nil
+      }
+      albums.distinct
     }
-    albums.distinct
   }
 
   private def doList(reDraw: () => JsCmd)(html: NodeSeq): NodeSeq = {
@@ -208,7 +225,7 @@ class AlbumView extends PaginatorSnippet[Album]{
     page.toList.sorted.drop(curPage * itemsPerPage).take(itemsPerPage).flatMap(alb => {
       seq = seq + 1 
       bind ("album", html, AttrBindParam("id", alb.id.toString, "id"),
-                          "seq" -> <span>{link("/?albumid=" + alb.id.toString + "&searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer) + "&offset=" + offset, () => (), Text(seq.toString))}</span>,
+                          "seq" -> <span>{link("/?albumid=" + alb.id.toString + "&searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer) + "&searchInvalid=" + urlEncode(searchInvalid.toString) + "&offset=" + offset, () => (), Text(seq.toString))}</span>,
                           "albumtitle" -> <span>{link("track?albumid=" + alb.id.toString, () => (), Text(alb.albumtitle.get))}</span>,
                           "artistname" -> <span>{link("band?bandid="+ alb.getBandSeq().getBand().id.toString, () => (), Text(alb.getBandSeq().getBand().bandname.get))}</span>,
                           "artistseq" -> <span>{link("member?bandid="+ alb.getBandSeq().getBand().id.toString + "&seq=" + alb.getBandSeq().seq.toString, () => (), Text(alb.getBandSeq().seq.toString))}</span>,
