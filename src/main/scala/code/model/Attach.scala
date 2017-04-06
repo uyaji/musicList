@@ -6,7 +6,7 @@ object Attach extends Attach with LongKeyedMetaMapper[Attach] {
   override def dbTableName = "attaches"
 }
 
-class Attach extends LargeObject with LongKeyedMapper[Attach] with IdPK {
+class Attach extends LargeObject with LongKeyedMapper[Attach] with IdPK with ManyToMany {
 //class Attach extends LongKeyedMapper[Attach] with IdPK {
   def getSingleton = Attach
 
@@ -28,5 +28,6 @@ class Attach extends LargeObject with LongKeyedMapper[Attach] with IdPK {
     Track.findAll(By(Track.id, track.get)).head
   }
   override def getFileName(): String = filename.get
+  object users extends MappedManyToMany(UserAttaches, UserAttaches.attach, UserAttaches.user, User, OrderBy(UserAttaches.user, Ascending))
 
 }

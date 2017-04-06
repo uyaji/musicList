@@ -155,12 +155,21 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
              "delete" -> <span>{
                link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => delete(track.id.get, atc.id.get), Text("delete"))
              }</span>,
+             "stars" -> <span>{
+               atc.users.size match {
+                 case 0 => Text(" ")
+                 case _ => Text(atc.users.size.toString)
+               }
+             }</span>,
              "valid" -> <span>{
                if(Util.isSuperUser) {
                  link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => switchShow(atc.id.get, !(atc.valid.get)), Text(if(atc.valid.get) "valid" else "invalid"))
                } else {
                  Text(" ")
                }
+             }</span>,
+             "addstar" -> <span>{
+               link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => addStar(atc.id.get), Text("Add Start"))
              }</span>
             );
           })
@@ -205,6 +214,19 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
       attach.valid(valid)
       attach.save
     }
+
+    def addStar(id: Long) {
+      val currentUser = User.currentUser.head
+      val attach = Attach.findAll(By(Attach.id, id)).head
+      if(!attach.users.contains(currentUser)) {
+        attach.users += currentUser
+        attach.save
+        S.notice("You have added the star.")
+      } else {
+        S.error("You have already added.")
+      }
+    }
+
     def duplicateSeqCheck(albumid: Long, seq: Long): Boolean =
           Album.findAll(By(Album.id, albumid)).head.albumTracks.filter{ atr => atr.seq == seq }.size.equals(0)
     def changeSeqCheck(albumTrackId: Long, seq: Long): Boolean =
