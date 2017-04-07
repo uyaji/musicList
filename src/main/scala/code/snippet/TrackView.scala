@@ -169,7 +169,10 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
                }
              }</span>,
              "addstar" -> <span>{
-               link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => addStar(atc.id.get), Text("Add Start"))
+               if(atc.valid.get || Util.isSuperUser)
+                 link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => addStar(atc.id.get), Text("Add Start"))
+               else
+                 Text(" ")
              }</span>
             );
           })
