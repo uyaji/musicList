@@ -64,7 +64,7 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
       val path = "/track?albumid=" + albumid + "&offset=" + offset
       val attach = isAttachFileExist(upload) match {
         case true => getExistAttach(getFileParamHolder(upload).fileName) match {
-          case Nil => Some(new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file, Util.isSuperUser ))
+          case Nil => Some(new Attach(getFileParamHolder(upload).fileName, getFileParamHolder(upload).mimeType, getFileParamHolder(upload).file, Util.isSuperUser, User.currentUser.head.id.get ))
           case attaches: List[Attach] => Some(attaches.head)
         }
         case false => None

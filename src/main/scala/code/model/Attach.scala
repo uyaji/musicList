@@ -11,12 +11,13 @@ class Attach extends LargeObject with LongKeyedMapper[Attach] with IdPK with Man
   def getSingleton = Attach
 
 //  override def getFileName = this.filename.get
-  def this(filename: String, mimetype: String, trackattach: Array[Byte], valid: Boolean) = {
+  def this(filename: String, mimetype: String, trackattach: Array[Byte], valid: Boolean, uploader: Long) = {
     this()
     this.filename(filename)
     this.mimetype(mimetype)
     this.trackattach(trackattach)
     this.valid(valid)
+    this.uploader(uploader)
   }
 
   object filename extends MappedString(this, 100)
@@ -29,5 +30,9 @@ class Attach extends LargeObject with LongKeyedMapper[Attach] with IdPK with Man
   }
   override def getFileName(): String = filename.get
   object users extends MappedManyToMany(UserAttaches, UserAttaches.attach, UserAttaches.user, User, OrderBy(UserAttaches.user, Ascending))
+  object uploader extends LongMappedMapper(this, User)
 
+  def getUploader(): User = {
+    User.findAll(By(User.id, uploader.get)).head
+  }
 }
