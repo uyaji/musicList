@@ -29,7 +29,8 @@ libraryDependencies ++= {
     "ch.qos.logback"    % "logback-classic"     % "1.1.3",
     "org.specs2"        %% "specs2-core"        % "3.6.4"           % "test",
     "com.h2database"    % "h2"                  % "1.4.187",
-    "mysql"             % "mysql-connector-java" % "5.1.39"
+    "mysql"             % "mysql-connector-java" % "5.1.39",
+    "org.scala-lang"    % "scala-actors"        % "2.11.7"
   )
 }
 
