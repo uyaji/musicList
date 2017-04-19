@@ -1,0 +1,74 @@
+<lift:surround with="default" at="content">
+
+<style>
+/* <![CDATA[ */
+.status{
+  border-bottom:2px dashed #D2DADA;
+  line-height:1.1em;
+  margin-top:10px;
+  margin-bottom:10px;
+}
+.status li{
+  list-style:none;
+}
+.status textarea{
+  height:100%;
+  width :60%;
+}
+.message_r{
+  text-align: right;
+  font-size:1.8em;
+  line-height:2.0em;
+  color:#666666;
+}
+.message_l{
+  text-align: left;
+  font-size:1.8em;
+  line-height:2.0em;
+  color:#666666;
+}
+.user_r{
+  text-align: right;
+  font-size:1.2em;
+  color:#3333FF;
+}
+.user_l{
+  text-align: left;
+  font-size:1.2em;
+  color:#3333FF;
+}
+.dateOf_r{
+  text-align: right;
+  font-size:0.9em;
+  color:#333333;
+}
+.dateOf_l{
+  text-align: left;
+  font-size:0.9em;
+  color:#333333;
+}
+/* ]]> */
+</style>
+
+  <lift:Twit.post form="POST">
+    <h2>こんにちは！<twit:name></twit:name>さん！</h2>
+    <h2>いま何している？</h2>
+
+    <ul class="status">
+      <li> <twit:status></twit:status> </li>
+      <li> <twit:submit></twit:submit> </li>
+    </ul>
+  </lift:Twit.post>
+
+  <lift:comet type="CometTwit" name="Other">
+    <twit:messages>メッセージはありません。</twit:messages>
+  </lift:comet>
+
+  <ul class="status">
+    <lift:Twit.show>
+      <twit:message></twit:message>
+      <twit:user></twit:user>
+    </lift:Twit.show>
+  </ul>
+
+</lift:surround>

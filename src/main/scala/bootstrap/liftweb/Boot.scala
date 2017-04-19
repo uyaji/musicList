@@ -110,6 +110,8 @@ class Boot extends Logger {
       Menu(Loc("band", Link(List("band"), true, "/band"), 
 	       "")),
       Menu(Loc("member", Link(List("member"), true, "/member"), 
+	       "")),
+      Menu(Loc("twit", Link(List("twit"), true, "/twit"), 
 	       "")))
 
     def sitemapMutators = User.sitemapMutator

@@ -14,6 +14,7 @@ object TwitServer extends LiftActor with ListenerManager {
     case m: Message => {
       msgs ::= m
       updateListeners()
+      msgs = Nil
     }
   }
 }

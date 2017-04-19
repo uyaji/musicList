@@ -23,18 +23,26 @@ class CometTwit extends CometActor with CometListener {
   protected def registerWith = TwitServer
 
   override def lowPriority = {
-    case msg:List[Message] => {
+    case msg  => {
       partialUpdate( PrependHtml(spanId,
         <xml:Group>
-          { msg.map( m => {
-            <ul class="status">
-              <li class="message_l">{ m.status.is.get }</li>
-              <li class="user_l">{ userName( m.from.obj ) }</li>
-            </ul>
+          { msg.asInstanceOf[List[Message]].map( m => {
+            if(userName( m.fromUser).equals(User.currentUser.head.shortName)) {
+              <ul class="status">
+                <li class="message_l">{ m.status.get }</li>
+                <li class="user_l">{ userName( m.fromUser ) }</li>
+              </ul>
+            }
+            else {
+              <ul class="status">
+                <li class="message_r">{ m.status.get }</li>
+                <li class="user_r">{ userName( m.fromUser ) }</li>
+              </ul>
+            }
           })}
         </xml:Group>
       ))
     }
   }
-  def userName( user:Box[User] ) = user.dmap( "Guest" ){ user => user.shortName }
+  def userName( user:User ) = user.shortName
 }
