@@ -50,25 +50,33 @@
 /* ]]> */
 </style>
 
-  <lift:Twit.post form="POST">
-    <h2>こんにちは！<twit:name></twit:name>さん！</h2>
-    <h2>いま何している？</h2>
+  <lift:Util.out>Please
+    <Lift:menu.item name="Login">Log In</lift:menu.item>
+    &nbsp or &nbsp
+    <Lift:menu.item name="CreateUser">Sign Up</lift:menu.item>
+    <p>&nbsp&nbsp&nbsp&nbspReference only user/pass : guest@mail.com / guest</p>
+  </lift:Util.out>
+  <lift:Util.in>
+    <lift:Twit.post form="POST">
+      <h2>こんにちは！<twit:name></twit:name>さん！</h2>
+      <h2>いま何している？</h2>
+
+      <ul class="status">
+        <li> <twit:status></twit:status> </li>
+        <li> <twit:submit></twit:submit> </li>
+      </ul>
+    </lift:Twit.post>
+
+    <lift:comet type="CometTwit" name="Other">
+      <twit:messages>メッセージはありません。</twit:messages>
+    </lift:comet>
 
     <ul class="status">
-      <li> <twit:status></twit:status> </li>
-      <li> <twit:submit></twit:submit> </li>
+      <lift:Twit.show>
+        <twit:message></twit:message>
+        <twit:user></twit:user>
+      </lift:Twit.show>
     </ul>
-  </lift:Twit.post>
-
-  <lift:comet type="CometTwit" name="Other">
-    <twit:messages>メッセージはありません。</twit:messages>
-  </lift:comet>
-
-  <ul class="status">
-    <lift:Twit.show>
-      <twit:message></twit:message>
-      <twit:user></twit:user>
-    </lift:Twit.show>
-  </ul>
+  </lift:Util.in>
 
 </lift:surround>

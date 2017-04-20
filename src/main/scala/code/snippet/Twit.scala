@@ -11,14 +11,17 @@ import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JE._
 import net.liftweb.http.js.jquery.JqJsCmds._
 import code.model._
+import code.logic._
 import net.liftweb.mapper._
 import code.comet._
 
 class Twit {
 
+  val from = Util.paramGet("from").toLong
+  val to = Util.paramGet("to").toLong
   def post( xhtml: NodeSeq): NodeSeq = {
     val user = User.currentUser
-    val message = Message.create.from( user )
+    val message = Message.create.from( from ).to( to )
     val name = User.currentUser.head.shortName
 
     def addMessage: Unit = message.validate match {
@@ -39,8 +42,9 @@ class Twit {
 
 
   def show(xhtml:NodeSeq): NodeSeq = {
+    val seq: Seq[Long] = List(from, to)
     <xml:Group>{
-      Message.findAll(OrderBy(Message.id, Descending)).flatMap( msg => {
+      Message.findAll(ByList(Message.from, seq), ByList(Message.to, seq), OrderBy(Message.id, Descending)).flatMap( msg => {
         if(userName( msg.fromUser ).equals(User.currentUser.head.shortName)) {
             bind("twit", xhtml, 
               "message" -> <li class="message_l">{msg.status.get}</li>,
