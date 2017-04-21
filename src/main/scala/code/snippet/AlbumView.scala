@@ -57,6 +57,20 @@ class AlbumView extends PaginatorSnippet[Album]{
     )
   }
 
+  def showMessage(html: NodeSeq): NodeSeq = {
+    val messageExist = Message.findAll(By(Message.to, User.currentUser.head.id.get))
+    if(messageExist.size > 0) {
+      bind ("twit", html, AttrBindParam("id", "1", "id"),
+                            "message" -> <span id="message"> you gat a message </span>
+      )
+    }
+    else {
+      bind ("twit", html, AttrBindParam("id", "1", "id"),
+                            "message" -> <span></span>
+      )
+    }
+  }
+
   def list(html: NodeSeq): NodeSeq = {
     def renderRow(): NodeSeq = {
       def reDraw() = JsCmds.Replace("all_albums",renderRow())
