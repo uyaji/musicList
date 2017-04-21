@@ -19,6 +19,7 @@ class Twit {
 
   val from = Util.paramGet("from").toLong
   val to = Util.paramGet("to").toLong
+  val path = "twit?from=" + from + "&to=" + to
   def post( xhtml: NodeSeq): NodeSeq = {
     val user = User.currentUser
     val message = Message.create.from( from ).to( to )
@@ -28,15 +29,17 @@ class Twit {
       case Nil => {
         message.save
         TwitServer ! message
-        S.notice("メッセージを投稿しました。")
+        S.notice("twit the message")
+        S.redirectTo(path)
       }
       case x => S.error( x )
     }
 
     bind("twit", xhtml,
       "name" -> name,
+      "uploader" -> User.findAll(By(User.id, to)).head.shortName,
       "status" -> message.status.toForm,
-      "submit" -> submit("投稿する", () => addMessage )
+      "submit" -> submit("twit", () => addMessage )
     )
   }
 

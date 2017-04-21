@@ -173,6 +173,12 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
                  link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => addStar(atc.id.get), Text("Add Start"))
                else
                  Text(" ")
+             }</span>,
+             "contact" -> <span>{
+               if(atc.valid.get)
+                 link("twit?from=" + User.currentUser.head.id + "&to=" + atc.uploader.get, () => (), Text("contact"))
+               else
+                 Text(" ")
              }</span>
             );
           })
