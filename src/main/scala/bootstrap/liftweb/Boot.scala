@@ -69,6 +69,8 @@ class Boot extends Logger {
         () => Select.rtnPlayerList(key1, key2)
       case Req( "selectTracks" :: key1 :: key2 :: Nil, _, _ ) =>
         () => Select.rtnTrackList(key1, key2)
+      case Req( "selectTwiters" :: id :: Nil, _, _ ) =>
+        () => Select.rtnTwiterList(id)
 
     }
     // where to search snippet
