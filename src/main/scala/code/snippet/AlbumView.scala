@@ -61,7 +61,7 @@ class AlbumView extends PaginatorSnippet[Album]{
     val messageExist = Message.findAll(By(Message.to, User.currentUser.head.id.get))
     if(messageExist.size > 0) {
       bind ("twit", html, AttrBindParam("id", "1", "id"),
-                            "message" -> <span id="message"> you gat a message </span>,
+                            "message" -> <span id="message"> you got a message </span>,
                             "user" -> <input type="hidden" id="user" value={User.currentUser.head.id.toString}/>
       )
     }

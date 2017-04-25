@@ -17,9 +17,9 @@ import code.comet._
 
 class Twit {
 
-  val from = Util.paramGet("from").toLong
+  val from = User.currentUser.head.id.get
   val to = Util.paramGet("to").toLong
-  val path = "twit?from=" + from + "&to=" + to
+  val path = "twit?to=" + to
   def post( xhtml: NodeSeq): NodeSeq = {
     val user = User.currentUser
     val message = Message.create.from( from ).to( to )

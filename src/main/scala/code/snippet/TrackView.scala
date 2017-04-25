@@ -176,7 +176,7 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
              }</span>,
              "contact" -> <span>{
                if(atc.valid.get)
-                 link("twit?from=" + User.currentUser.head.id + "&to=" + atc.uploader.get, () => (), Text("contact"))
+                 link("twit?to=" + atc.uploader.get, () => (), Text("contact"))
                else
                  Text(" ")
              }</span>
