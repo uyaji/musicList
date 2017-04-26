@@ -27,15 +27,15 @@ class CometTwit extends CometActor with CometListener {
       partialUpdate( PrependHtml(spanId,
         <xml:Group>
           { msg.asInstanceOf[List[Message]].map( m => {
-            if(userName( m.fromUser).equals(User.currentUser.head.shortName)) {
+            if( m.fromUser.equals(User.currentUser.head.id.get)) {
               <ul class="status">
-                <li class="message_l">{ m.status.get }</li>
+                <li class="balloon_l">{ m.status.get }</li>
                 <li class="user_l">{ userName( m.fromUser ) }</li>
               </ul>
             }
             else {
               <ul class="status">
-                <li class="message_r">{ m.status.get }</li>
+                <li class="balloon_r">{ m.status.get }</li>
                 <li class="user_r">{ userName( m.fromUser ) }</li>
               </ul>
             }

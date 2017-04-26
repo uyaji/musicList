@@ -47,38 +47,19 @@
   font-size:0.9em;
   color:#333333;
 }
-.balloon_l {
-  background-color: #E0FFFF;
-  padding: 20px;
-  position: relative;
-  width: 30%;
-}
-.balloon_l:after {
-  border-right: 12px solid #E0FFFF;
-  border-top: 12px solid transparent;
-  border-bottom: 12px solid transparent;
-  content: '';
-  margin-top: -10px;
-  position: absolute;
-  left: -12px;
-  top: 50%;
-}
-.balloon_r {
-  background-color: #FFA07A;
-  padding: 20px;
-  position: relative;
-  width: 30%;
-  margin-left: auto;
-}
-.balloon_r:after {
-  border-left: 12px solid #FFA07A;
-  border-top: 12px solid transparent;
-  border-bottom: 12px solid transparent;
-  content: '';
-  margin-top: -10px;
-  position: absolute;
-  right: -12px;
-  top: 50%;
+#balloon-1-bottom {
+	position: relative;
+	display: inline-block;
+	padding: 0 15px;
+	width: auto;
+	min-width: 115px;
+	height: 40px;
+	line-height: 34px;
+	color: #19283C;
+	text-align: center;
+	background: #F6F6F6;
+	border: 3px solid #19283C;
+	z-index: 0;
 }
 /* ]]> */
 </style>

@@ -48,15 +48,15 @@ class Twit {
     val seq: Seq[Long] = List(from, to)
     <xml:Group>{
       Message.findAll(ByList(Message.from, seq), ByList(Message.to, seq), OrderBy(Message.id, Descending)).flatMap( msg => {
-        if(userName( msg.fromUser ).equals(User.currentUser.head.shortName)) {
+        if( msg.from.equals(User.currentUser.head.id.get)) {
             bind("twit", xhtml, 
-              "message" -> <li class="message_l">{msg.status.get}</li>,
+              "message" -> <li class="balloon_l">{msg.status.get}</li>,
               "user" -> <li class="user_l">{userName(msg.fromUser)}</li>
             )
         }
         else {
             bind("twit", xhtml, 
-              "message" -> <li class="message_r">{msg.status.get}</li>,
+              "message" -> <li class="balloon_r">{msg.status.get}</li>,
               "user" -> <li class="user_r">{userName(msg.fromUser)}</li>
             )
         }
