@@ -50,7 +50,8 @@ class Twit {
       Message.findAll(ByList(Message.from, seq), ByList(Message.to, seq), OrderBy(Message.id, Descending)).flatMap( msg => {
         if( msg.from.equals(User.currentUser.head.id.get)) {
             bind("twit", xhtml, 
-              "message" -> <li class="balloon_l">{msg.status.get}</li>,
+//              "message" -> <li class="balloon_l">{msg.status.get}</li>,
+              "message" -> <div class="balloon_l"><p>{msg.status.get}</p></div>,
               "user" -> <li class="user_l">{userName(msg.fromUser)}</li>
             )
         }
