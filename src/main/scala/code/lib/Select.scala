@@ -46,7 +46,8 @@ object Select {
 
   def rtnTwiterList(id: String): Box[LiftResponse] = {
     implicit val formats = DefaultFormats
-    val twiterList = new HashSet[TwitJson]()
+//    val twiterList = new HashSet[TwitJson]()
+    val twiterList = new TreeSet[TwitJson]()
 //    val options = Message.findAll(By(Message.to, id.toLong)).map(me => me.from.get).distinct.toList
     for(message <- Message.findAll(By(Message.to, id.toLong)).toList) {
       val messageJson = TwitJson(message.fromUser.shortName, message.from.get.toString)
@@ -60,5 +61,9 @@ object Select {
     Full(InMemoryResponse(jsonString.getBytes("UTF-8"), jsonHeader, S.responseCookies, 200))
   }
 
-  case class TwitJson(label: String, value: String)
+  case class TwitJson(label: String, value: String) extends Ordered[TwitJson] {
+    def compare(that: TwitJson) = {
+      label.compareToIgnoreCase(that.label)
+    }
+  }
 }
