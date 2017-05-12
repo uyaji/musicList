@@ -2,6 +2,7 @@ package code.snippet
 
 import net.liftweb.actor._
 import scala.xml.{NodeSeq,Text}
+import akka.actor._
 import net.liftweb.http._
 import net.liftweb.http.S._
 import net.liftweb.http.SHtml._
@@ -10,6 +11,7 @@ import net.liftweb.common.{Box, Full}
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JE._
 import net.liftweb.http.js.jquery.JqJsCmds._
+import code.lib._
 import code.model._
 import code.logic._
 import net.liftweb.mapper._
@@ -28,7 +30,9 @@ class Twit {
     def addMessage: Unit = message.validate match {
       case Nil => {
         message.save
-        TwitServer ! message
+//        TwitServer ! message
+        println("***************** send msg ************************")
+        bridge ! message
         S.notice("twit the message")
         S.redirectTo(path)
       }
@@ -66,4 +70,6 @@ class Twit {
   }
 
   def userName( user:User ) = user.shortName
+
+  private lazy val bridge: ActorRef = BridgeController.getBridgeActor
 }

@@ -25,6 +25,6 @@ class Message extends LongKeyedMapper[Message] with IdPK {
 
   object to extends MappedLongForeignKey(this, User)
 
-  def fromUser = User.findAll(By(User.id, from)).head
-  def toUser = User.findAll(By(User.id, to)).head
+  def fromUser = User.findAll(By(User.id, from.get)).head
+  def toUser = User.findAll(By(User.id, to.get)).head
 }

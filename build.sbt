@@ -4,7 +4,7 @@ version := "1.0"
 
 organization := "net.liftweb"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 resolvers ++= Seq("snapshots"     at "https://oss.sonatype.org/content/repositories/snapshots",
                   "staging"       at "https://oss.sonatype.org/content/repositories/staging",
@@ -19,6 +19,7 @@ scalacOptions ++= Seq("-deprecation", "-unchecked")
 
 libraryDependencies ++= {
   val liftVersion = "2.6.2"
+  val akkaVersion = "2.11-2.5.0"
   Seq(
     "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",
     "net.liftweb"       %% "lift-mapper"        % liftVersion        % "compile",
@@ -30,6 +31,7 @@ libraryDependencies ++= {
     "org.specs2"        %% "specs2-core"        % "3.6.4"           % "test",
     "com.h2database"    % "h2"                  % "1.4.187",
     "mysql"             % "mysql-connector-java" % "5.1.39",
+    "com.typesafe.akka" %% "akka-actor" % "2.5.0",
     "org.scala-lang"    % "scala-actors"        % "2.11.7"
   )
 }
