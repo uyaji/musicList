@@ -31,7 +31,6 @@ class Twit {
       case Nil => {
         message.save
 //        TwitServer ! message
-        println("***************** send msg ************************")
         bridge ! message
         S.notice("twit the message")
         S.redirectTo(path)

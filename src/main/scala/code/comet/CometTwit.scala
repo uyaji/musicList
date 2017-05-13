@@ -16,7 +16,7 @@ import net.liftweb.http.js.JE._
 import code.model._
 import code.lib.BridgeController
 
-class CometTwit extends CometActor with CometListener {
+class CometTwit extends CometActor {
   bridge ! this
   override def defaultPrefix = Full("twit")
   private lazy val spanId = uniqueId + "_massages_span"
@@ -24,28 +24,18 @@ class CometTwit extends CometActor with CometListener {
 
   def render = bind("messages" -> <span id={spanId}><div></div></span>)
 
-  protected def registerWith = TwitServer
-
   override def lowPriority = {
-    case msg  => {
-      partialUpdate( PrependHtml(spanId,
-        <xml:Group>
-          { msg.asInstanceOf[List[Message]].map( m => {
-            if( m.fromUser.equals(User.currentUser.head.id.get)) {
-              <ul class="status">
-                <li class="balloon_l">{ m.status.get }</li>
-                <li class="user_l">{ userName( m.fromUser ) }</li>
-              </ul>
-            }
-            else {
-              <ul class="status">
-                <li class="balloon_r">{ m.status.get }</li>
-                <li class="user_r">{ userName( m.fromUser ) }</li>
-              </ul>
-            }
-          })}
-        </xml:Group>
-      ))
+    case msg: Message  => {
+      if( !msg.fromUser.id.get.equals(User.currentUser.head.id.get) ) {
+        partialUpdate( PrependHtml(spanId,
+          <xml:Group>
+            <ul class="status">
+              <li class="balloon_r">{ msg.status.get }</li>
+              <li class="user_r">{ userName( msg.fromUser ) }</li>
+            </ul>
+          </xml:Group>
+        ))
+      }
     }
   }
   def userName( user:User ) = user.shortName
