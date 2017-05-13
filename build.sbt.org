@@ -31,7 +31,7 @@ libraryDependencies ++= {
     "org.specs2"        %% "specs2-core"        % "3.6.4"           % "test",
     "com.h2database"    % "h2"                  % "1.4.187",
     "mysql"             % "mysql-connector-java" % "5.1.39",
-    "com.typesafe.akka" %% "akka-actor" % "2.3.16",
+    "com.typesafe.akka" %% "akka-actor" % "2.5.0",
     "org.scala-lang"    % "scala-actors"        % "2.11.7"
   )
 }
