@@ -7,7 +7,6 @@ import scala.xml.{ NodeSeq, Text }
 import akka.actor._
 import net.liftweb.common.{Box, Full}
 import net.liftweb.util._
-import net.liftweb.actor._
 import net.liftweb.util.Helpers._
 import net.liftweb.http.S._
 import net.liftweb.http.js.JsCmds._
