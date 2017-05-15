@@ -25,7 +25,8 @@ class CometTwit extends CometActor {
 
   override def lowPriority = {
     case msg: Message  => {
-      if( !msg.fromUser.id.get.equals(User.currentUser.head.id.get) ) {
+      if( !msg.fromUser.id.get.equals(User.currentUser.head.id.get) 
+        && msg.toUser.id.get.equals(User.currentUser.head.id.get)) {
         partialUpdate( PrependHtml(spanId,
           <xml:Group>
             <ul class="status">
