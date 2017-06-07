@@ -18,7 +18,24 @@ import net.liftweb.mapper._
 import code.comet._
 
 class Twit {
-
+  try {
+    val session = S.session.get
+    // 既にsessinにCometTwitが登録されている場合、登録解除後、現在の相手で再登録。
+    val comets = session.findComet("CometTwit")
+    // 登録されている会話相手(room)と、現在の会話相手(room)が異なる場合、
+    // 登録解除、再登録。
+    comets.map{cm => {
+      val from = User.currentUser.head.id.get.toString
+      val to = Util.paramGet("to")
+      val room = if(from > to) from + to else to + from
+      if(!cm.asInstanceOf[CometTwit].room.equals(room)) {
+        cm.asInstanceOf[CometTwit].unSubScribe
+        cm.asInstanceOf[CometTwit].changeRoom(Util.paramGet("to"))
+      }
+    }}
+  } catch {
+    case e: Exception => println("Exception is happened")
+  }
   val from = User.currentUser.head.id.get
   val to = Util.paramGet("to").toLong
   val path = "twit?to=" + to
@@ -46,7 +63,6 @@ class Twit {
     )
   }
 
-
   def show(xhtml:NodeSeq): NodeSeq = {
     val seq: Seq[Long] = List(from, to)
     <xml:Group>{
@@ -60,7 +76,8 @@ class Twit {
         }
         else {
             bind("twit", xhtml, 
-              "message" -> <li class="balloon_r">{msg.status.get}</li>,
+//              "message" -> <li class="balloon_r">{msg.status.get}</li>,
+              "message" -> <div class="balloon_r"><p>{msg.status.get}</p></div>,
               "user" -> <li class="user_r">{userName(msg.fromUser)}</li>
             )
         }
@@ -70,5 +87,8 @@ class Twit {
 
   def userName( user:User ) = user.shortName
 
-  private lazy val bridge: ActorRef = BridgeController.getBridgeActor
+  private lazy val bridge: ActorRef = {
+    val room = if (from > to) from.toString+to.toString else to.toString + from.toString
+    BridgeController.getBridgeActor(room)
+  }
 }

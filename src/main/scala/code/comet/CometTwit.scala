@@ -13,13 +13,17 @@ import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.jquery.JqJsCmds._
 import net.liftweb.http.js.JE._
 import code.model._
+import code.logic._
 import code.lib.BridgeController
 
 class CometTwit extends CometActor {
-  bridge ! this
+  override def lifespan = Full(60 seconds)
+  var to = Util.paramGet("to")
   override def defaultPrefix = Full("twit")
   private lazy val spanId = uniqueId + "_massages_span"
   private var msg: List[Message] = Nil
+  var from = User.currentUser.head.id.get.toString
+  var room = if(from > to) from + to else to + from
 
   def render = bind("messages" -> <span id={spanId}><div></div></span>)
 
@@ -30,7 +34,7 @@ class CometTwit extends CometActor {
         partialUpdate( PrependHtml(spanId,
           <xml:Group>
             <ul class="status">
-              <li class="balloon_r">{ msg.status.get }</li>
+              <div class="balloon_r"><p>{ msg.status.get }</p></div>
               <li class="user_r">{ userName( msg.fromUser ) }</li>
             </ul>
           </xml:Group>
@@ -40,5 +44,31 @@ class CometTwit extends CometActor {
   }
   def userName( user:User ) = user.shortName
 
-  private lazy val bridge: ActorRef = BridgeController.getBridgeActor
+  private lazy val bridge: ActorRef = {
+    BridgeController.getBridgeActor(room)
+  }
+
+  override def localSetup {
+    bridge ! Subscribe(this)
+    super.localSetup()
+  }
+
+  override def localShutdown {
+    bridge ! UnSubscribe(this)
+    super.localShutdown()
+  }
+
+  def unSubScribe {
+    BridgeController.getBridgeActor(room) ! UnSubscribe(this)
+  }
+
+  def changeRoom(to: String) {
+    val from = User.currentUser.head.id.get.toString
+    val room = if(from > to) from + to else to + from
+    this.room = room
+    BridgeController.getBridgeActor(room) ! Subscribe(this)
+  }
 }
+
+case class Subscribe(comet: CometActor)
+case class UnSubscribe(comet: CometActor)
