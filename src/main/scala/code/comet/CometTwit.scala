@@ -17,7 +17,6 @@ import code.logic._
 import code.lib.BridgeController
 
 class CometTwit extends CometActor {
-  override def lifespan = Full(60 seconds)
   var to = Util.paramGet("to")
   override def defaultPrefix = Full("twit")
   private lazy val spanId = uniqueId + "_massages_span"
