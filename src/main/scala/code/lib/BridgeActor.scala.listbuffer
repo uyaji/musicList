@@ -9,17 +9,17 @@ import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import akka.util.Timeout
-import scala.collection.immutable._
+import scala.collection.mutable._
 import code.comet._
 
 class BridgeActor extends Actor {
-  private var target: Set[Option[CometActor]] = Set()
+  private var target: ListBuffer[Option[CometActor]] = new ListBuffer()
   def receive = {
     case Subscribe(comet) => {
-      target = target + Some(comet)
+      target += Some(comet)
     }
     case UnSubscribe(comet) => {
-      target = target - Some(comet)
+      target -= Some(comet)
     }
     case msg => {
       target.foreach(_.get ! msg)
