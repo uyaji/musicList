@@ -17,11 +17,9 @@ class BridgeActor extends Actor {
   def receive = {
     case Subscribe(comet) => {
       target = target + Some(comet)
-println("add target size = " + target.size)
     }
     case UnSubscribe(comet) => {
       target = target - Some(comet)
-println("sub target size = " + target.size)
     }
     case msg => {
       target.foreach(_.get ! msg)

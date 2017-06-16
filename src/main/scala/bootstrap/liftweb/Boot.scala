@@ -102,19 +102,15 @@ class Boot extends Logger {
     // Build SiteMap
     def sitemap = SiteMap(
       Menu.i("Home") / "index" >> User.AddUserMenusAfter, // the simple way to declare a menu
-
       // more complex because this menu allows anything in the
       // /static path to be visible
       Menu(Loc("Static", Link(List("static"), true, "/static/index"), 
 	       "Static Content")), 
-      Menu(Loc("track", Link(List("track"), true, "/track"), 
-	       "")),
-      Menu(Loc("band", Link(List("band"), true, "/band"), 
-	       "")),
-      Menu(Loc("member", Link(List("member"), true, "/member"), 
-	       "")),
-      Menu(Loc("twit", Link(List("twit"), true, "/twit"), 
-	       "")))
+      Menu.i("Track") / "track" >> Hidden >> LocGroup("bottom"),
+      Menu.i("Band") / "band" >> Hidden >> LocGroup("bottom"),
+      Menu.i("Member") / "member" >> Hidden >> LocGroup("bottom"),
+      Menu.i("Twit") / "twit" >> Hidden >> LocGroup("bottom")
+      )
 
     def sitemapMutators = User.sitemapMutator
 
