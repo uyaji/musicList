@@ -19,9 +19,8 @@ import code.comet._
 
 class Twit {
   try {
-    val session = S.session.get
-    // 既にsessinにCometTwitが登録されている場合、登録解除後、現在の相手で再登録。
-    val comets = session.findComet("CometTwit")
+    // 既にsessinにCometTwitが登録されている場合、登録解除後、現在の相手で再登録
+    val comets = S.session.get.findComet("CometTwit")
     // 登録されている会話相手(room)と、現在の会話相手(room)が異なる場合、
     // 登録解除、再登録。
     comets.map{cm => {

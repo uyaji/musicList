@@ -12,6 +12,7 @@ import net.liftweb.http._
 import S._
 import SHtml._
 import net.liftweb.http.js.{JsCmd, JsCmds}
+import net.liftweb.http.js.jquery._
 import java.util.Date
 
 import java.net.URL
@@ -58,10 +59,12 @@ class AlbumView extends PaginatorSnippet[Album]{
   }
 
   def showMessage(html: NodeSeq): NodeSeq = {
+    val total = ValueCell(100)
     val messageExist = Message.findAll(By(Message.to, User.currentUser.head.id.get))
     if(messageExist.size > 0) {
       bind ("twit", html, AttrBindParam("id", "1", "id"),
-                            "message" -> <span id="message"> you got a message </span>,
+                            // "you got a message"は、cometで、動的に制御する。
+                            "message" -> <span id="message"> you got a message </span><br />,
                             "user" -> <input type="hidden" id="user" value={User.currentUser.head.id.toString}/>
       )
     }
@@ -144,13 +147,13 @@ class AlbumView extends PaginatorSnippet[Album]{
           "name=albumtitle" #> SHtml.text(albumtitle, albumtitle = _) &
           "name=artistname" #> SHtml.text(artistname, artistname = _, "class" -> "search") &
           "name=artistseq"  #> SHtml.text(artistseq, artistseq = _) &
-          "type=submit" #> SHtml.onSubmitUnit(albumProcess);
+          "type=submit" #> SHtml.onSubmitUnit(albumProcess)
         }
         case _ => {
           "name=albumtitle" #> SHtml.text(albumtitle, albumtitle = _) &
           "name=artistname" #> SHtml.text(artistname, artistname = _, "class" -> "search") &
           "name=artistseq"  #> SHtml.select(options, default, artistseq = _) &
-          "type=submit" #> SHtml.onSubmitUnit(albumProcess);
+          "type=submit" #> SHtml.onSubmitUnit(albumProcess)
         }
       }
       return sel(from)
