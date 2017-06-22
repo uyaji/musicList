@@ -9,11 +9,12 @@ import akka.actor._
 import code.model._
 import code.lib.BridgeController
 
-class CometTotal extends CometActor {
+class CometNotification extends CometActor {
   override def defaultPrefix = Full("twit")
   // totalは、メッセージの有無、話者の人数を反映させる。
   var total = ValueCell(100)
   // 現状roomは、固定だが、動的に変更する。
+  // 呼び出すBridgeActorは、ログイン者毎のBridgeActorを新規で作成する。
   val room = "43"
   def render = bind("total" -> WiringUI.asText(total, JqWiringSupport.fade))
 
