@@ -48,6 +48,7 @@ class Twit {
         message.save
 //        TwitServer ! message
         bridge ! message
+        notifBridge ! message
         S.notice("twit the message")
         S.redirectTo(path)
       }
@@ -89,5 +90,9 @@ class Twit {
   private lazy val bridge: ActorRef = {
     val room = if (from > to) from.toString+to.toString else to.toString + from.toString
     BridgeController.getBridgeActor(room)
+  }
+
+  private lazy val notifBridge: ActorRef = {
+    BridgeNotifController.getBridgeActor(to.toString)
   }
 }

@@ -19,6 +19,8 @@
         <h2>Welcome your Music collection!</h2>
         <p class="lift:AlbumView.showMessage">
           <lift:comet type="CometNotification" name="Other">
+<!-- messageも、totalと同様に、cometで動的に制御する。-->
+<!--            <twit:message></twit:message>-->
             <span id="message"><twit:notification></twit:notification></span>
             <twit:user></twit:user>
           </lift:comet>

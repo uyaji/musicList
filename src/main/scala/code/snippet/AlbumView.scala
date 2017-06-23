@@ -63,12 +63,6 @@ class AlbumView extends PaginatorSnippet[Album]{
     val messageExist = Message.findAllByPreparedStatement(con => con.connection.prepareStatement("SELECT * FROM message WHERE to_c = " + User.currentUser.head.id.get + " GROUP BY from_C"))
     if(messageExist.size > 0) {
       bind ("twit", html, AttrBindParam("id", "1", "id"),
-                            // "you got a message"は、cometで、動的に制御する。
-                            "message" -> <span id="message"> you got a message 
-                               from {messageExist.size} person{messageExist.size match {
-                                 case 1 => ""
-                                 case _ => "s"
-                               }}.</span><br />,
                             "user" -> <input type="hidden" id="user" value={User.currentUser.head.id.toString}/>
       )
     }
