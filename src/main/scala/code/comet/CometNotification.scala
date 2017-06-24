@@ -22,13 +22,14 @@ class CometNotification extends CometActor {
   override def lowPriority = {
     case msg: Message  => {
       val notifArray = notification.get.split("from ")
+      Thread.sleep(10000)
       notifArray.size match {
-        case 0 => notification.set(getNotification)
+        case 1 => {
+          notification.set(getNotification)
+        }
         case _ => {
-          Thread.sleep(10000)
           val messageExistCount = Message.findAllByPreparedStatement(con => con.connection.prepareStatement("SELECT * FROM message WHERE to_c = " + User.currentUser.head.id.get + " GROUP BY from_C")).size
-          if(notifArray(1).substring(0,1).toLong.equals(messageExistCount)) {
-          } else {
+          if(!notifArray(1).substring(0,1).toLong.equals(messageExistCount)) {
             notification.set(getNotification)
           }
         }
