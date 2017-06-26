@@ -13,41 +13,33 @@ import code.lib.BridgeNotifController
 class CometNotification extends CometActor {
   override def defaultPrefix = Full("twit")
   // notificationは、メッセージの有無、話者の人数を反映させる。
-  var notification = ValueCell("")
+  var notificaterCount = ValueCell(0)
+  var notificationMessage = ValueCell("")
+  var notificationPerson = ValueCell("")
   // 現状roomは、固定だが、動的に変更する。
   // 呼び出すBridgeActorは、ログイン者毎のBridgeActorを新規で作成する。
   val to = User.currentUser.head.id.get.toString
-  def render = bind("notification" -> WiringUI.asText( notification , JqWiringSupport.fade))
+  def render = bind("notification" -> WiringUI.asText( notificationMessage , JqWiringSupport.fade))
 
   override def lowPriority = {
     case msg: Message  => {
-      val notifArray = notification.get.split("from ")
       Thread.sleep(10000)
-      notifArray.size match {
-        case 1 => {
-          notification.set(getNotification)
-        }
-        case _ => {
-          val messageExistCount = Message.findAllByPreparedStatement(con => con.connection.prepareStatement("SELECT * FROM message WHERE to_c = " + User.currentUser.head.id.get + " GROUP BY from_C")).size
-          if(!notifArray(1).substring(0,1).toLong.equals(messageExistCount)) {
-            notification.set(getNotification)
-          }
-        }
-      }
+      messageSet()
     }
     case InitialNotification => {
       Thread.sleep(6000)
-      notification.set(getNotification)
+      messageSet()
     }
   }
   
-  def getNotification(): String = {
-    val messageExist = Message.findAllByPreparedStatement(con => con.connection.prepareStatement("SELECT * FROM message WHERE to_c = " + User.currentUser.head.id.get + " GROUP BY from_C"))
-    val returnMessage = "you got a message from " + messageExist.size  + " person" 
-    messageExist.size match {
-      case 0 => ""
-      case 1 => returnMessage
-      case _ => returnMessage + "s"
+  def messageSet() {
+    val count = Message.findAllByPreparedStatement(con => con.connection.prepareStatement("SELECT * FROM message WHERE to_c = " + User.currentUser.head.id.get + " GROUP BY from_C")).size
+    notificaterCount.set(count)
+    if(count > 0) {
+      if(notificaterCount.get > 1) notificationPerson.set(" persons")
+      else notificationPerson.set(" person")
+      notificationMessage.set("you got a message from ")
+      notificationMessage.set(((notificationMessage lift notificaterCount){_ + _} lift notificationPerson){_ + _}.get)
     }
   }
 
