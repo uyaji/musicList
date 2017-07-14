@@ -53,9 +53,13 @@ class AlbumView extends PaginatorSnippet[Album]{
       case false => "general user"
     }
     bind ("application", html, AttrBindParam("id", "1", "id"),
+                          "mode" -> <span><span class="lift:Loc.runmode"></span> : {Props.mode}</span>,
+                          "usermode" -> <span> / <span class="lift:Loc.usertype"></span> : {userMode}</span>
+    )
+/*    bind ("application", html, AttrBindParam("id", "1", "id"),
                           "mode" -> <span>run mode : {Props.mode}</span>,
                           "usermode" -> <span> / user type : {userMode}</span>
-    )
+    )*/
   }
 
   def showMessage(html: NodeSeq): NodeSeq = {
@@ -168,7 +172,7 @@ class AlbumView extends PaginatorSnippet[Album]{
         "name=searchArtist" #> SHtml.text(searchArtist, searchArtist = _, "class" -> "search") &
         "name=searchTrack" #> SHtml.text(searchTrack, searchTrack = _, "class" -> "search") &
         "name=searchPlayer" #> SHtml.text(searchPlayer, searchPlayer = _, "class" -> "search") &
-        "name=searchInvalid" #> {<span>invalid</span> ++ SHtml.checkbox(searchInvalid, searchInvalid = _, "class" -> "search") }&
+        "name=searchInvalid" #> {<span class="lift:Loc.nonpublish"></span> ++ SHtml.checkbox(searchInvalid, searchInvalid = _, "class" -> "search") }&
         "type=submit" #> SHtml.onSubmitUnit(searchAlbum);
       } else {
         "name=searchAlbumtitle" #> SHtml.text(searchAlbumtitle, searchAlbumtitle = _, "class" -> "search") &

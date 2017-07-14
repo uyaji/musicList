@@ -16,7 +16,7 @@
         <p class="lift:AlbumView.showMode">
           <application:mode></application:mode>&nbsp<application:usermode></application:usermode>
         <p>
-        <h2>Welcome your Music collection!</h2>
+        <h2><span class=lift:Loc.title></span></h2>
         <p class="lift:AlbumView.showMessage">
           <lift:comet type="CometNotification" name="Other">
             <span id="message"><twit:notification></twit:notification></span>
@@ -25,40 +25,40 @@
         <p>
         <br />
         <form class="lift:AlbumView.add?form=post">
-          <label for="albumtitle">album title&nbsp&nbsp</label>
+          <label for="albumtitle"><span class="lift:Loc.albumtitle"></span></label>
           <input name="albumtitle" id="albumtitle"><br />
-          <label for="artistname">artist name</label>
+          <label for="artistname"><span class="lift:Loc.artistname"></span></label>
           <input name="artistname" id="artistname"><br />
           <p id="artistseqinput">
-          <label id="artistlabel" for="artiseq">artist seq&nbsp&nbsp&nbsp&nbsp</label>
+          <label id="artistlabel" for="artiseq"><span class="lift:Loc.artistseq"></span></label>
           <input name="artistseq" id="artistseq"><br />
           </p>
           <p name="artistselect" id="artistselect">
           </p>
-          <input type="submit" value="Add Album!"/>
+          <button type="submit"><span class="lift:Loc.addalbum"><span></button>
         </form>
         <hr />
         <form data-lift="AlbumView.search?form=post" class="lift:AlbumView.search?form=post">
-          <label>search filter</label><br />
-          <label for="searchAlbumtitle">album title</label>
+          <label><span class="lift:Loc.searchfilter"></span></label><br />
+          <label for="searchAlbumtitle"><span class="lift:Loc.albumtitle"></span></label>
           <input name="searchAlbumtitle" id="searchAlbumtitle" size="10"/>
-          <label for="searchArtist">&nbsp&nbspartist name&nbsp&nbsp</label>
+          <label for="searchArtist"><span class="lift:Loc.artistname"></span></label>
           <input name="searchArtist" id="searchArtist" size="10"><br/>
-          <label for="searchTrack">track title&nbsp&nbsp</label>
+          <label for="searchTrack"><span class="lift:Loc.tracktitle"></span></label>
           <input name="searchTrack" id="searchTrack" size="10">
-          <label for="searchPlayer">&nbsp&nbspplayer name</label>
+          <label for="searchPlayer"><span class="lift:Loc.playername"></span></label>
           <input name="searchPlayer" id="searchPlayer" size="10">
           <div name="searchInvalid" id="searchInvalid"></div>
-          <input type="submit" value="Search Album!"/>
+          <button type="submit"><span class="lift:Loc.searchalbum"></span></button>
         </form>
         <div>
           <table>
             <thead>
               <tr>
-                <th>seq</th>
-                <th>Album Title</th>
-                <th>Artist</th>
-                <th>Artist Seq</th>
+                <th><span class="lift:Loc.seq"></span></th>
+                <th><span class="lift:Loc.albumtitle"></span></th>
+                <th><span class="lift:Loc.artistname"></span></th>
+                <th><span class="lift:Loc.artistseqtb"></span></th>
                 <th></th>
                 <th></th>
                 <th></th>
