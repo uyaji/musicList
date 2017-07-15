@@ -108,7 +108,7 @@ class BandView extends PaginatorSnippet[BandSeq] {
                           }</span>,
                           "startat" -> <span>{link("member?bandid=" + bds.band.toString + "&seq=" + bds.seq.toString, () => (), Text(bds.bandSeqStartAt.get.toString.substring(0,4)))}</span>,
                           "endat" -> <span>{bds.bandSeqEndAt.get.toString.substring(0, 4)}</span>,
-                          "delete" -> <span>{link("band?bandid=" + Util.paramGet("bandid") + "&offset=" + offset , () => delete(bandid.toLong, bds.seq.get), Text("delete"))}</span>
+                          "delete" -> <span>{link("band?bandid=" + Util.paramGet("bandid") + "&offset=" + offset , () => delete(bandid.toLong, bds.seq.get), Text(S.loc("delete").get.toString))}</span>
                           )
             case _ => 
                           bind("band", html,

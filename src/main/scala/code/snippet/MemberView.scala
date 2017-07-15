@@ -102,7 +102,8 @@ class MemberView extends PaginatorSnippet[BandSeqPlayers] {
             link("member?bandid=" + bandid + "&seq=" + bandseq + "&memberseq=" + memberseq + "&bandseqplayerid=" + bandseqplayerid + "&offset=" + offset, () => (), Text(memberseq))
           }</span>,
           "name" -> <span>{Player.findAll(By(Player.id, bsp.player.get)).head.name}</span>,
-          "delete" -> <span>{link("member?bandid=" + bandid + "&seq=" + bandseq + "&offset=" + offset, () => delete(bandSeq.id.get, bsp.player.get), Text("delete"))}</span>
+//          "delete" -> <span>{link("member?bandid=" + bandid + "&seq=" + bandseq + "&offset=" + offset, () => delete(bandSeq.id.get, bsp.player.get), Text("delete"))}</span>
+          "delete" -> <span>{link("member?bandid=" + bandid + "&seq=" + bandseq + "&offset=" + offset, () => delete(bandSeq.id.get, bsp.player.get), Text(S.loc("delete").get.toString))}</span>
         )
       })
     }

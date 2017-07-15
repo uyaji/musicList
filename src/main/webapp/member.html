@@ -13,26 +13,26 @@
         <p>&nbsp&nbsp&nbsp&nbspReference only user/pass : guest@mail.com / guest</p>
       </lift:Util.out>
       <lift:Util.in>
-        <h2>Welcome Member detail!</h2>
+        <h2><span class="lift:Loc.membertitle"></span></h2>
         <div class="lift:MemberView.bandNameSeq">
-          <h3> Band name : <band:nameseq></nemaseq></h3>
+          <h3> <span class="lift:Loc.artistname"></span> : <band:nameseq></nemaseq></h3>
         </div>
         <form class="lift:MemberView.add?form=post">
           <input name="memberseq"><br />
           <input name="bandseqplayerid"><br />
-          <label for="seq" class="column span-10">seq</label><br />
+          <label for="seq" class="column span-10"><span class="lift:Loc.memberseq"></span></label><br />
           <input type="text" name="seq" class="column span-10"/><br />
-          <label for="name" class="column span-10">name</label><br />
+          <label for="name" class="column span-10"><span class="lift:Loc.playername"></span></label><br />
           <input id="membername" type="text" name="name" /><br />
-          <input type="submit" value="Add member!" style="margin-top:5px;"/>
+          <button type="submit" style="margin-top:5px;"/><span class="lift:Loc.addmember"></span></button>
         </form>
         <div>
           <table>
             <thead>
               <tr>
-                <th>SEQ</th>
-                <th>Name</th>
-                <th>action</th>
+                <th><span class="lift:Loc.memberseq"></span></th>
+                <th><span class="lift:Loc.playername"></span></th>
+                <th><span class="lift:Loc.action"></span></th>
               </tr>
             </thead>
             <tbody id="members" class="lift:MemberView.list">

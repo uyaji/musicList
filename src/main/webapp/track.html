@@ -13,30 +13,30 @@
         <p>&nbsp&nbsp&nbsp&nbspReference only user/pass : guest@mail.com / guest</p>
       </lift:Util.out>
       <lift:Util.in>
-        <h2>Welcome your Music detail!</h2>
+        <h2><span class="lift:Loc.trackdetailstitle"></span></h2>
         <div class="lift:TrackView.albumtitle">
-          <h3>Album title : <album:title></album:title></h3>
+          <h3><span class="lift:Loc.albumtitle"></span> : <album:title></album:title></h3>
         </div>
         <form class="lift:TrackView?form=post;multipart=true">
           <input name="albumid"><br />
           <input name="albumtrcid"><br />
-          <label for="seq">track seq</label><br />
+          <label for="seq"><span class="lift:Loc.seq"></span></label><br />
           <input name="seq" id="seq"><br />
-          <label for="tracktile">track title</label><br />
+          <label for="tracktile"><span class="lift:Loc.tracktitle"></span></label><br />
           <input name="tracktitle" id="tracktitle""><br />
           <input name="upload"><br />
-          <input type="submit" value="Add Track!">
+          <button type="submit"><span class="lift:Loc.addtrack"></span></button>
         </form>
         <div>
           <table>
             <thead>
               <tr>
-                <th>seq</th>
-                <th>Track Title</th>
-                <th>Attach File</th>
-                <th>stars</th>
+                <th><span class="lift:Loc.seq"></span></th>
+                <th><span class="lift:Loc.tracktitle"></span></th>
+                <th><span class="lift:Loc.attach"></span></th>
+                <th><span class="lift:Loc.stars"></span></th>
+                <th><span class="lift:Loc.action"></span></th>
                 <th></th>
-                <th>action</th>
                 <th></th>
                 <th></th>
               </tr>

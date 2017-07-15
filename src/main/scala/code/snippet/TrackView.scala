@@ -121,7 +121,7 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
                  Text(" ")
              }</span>,
              "delete" -> <span>{
-                   link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => delete(track.id.get,0), Text("delete"))
+                   link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => delete(track.id.get,0), Text(S.loc("delete").get.toString))
              }</span>
           );
         }
@@ -153,7 +153,7 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
                }
              }</span>,
              "delete" -> <span>{
-               link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => delete(track.id.get, atc.id.get), Text("delete"))
+               link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => delete(track.id.get, atc.id.get), Text(S.loc("delete").get.toString))
              }</span>,
              "stars" -> <span>{
                atc.users.size match {
@@ -163,20 +163,20 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
              }</span>,
              "valid" -> <span>{
                if(Util.isSuperUser) {
-                 link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => switchShow(atc.id.get, !(atc.valid.get)), Text(if(atc.valid.get) "valid" else "invalid"))
+                 link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => switchShow(atc.id.get, !(atc.valid.get)), Text(if(atc.valid.get) S.loc("valid").get.toString else S.loc("invalid").get.toString))
                } else {
                  Text(" ")
                }
              }</span>,
              "addstar" -> <span>{
                if(atc.valid.get || Util.isSuperUser)
-                 link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => addStar(atc.id.get), Text("Add Start"))
+                 link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => addStar(atc.id.get), Text(S.loc("addstar").get.toString))
                else
                  Text(" ")
              }</span>,
              "contact" -> <span>{
                if(atc.valid.get)
-                 link("twit?to=" + atc.uploader.get, () => (), Text("contact"))
+                 link("twit?to=" + atc.uploader.get, () => (), Text(S.loc("contact").get.toString))
                else
                  Text(" ")
              }</span>
