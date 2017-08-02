@@ -18,8 +18,32 @@ import java.util.Date
 import java.net.URL
 import scala.util.parsing.combinator.RegexParsers
 
+object Config {
+  lazy val util = Util
+  lazy val key = "offset"
+  lazy val utilLib = new UtilLib(this)
+}
+
+class UtilLib(env: {
+  val util: TraitUtil
+  val key: String
+}) {
+  def trigger = {
+    println("result = " + env.util.paramGet(env.key))
+  }
+}
+
+class Executer(env: {val utilLib: UtilLib}) {
+  env.utilLib.trigger
+}
+
 class AlbumView extends PaginatorSnippet[Album]{
-  val offset = Util.paramGet("offset")
+  // Dependency Injection
+  MusicInjector.setThing(Util)
+  val offset = MusicInjector.things.vend.paramGet("offset")
+// cake pattern implementation
+//  new Executer(Config)
+//  val offset = Util.paramGet("offset")
   var searchAlbumtitle = Util.paramGet("searchAlbumtitle") match {
     case "0" => ""
     case key => key
@@ -287,3 +311,12 @@ class AlbumView extends PaginatorSnippet[Album]{
     !band.getTargets.forall(bseq => bseq.asInstanceOf[BandSeq].getTarget2s.forall(alb => alb.albumtitle != album.getName))
 }
 
+object MusicInjector extends SimpleInjector {
+  var thing: TraitUtil = null
+  val things = new Inject(buildOne _) {}
+  // コンパニオンオブジェクトなので、インスタンス化にnewする必要無し。
+  def buildOne(): TraitUtil = thing
+  def setThing(some: TraitUtil) {
+    thing = some
+  }
+}

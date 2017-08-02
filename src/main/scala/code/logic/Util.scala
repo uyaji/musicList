@@ -8,7 +8,7 @@ import java.util.Date
 
 import code.model._
 
-object Util {
+object Util extends TraitUtil{
   def generateSeq(rowCount: Long, getMaxSeq: () => Long, paramSeq: String): String = {
     paramSeq match {
       case "0" => rowCount match {
@@ -40,7 +40,7 @@ object Util {
     sdf.format(date)
   }
 
-  def isAllDigits(s: String) = s match {
+  def isAllDigits(s: String): Boolean = s match {
     case "" => false
     case p: String => p forall Character.isDigit
   }

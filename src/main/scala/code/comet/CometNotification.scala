@@ -16,7 +16,7 @@ class CometNotification extends CometActor {
   var notificaterCount = ValueCell(0)
   var notificationMessage = ValueCell("")
   var notificationPerson = ValueCell("")
-  // 現状roomは、固定だが、動的に変更する。
+  // roomは、動的に変更する。
   // 呼び出すBridgeActorは、ログイン者毎のBridgeActorを新規で作成する。
   val to = User.currentUser.head.id.get.toString
   def render = bind("notification" -> WiringUI.asText( notificationMessage , JqWiringSupport.fade))
