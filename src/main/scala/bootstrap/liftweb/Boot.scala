@@ -73,6 +73,8 @@ class Boot extends Logger {
         () => Select.rtnTwiterList(id)
 
     }
+    import code.rest._
+    LiftRules.dispatch.append(Streamer)
     // where to search snippet
     LiftRules.addToPackages("code")
 

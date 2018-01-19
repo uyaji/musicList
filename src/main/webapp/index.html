@@ -13,6 +13,7 @@
         <p>&nbsp&nbsp&nbsp&nbspReference only user/pass : guest@mail.com / guest</p>
       </lift:Util.out>
       <lift:Util.in>
+        <link data-lift="head" rel="stylesheet" href="red-tiles.css" type="text/css" />
         <p class="lift:AlbumView.showMode">
           <application:mode></application:mode>&nbsp<application:usermode></application:usermode>
         <p>
@@ -82,8 +83,8 @@
             <nav:first></nav:first> | <nav:prev></nav:prev> | <nav:allpages></nav:allpages> | <nav:next></nav:next> | <nav:last></nav:last> | <nav:records></nav:records>
           </p>
         </div>
-        <link type="text/css" href="css/jquery-ui.min.css" rel="stylesheet" />
-        <link type="text/css" href="css/modal.css" rel="stylesheet" />
+        <link data-lift="head" rel="stylesheet" href="css/modal.css" type="text/css" />
+        <link data-lift="head" rel="stylesheet" href="css/jquery-ui.min.css" type="text/css" />
         <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
         <script type="text/javascript" src="js/jquery-ui.min.js"></script>
         <script data-lift="with-resource-id" type="text/javascript" src="js/suggest.js"></script>
