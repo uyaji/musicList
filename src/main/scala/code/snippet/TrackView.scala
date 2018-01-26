@@ -149,7 +149,8 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
              "filename" -> <span>{
                track.attaches.size match {
                  case 0 => Text(" ")
-                 case _ => if(atc.valid.get || Util.isSuperUser) link("lob/" + atc.id.get.toString, () => (), Text(atc.filename.toString)) else Text(" ")
+//                 case _ => if(atc.valid.get || Util.isSuperUser) link("lob/" + atc.id.get.toString, () => (), Text(atc.filename.toString)) else Text(" ")
+                 case _ => if(atc.valid.get || Util.isSuperUser) link("video/" + atc.id.get.toString, () => (), Text(atc.filename.toString), "target"->"_blank") else Text(" ")
                }
              }</span>,
              "delete" -> <span>{
