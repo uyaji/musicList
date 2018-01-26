@@ -33,7 +33,7 @@ class CometNotification extends CometActor {
   }
   
   def messageSet() {
-    val count = Message.findAllByPreparedStatement(con => con.connection.prepareStatement("SELECT * FROM message WHERE to_c = " + User.currentUser.head.id.get + " GROUP BY from_C")).size
+    val count = Message.findAllByPreparedStatement(con => con.connection.prepareStatement("SELECT from_C FROM message WHERE to_c = " + User.currentUser.head.id.get + " GROUP BY from_C")).size
     notificaterCount.set(count)
     if(count > 0) {
       if(notificaterCount.get > 1) notificationPerson.set(S.loc("persons").get.toString)

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+    <title>Home</title>
+  </head>
+  <body data-lift-content-id="main">
+    <div id="main" data-lift="surround?with=default;at=content">
+      <lift:Util.out>Please
+        <Lift:menu.item name="Login">Log In</lift:menu.item>
+        &nbsp or &nbsp
+        <Lift:menu.item name="CreateUser">Sign Up</lift:menu.item>
+        <p>&nbsp&nbsp&nbsp&nbspReference only user/pass : guest@mail.com / guest</p>
+      </lift:Util.out>
+      <lift:Util.in>
+        <link data-lift="head" rel="stylesheet" href="red-tiles.css" type="text/css" />
+        <p class="lift:AlbumView.showMode">
+          <application:mode></application:mode>&nbsp<application:usermode></application:usermode>
+        <p>
+        <h2><span class="lift:Loc.title"></span></h2>
+        <br />
+        <form class="lift:AlbumView.add?form=post">
+          <label for="albumtitle"><span class="lift:Loc.albumtitle"></span></label>
+          <input name="albumtitle" id="albumtitle"><br />
+          <label for="artistname"><span class="lift:Loc.artistname"></span></label>
+          <input name="artistname" id="artistname"><br />
+          <p id="artistseqinput">
+          <label id="artistlabel" for="artiseq"><span class="lift:Loc.artistseq"></span></label>
+          <input name="artistseq" id="artistseq"><br />
+          </p>
+          <p name="artistselect" id="artistselect">
+          </p>
+          <button type="submit"><span class="lift:Loc.addalbum"><span></button>
+        </form>
+        <hr />
+        <form data-lift="AlbumView.search?form=post" class="lift:AlbumView.search?form=post">
+          <label><span class="lift:Loc.searchfilter"></span></label><br />
+          <label for="searchAlbumtitle"><span class="lift:Loc.albumtitle"></span></label>
+          <input name="searchAlbumtitle" id="searchAlbumtitle" size="10"/>
+          <label for="searchArtist"><span class="lift:Loc.artistname"></span></label>
+          <input name="searchArtist" id="searchArtist" size="10"><br/>
+          <label for="searchTrack"><span class="lift:Loc.tracktitle"></span></label>
+          <input name="searchTrack" id="searchTrack" size="10">
+          <label for="searchPlayer"><span class="lift:Loc.playername"></span></label>
+          <input name="searchPlayer" id="searchPlayer" size="10">
+          <div name="searchInvalid" id="searchInvalid"></div>
+          <button type="submit"><span class="lift:Loc.searchalbum"></span></button>
+        </form>
+        <div>
+          <table>
+            <thead>
+              <tr>
+                <th><span class="lift:Loc.seq"></span></th>
+                <th><span class="lift:Loc.albumtitle"></span></th>
+                <th><span class="lift:Loc.artistname"></span></th>
+                <th><span class="lift:Loc.artistseqtb"></span></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="all_albums" class="lift:AlbumView.list">
+              <tr album:id="">
+                <td><album:seq></album:seq></td>
+                <td><album:albumtitle></album:albumtitle></td>
+                <td><album:artistname></album:artistname></td>
+                <td><album:artistseq></album:artistseq></td>
+                <td><album:tracktitle></album:tracktitle></td>
+                <td><album:tracktitles></album:tracktitles></td>
+                <td><album:player></album:player></td>
+                <td><album:players></album:players></td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="lift:AlbumView.paginate">
+            <nav:first></nav:first> | <nav:prev></nav:prev> | <nav:allpages></nav:allpages> | <nav:next></nav:next> | <nav:last></nav:last> | <nav:records></nav:records>
+          </p>
+        </div>
+        <link data-lift="head" rel="stylesheet" href="css/modal.css" type="text/css" />
+        <link data-lift="head" rel="stylesheet" href="css/jquery-ui.min.css" type="text/css" />
+        <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+        <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+        <script data-lift="with-resource-id" type="text/javascript" src="js/suggest.js"></script>
+        <script data-lift="with-resource-id" type="text/javascript" src="js/select.js"></script>
+        <script data-lift="with-resource-id" type="text/javascript" src="js/tracks.js"></script>
+        <script data-lift="with-resource-id" type="text/javascript" src="js/players.js"></script>
+        <script data-lift="with-resource-id" type="text/javascript" src="js/message.js"></script>
+        <p><a href="#modal01" class="modalOpen"></a></p>
+        <div class="modal" id="modal01">
+          <!-- モーダルウィンドウが開いている時のオーバーレイ -->
+          <div class="overLay modalClose"></div>
+          <!-- モーダルウィンドウの中身 -->
+          <div class="inner">
+            <!-- モーダルウィンドウ -->
+          </div>
+        </div>
+      </lift:Util.in>
+    </div>
+  </body>
+</html>
+

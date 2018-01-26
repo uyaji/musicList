@@ -88,7 +88,7 @@ class AlbumView extends PaginatorSnippet[Album]{
 
   def showMessage(html: NodeSeq): NodeSeq = {
     val total = ValueCell(100)
-    val messageExist = Message.findAllByPreparedStatement(con => con.connection.prepareStatement("SELECT * FROM message WHERE to_c = " + User.currentUser.head.id.get + " GROUP BY from_C"))
+    val messageExist = Message.findAllByPreparedStatement(con => con.connection.prepareStatement("SELECT from_C FROM message WHERE to_c = " + User.currentUser.head.id.get + " GROUP BY from_C"))
     if(messageExist.size > 0) {
       bind ("twit", html, AttrBindParam("id", "1", "id"),
                             "user" -> <input type="hidden" id="user" value={User.currentUser.head.id.toString}/>
