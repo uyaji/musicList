@@ -1,8 +1,8 @@
 db.driver     =org.postgresql.Driver
-db.url        =jdbc:postgresql://ec2-54-163-238-169.compute-1.amazonaws.com:5432/ddlp9bqkm5ejnc
-db.user       =foquonvurzqldp
-db.password   =c3141eb3c71e51ae0f2a0e29355e0e972609959cdddba4c17473208af5b08153
+db.url        =jdbc:postgresql://localhost:5432/music_list
+db.user       =password
+db.password   =password
 db.url_prefix =
 db.host       =
 db.port       =
-db.database   =
+db.database =
