@@ -32,9 +32,10 @@ object Streamer extends RestHelper {
 
       val headers =
         ("Connection" -> "close") ::
-        ("Transfer-Encoding" -> "chunked") ::
+      // The under 1 line is a comment out for the heroku.
+//        ("Transfer-Encoding" -> "chunked") ::
         content_type ::
-        ("Content-Range" -> ("bytes " + start.toString + "-" + end.toString + "/" + attach.trackattach.length.toString)) ::
+        ("Content-Range" -> ("bytes " + start.toString + "-" + end.toString + "/" + attach.trackattach.get.length.toString)) ::
         Nil
 
       () =>  Full(StreamingResponse (
