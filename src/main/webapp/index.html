@@ -15,13 +15,14 @@
       <lift:Util.in>
         <link data-lift="head" rel="stylesheet" href="red-tiles.css" type="text/css" />
         <p class="lift:AlbumView.showMode">
-          <application:mode></application:mode>&nbsp<application:usermode></application:usermode>
+          <span id="applicationmode"></span>&nbsp<span id="usermode"></span>
+<!--          <application:mode></application:mode>&nbsp<application:usermode></application:usermode>-->
         <p>
         <h2><span class="lift:Loc.title"></span></h2>
         <p class="lift:AlbumView.showMessage">
           <lift:comet type="CometNotification" name="Other">
             <span id="message"><twit:notification></twit:notification></span>
-            <twit:user></twit:user>
+            <span id="twituser"></span>
           </lift:comet>
         <p>
         <br />
@@ -68,19 +69,31 @@
             </thead>
             <tbody id="all_albums" class="lift:AlbumView.list">
               <tr album:id="">
-                <td><album:seq></album:seq></td>
+                <td><span id="albumseq"></span></td>
+                <td><span id="albumalbumtitle"></span></td>
+                <td><span id="albumartistname"></span></td>
+                <td><span id="albumartistseq"></span></td>
+                <td><span id="albumtracktitle"></span></td>
+                <td><span id="albumtracktitles"></span></td>
+                <td><span id="albumplayer"></span></td>
+                <td><span id="albumplayers"></span></td>
+
+<!--                <td><album:seq></album:seq></td>
                 <td><album:albumtitle></album:albumtitle></td>
                 <td><album:artistname></album:artistname></td>
                 <td><album:artistseq></album:artistseq></td>
                 <td><album:tracktitle></album:tracktitle></td>
                 <td><album:tracktitles></album:tracktitles></td>
                 <td><album:player></album:player></td>
-                <td><album:players></album:players></td>
+                <td><album:players></album:players></td>-->
+
               </tr>
             </tbody>
           </table>
-          <p class="lift:AlbumView.paginate">
-            <nav:first></nav:first> | <nav:prev></nav:prev> | <nav:allpages></nav:allpages> | <nav:next></nav:next> | <nav:last></nav:last> | <nav:records></nav:records>
+          <!--<p class="lift:AlbumView.paginate" xmls:nav="navigate">
+            <nav:first></nav:first> | <nav:prev></nav:prev> | <nav:allpages></nav:allpages> | <nav:next></nav:next> | <nav:last></nav:last> | <nav:records></nav:records>-->
+          <p data-lift="AlbumView.paginate">
+            <span class="first"></span> | <span class="prev"></span> | <span class="allpages"></span> | <span class="next"></span> | <span class="last"></span> | <span class="records"></span>
           </p>
         </div>
         <link data-lift="head" rel="stylesheet" href="css/modal.css" type="text/css" />

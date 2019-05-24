@@ -15,7 +15,7 @@
       <lift:Util.in>
         <h2><span class="lift:Loc.trackdetailstitle"></span></h2>
         <div class="lift:TrackView.albumtitle">
-          <h3><span class="lift:Loc.albumtitle"></span> : <album:title></album:title></h3>
+          <h3><span class="lift:Loc.albumtitle"></span> : <span id="albumtitle"></span></h3>
         </div>
         <form class="lift:TrackView?form=post;multipart=true">
           <input name="albumid"><br />
@@ -43,14 +43,14 @@
             </thead>
             <tbody id="all_tracks" class="lift:TrackView.list">
               <tr tracK:id="">
-                <td><track:seq></track:seq></td>
-                <td><track:tracktitle></track:tracktitle></td>
-                <td><track:filename></track:filename></td>
-                <td><track:stars></track:stars></td>
-                <td><track:addstar></track:addstar></td>
-                <td><track:delete></track:delete></td>
-                <td><track:contact></track:contact></td>
-                <td><track:valid></track:valid></td>
+                <td><span id="trackseq"></span></td>
+                <td><span id="tracktracktitle"></span></td>
+                <td><span id="trackfilename"></span></td>
+                <td><span id="trackstars"></span></td>
+                <td><span id="trackaddstar"></span></td>
+                <td><span id="trackdelete"></span></td>
+                <td><span id="trackcontact"></span></td>
+                <td><span id="trackvalid"></span></td>
               </tr>
             </tbody>
           </table>

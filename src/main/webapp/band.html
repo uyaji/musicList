@@ -15,7 +15,7 @@
       <lift:Util.in>
         <h2><span class="lift:Loc.bandtitle"></span></h2>
         <div class="lift:BandView.bandName">
-          <h3><span class="lift:Loc.artistname"></span> : <band:name></band:name></h3>
+          <h3><span class="lift:Loc.artistname"></span> : <span id=bandbandname></span></h3>
         </div>
         <form class="lift:BandView.add?form=post">
           <label for="seq" class="column span-10"><span class="lift:Loc.bandseq"></span></label><br />
@@ -37,9 +37,9 @@
             </thead>
             <tbody id="band_history" class="lift:BandView.list">
               <tr band>
-                <td><band:seq></band:seq></td>
-                <td><band:startat></band:startat> - <band:endat></band:endat></td>
-                <td><band:delete></band:delete></td>
+                <td><span id="bandseq"></span></td>
+                <td><span id = "bandstartat"></span> - <span id="bandendat"></span></td>
+                <td><span id="banddelete"></span></td>
               </tr>
             </tbody>
           </table>

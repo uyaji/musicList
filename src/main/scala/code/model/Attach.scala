@@ -24,13 +24,13 @@ class Attach extends LargeObject with LongKeyedMapper[Attach] with IdPK with Man
   object mimetype extends MappedString(this, 40)
   object trackattach extends MappedBinary(this)
   object valid extends MappedBoolean(this)
-  object track extends LongMappedMapper(this, Track)
+  object track extends MappedLongForeignKey(this, Track)
   def getTrack(): Track = {
     Track.findAll(By(Track.id, track.get)).head
   }
   override def getFileName(): String = filename.get
   object users extends MappedManyToMany(UserAttaches, UserAttaches.attach, UserAttaches.user, User, OrderBy(UserAttaches.user, Ascending))
-  object uploader extends LongMappedMapper(this, User)
+  object uploader extends MappedLongForeignKey(this, User)
 
   def getUploader(): User = {
     User.findAll(By(User.id, uploader.get)).head

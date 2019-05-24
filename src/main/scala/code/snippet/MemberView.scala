@@ -33,7 +33,12 @@ class MemberView extends PaginatorSnippet[BandSeqPlayers] {
               () => bandSeq.bandseqPlayers.reduceLeft((bp1, bp2) => if(bp1.seq.get > bp2.seq.get) bp1 else bp2).seq.get +1,
               memberseq)
   def bandNameSeq(html: NodeSeq): NodeSeq = {
-    bind("band", html, "nameseq" -> (band.bandname + " : " + Util.dateToString(bandSeq.bandSeqStartAt.get) + " - " + Util.dateToString(bandSeq.bandSeqEndAt.get) ))
+    val bindBandName = {
+      "#bandnameseq" #> <span>{
+        band.bandname + " : " + Util.dateToString(bandSeq.bandSeqStartAt.get) + " - " + Util.dateToString(bandSeq.bandSeqEndAt.get)
+      }</span>
+    }
+    bindBandName(html) 
   }
 
   def list(html: NodeSeq): NodeSeq = {
@@ -97,14 +102,18 @@ class MemberView extends PaginatorSnippet[BandSeqPlayers] {
           case _ => bsp.seq.toString
         }
         val bandseqplayerid: String = bsp.id.get.toString
-        bind("member", html,
-          "seq" -> <span>{
+        val bindmember = {
+          "#memberseq" #> <span>{
             link("member?bandid=" + bandid + "&seq=" + bandseq + "&memberseq=" + memberseq + "&bandseqplayerid=" + bandseqplayerid + "&offset=" + offset, () => (), Text(memberseq))
-          }</span>,
-          "name" -> <span>{Player.findAll(By(Player.id, bsp.player.get)).head.name}</span>,
-//          "delete" -> <span>{link("member?bandid=" + bandid + "&seq=" + bandseq + "&offset=" + offset, () => delete(bandSeq.id.get, bsp.player.get), Text("delete"))}</span>
-          "delete" -> <span>{link("member?bandid=" + bandid + "&seq=" + bandseq + "&offset=" + offset, () => delete(bandSeq.id.get, bsp.player.get), Text(S.loc("delete").get.toString))}</span>
-        )
+          }</span> &
+          "#membername" #> <span>{
+            Player.findAll(By(Player.id, bsp.player.get)).head.name
+          }</span> &
+          "#memberdelete" #> <span>{
+            link("member?bandid=" + bandid + "&seq=" + bandseq + "&offset=" + offset, () => delete(bandSeq.id.get, bsp.player.get), Text(S.loc("delete").head.toString))
+          }</span>
+        }
+        bindmember(html)
       })
     }
 

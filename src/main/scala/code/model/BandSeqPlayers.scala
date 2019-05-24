@@ -21,8 +21,8 @@ class BandSeqPlayers extends Relation with LongKeyedMapper[BandSeqPlayers] with 
   }
   override def validates = this.validate
 //
-  object bandseq extends LongMappedMapper(this, BandSeq)
-  object player extends LongMappedMapper(this, Player)
+  object bandseq extends MappedLongForeignKey(this, BandSeq)
+  object player extends MappedLongForeignKey(this, Player)
   object seq extends MappedLong(this) {
     override def validations =
       minVal _ :: super.validations

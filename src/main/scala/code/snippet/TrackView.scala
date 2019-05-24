@@ -45,7 +45,10 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
   }
 
   def albumtitle(html: NodeSeq): NodeSeq = {
-    bind("album", html, "title" -> album.albumtitle)
+    val bindAlbum = {
+      "#albumtitle" #> <span>{ album.albumtitle }</span>
+    }
+    bindAlbum(html)
   }
 
   def render = {
@@ -103,85 +106,86 @@ class TrackView extends PaginatorSnippet[AlbumTracks] {
     def firstXml: NodeSeq = Text(?("<<"))
     def lastXml: NodeSeq = Text(?(">>"))
     def currentXml: NodeSeq = Text("Displaying records " + (first+1) + "-" + (first+itemsPerPage min count) + " of  " + count)
-    bind("track", html, "albumid" -> <input type="text" name="albumid" class="column span-10"/>)
+//    bind("track", html, "albumid" -> <input type="text" name="albumid" class="column span-10"/>)
     page.flatMap(albmtrack => {
       val trkSeq: String = albmtrack.seq.get.toString
       val albumtrcid: String = albmtrack.id.get.toString
       val track = Track.findAll(By(Track.id, albmtrack.track.get)).head
       track.attaches.size match {
         case 0 => {
-          bind("track", html, AttrBindParam("id", albmtrack.track.get.toString, "id"),
-             "seq" -> <span>{
-                   link("track?albumid=" + Util.paramGet("albumid") + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid + "&offset=" + offset, () => (), Text(trkSeq))
-             }</span>,
-             "tracktitle" -> <span>{
-                   track.tracktitle.toString
-             }</span>,
-             "filename" -> <span>{
-                 Text(" ")
-             }</span>,
-             "delete" -> <span>{
-                   link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => delete(track.id.get,0), Text(S.loc("delete").get.toString))
-             }</span>
-          );
+          val bindTrack = {
+            "#trackseq" #> <span>{
+              link("track?albumid=" + Util.paramGet("albumid") + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid + "&offset=" + offset, () => (), Text(trkSeq))
+            }</span> &
+            "#tracktracktitle" #> <span>{
+              track.tracktitle.toString
+            }</span> &
+            "#trackfilename" #> <span>{
+              Text(" ")
+            }</span> &
+            "#trackdelete" #> <span>{
+              link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => delete(track.id.get,0), Text(S.loc("delete").head.toString))
+            }</span>
+          }
+          bindTrack(html)
         }
         case _ => {
           var i = 0
           track.attaches.flatMap(atc => {
             i = i + 1
-            bind("track", html, AttrBindParam("id", track.id.toString, "id"),
-             "seq" -> <span>{
-               i match {
-                 case 1 =>
-                   link("track?albumid=" + Util.paramGet("albumid") + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid + "&offset=" +  offset, () => (), Text(trkSeq))
-                 case _ =>
-                   Text("")
-               }
-             }</span>,
-             "tracktitle" -> <span>{
-               i match {
-                 case 1 =>
-                   track.tracktitle.toString
-                 case _ =>
-                   Text("")
-               }
-             }</span>,
-             "filename" -> <span>{
-               track.attaches.size match {
-                 case 0 => Text(" ")
-//                 case _ => if(atc.valid.get || Util.isSuperUser) link("lob/" + atc.id.get.toString, () => (), Text(atc.filename.toString)) else Text(" ")
-                 case _ => if(atc.valid.get || Util.isSuperUser) link("video/" + atc.id.get.toString, () => (), Text(atc.filename.toString), "target"->"_blank") else Text(" ")
-               }
-             }</span>,
-             "delete" -> <span>{
-               link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => delete(track.id.get, atc.id.get), Text(S.loc("delete").get.toString))
-             }</span>,
-             "stars" -> <span>{
-               atc.users.size match {
-                 case 0 => Text(" ")
-                 case _ => Text(atc.users.size.toString)
-               }
-             }</span>,
-             "valid" -> <span>{
-               if(Util.isSuperUser) {
-                 link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => switchShow(atc.id.get, !(atc.valid.get)), Text(if(atc.valid.get) S.loc("valid").get.toString else S.loc("invalid").get.toString))
-               } else {
-                 Text(" ")
-               }
-             }</span>,
-             "addstar" -> <span>{
-               if(atc.valid.get || Util.isSuperUser)
-                 link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => addStar(atc.id.get), Text(S.loc("addstar").get.toString))
-               else
-                 Text(" ")
-             }</span>,
-             "contact" -> <span>{
-               if(atc.valid.get)
-                 link("twit?to=" + atc.uploader.get, () => (), Text(S.loc("contact").get.toString))
-               else
-                 Text(" ")
-             }</span>
-            );
+            val bindTrack = {
+              "#trackseq" #> <span>{
+                i match {
+                  case 1 =>
+                    link("track?albumid=" + Util.paramGet("albumid") + "&seq=" + trkSeq + "&albumtrcid=" + albumtrcid + "&offset=" +  offset, () => (), Text(trkSeq))
+                  case _ =>
+                    Text("")
+                }
+              }</span> &
+              "#tracktracktitle" #> <span>{
+                i match {
+                  case 1 =>
+                    track.tracktitle.toString
+                  case _ =>
+                    Text("")
+                }
+              }</span> &
+              "#trackfilename" #> <span>{
+                track.attaches.size match {
+                  case 0 => Text(" ")
+                  case _ => if(atc.valid.get || Util.isSuperUser) link("video/" + atc.id.get.toString, () => (), Text(atc.filename.toString), "target"->"_blank") else Text(" ")
+                }
+              }</span> &
+              "#trackdelete" #> <span>{
+                link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => delete(track.id.get, atc.id.get), Text(S.loc("delete").head.toString))
+              }</span> &
+              "#trackstars" #> <span>{
+                atc.users.size match {
+                  case 0 => Text(" ")
+                  case _ => Text(atc.users.size.toString)
+                }
+              }</span> &
+              "#trackvalid" #> <span>{
+                if(Util.isSuperUser) {
+                  link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => switchShow(atc.id.get, !(atc.valid.get)), Text(if(atc.valid.get) S.loc("valid").head.toString else S.loc("invalid").head.toString))
+                } else {
+                  Text(" ")
+                }
+              }</span> &
+              "#trackaddstar" #> <span>{
+                if(atc.valid.get || Util.isSuperUser)
+                  link("track?albumid=" + Util.paramGet("albumid") + "&offset=" + offset, () => addStar(atc.id.get), Text(S.loc("addstar").head.toString))
+                else
+                  Text(" ")
+              }</span> &
+              "#trackcontact" #> <span>{
+                if(atc.valid.get)
+                  link("twit?to=" + atc.uploader.get, () => (), Text(S.loc("contact").head.toString))
+                else
+                  Text(" ")
+              }</span> 
+            }
+            bindTrack(html)
           })
         }
       }

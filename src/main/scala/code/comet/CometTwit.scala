@@ -24,7 +24,11 @@ class CometTwit extends CometActor {
   var from = User.currentUser.head.id.get.toString
   var room = if(from > to) from + to else to + from
 
-  def render = bind("messages" -> <span id={spanId}><div></div></span>)
+//  def render = bind("messages" -> <span id={spanId}><div></div></span>)
+  def render = {
+    val messageBinder = "#messages" #> <span id={spanId}><div></div></span>
+    messageBinder
+  }
 
   override def lowPriority = {
     case msg: Message  => {

@@ -4,7 +4,7 @@ version := "1.0"
 
 organization := "net.liftweb"
 
-scalaVersion := "2.11.12"
+scalaVersion := "2.11.8"
 
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
 
@@ -21,7 +21,7 @@ unmanagedResourceDirectories in Test <+= (baseDirectory) { _ / "src/main/webapp"
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
 libraryDependencies ++= {
-  val liftVersion = "3.1.0"
+  val liftVersion = "2.6.2"
   val akkaVersion = "2.11-2.5.0"
   Seq(
     "net.liftweb"       %% "lift-webkit"        % liftVersion        % "compile",

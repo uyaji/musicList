@@ -39,7 +39,7 @@ class Album extends Binder with Target with LongKeyedMapper[Album] with IdPK wit
       valMinLen(1, "you have to input title") _ ::
       super.validations
   }
-  object bandseq extends LongMappedMapper(this, BandSeq)
+  object bandseq extends MappedLongForeignKey(this, BandSeq)
 
   def getBandSeq(): BandSeq = {
     BandSeq.findAll(By(BandSeq.id, bandseq.get)).head

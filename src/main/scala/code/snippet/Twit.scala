@@ -20,10 +20,11 @@ import code.comet._
 class Twit {
   try {
     // 既にsessinにCometTwitが登録されている場合、登録解除後、現在の相手で再登録
-    val comets = S.session.get.findComet("CometTwit")
+//    val comets = S.session.get.findComet("cometTwit")
+    val comets = S.session.map(s => s.findComet("CometTwit"))
     // 登録されている会話相手(room)と、現在の会話相手(room)が異なる場合、
     // 登録解除、再登録。
-    comets.map{cm => {
+    comets.map{cml => cml.map{cm =>
       val from = User.currentUser.head.id.get.toString
       val to = Util.paramGet("to")
       val room = if(from > to) from + to else to + from
@@ -33,7 +34,8 @@ class Twit {
       }
     }}
   } catch {
-    case e: Exception => println("Exception is happened")
+//    case e: Exception => println("Exception is happened")
+    case e: Exception => e.printStackTrace()
   }
   val from = User.currentUser.head.id.get
   val to = Util.paramGet("to").toLong
@@ -55,12 +57,19 @@ class Twit {
       case x => S.error( x )
     }
 
-    bind("twit", xhtml,
+    val twitBind = {
+      "#twitname" #> <span>{ name }</span> &
+      "#twituploader" #> <span>{ User.findAll(By(User.id, to)).head.shortName }</span> &
+      "#twitstatus" #> <span>{ message.status.toForm.head }</span> &
+      "#twitsubmit" #> <span>{ submit("twit", () => addMessage ) }</span>
+    }
+    twitBind(xhtml)
+/*    bind("twit", xhtml,
       "name" -> name,
       "uploader" -> User.findAll(By(User.id, to)).head.shortName,
       "status" -> message.status.toForm,
       "submit" -> submit("twit", () => addMessage )
-    )
+    )*/
   }
 
   def show(xhtml:NodeSeq): NodeSeq = {
@@ -68,18 +77,28 @@ class Twit {
     <xml:Group>{
       Message.findAll(ByList(Message.from, seq), ByList(Message.to, seq), OrderBy(Message.id, Descending)).flatMap( msg => {
         if( msg.from.equals(User.currentUser.head.id.get)) {
-            bind("twit", xhtml, 
+          val twitBind = {
+            "#twitmessage" #> <span><div class="balloon_l"><p>{msg.status.get}</p></div></span> &
+            "#twituser" #> <span><li class="user_l">{userName(msg.fromUser)}</li></span>
+          } 
+          twitBind(xhtml)
+/*            bind("twit", xhtml, 
 //              "message" -> <li class="balloon_l">{msg.status.get}</li>,
               "message" -> <div class="balloon_l"><p>{msg.status.get}</p></div>,
               "user" -> <li class="user_l">{userName(msg.fromUser)}</li>
-            )
+            )*/
         }
         else {
-            bind("twit", xhtml, 
+          val twitBind = {
+            "#twitmessage" #> <span><div class="balloon_r"><p>{msg.status.get}</p></div></span> &
+            "#twituser" #> <span><li class="user_r">{userName(msg.fromUser)}</li></span>
+          }
+          twitBind(xhtml)
+/*            bind("twit", xhtml, 
 //              "message" -> <li class="balloon_r">{msg.status.get}</li>,
               "message" -> <div class="balloon_r"><p>{msg.status.get}</p></div>,
               "user" -> <li class="user_r">{userName(msg.fromUser)}</li>
-            )
+            )*/
         }
       })
     }</xml:Group>

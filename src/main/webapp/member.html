@@ -15,7 +15,7 @@
       <lift:Util.in>
         <h2><span class="lift:Loc.membertitle"></span></h2>
         <div class="lift:MemberView.bandNameSeq">
-          <h3> <span class="lift:Loc.artistname"></span> : <band:nameseq></nemaseq></h3>
+          <h3> <span class="lift:Loc.artistname"></span> : <span id="bandnameseq"></span></h3>
         </div>
         <form class="lift:MemberView.add?form=post">
           <input name="memberseq"><br />
@@ -37,9 +37,9 @@
             </thead>
             <tbody id="members" class="lift:MemberView.list">
               <tr member>
-                <td><member:seq></member:seq></td>
-                <td><member:name></member:name></td>
-                <td><member:delete></member:delete></td>
+                <td><span id="memberseq"></span></td>
+                <td><span id="membername"></span></td>
+                <td><span id="memberdelete"></span></td>
               </tr>
             </tbody>
           </table>

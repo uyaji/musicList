@@ -71,23 +71,23 @@
   </lift:Util.out>
   <lift:Util.in>
     <lift:Twit.post form="POST">
-      <h2><span class="lift:Loc.twittitle01"></span>&nbsp&nbsp<twit:name></twit:name><span class="lift:Loc.twittitle03"></span></h2>
-      <h2><span class="lift:Loc.twittitle02"></span>&nbsp&nbsp<twit:uploader></twit:uploader><span class="lift:Loc.twittitle04"></span></h2>
+      <h2><span class="lift:Loc.twittitle01"></span>&nbsp&nbsp<span id="twitname"></span><span class="lift:Loc.twittitle03"></span></h2>
+      <h2><span class="lift:Loc.twittitle02"></span>&nbsp&nbsp<span id="twituploader"></span><span class="lift:Loc.twittitle04"></span></h2>
 
       <ul class="status">
-        <li> <twit:status></twit:status> </li>
-        <li> <twit:submit></twit:submit> </li>
+        <li> <span id="twitstatus"></span> </li>
+        <li> <span id="twitsubmit"></span> </li>
       </ul>
     </lift:Twit.post>
 
     <lift:comet type="CometTwit" name="Other">
-      <twit:messages>メッセージはありません。</twit:messages>
+      <span id="messages">メッセージはありません。</span>
     </lift:comet>
 
     <ul class="status">
       <lift:Twit.show>
-        <twit:message></twit:message>
-        <twit:user></twit:user>
+        <span id="twitmessage"></span>
+        <span id="twituser"></span>
       </lift:Twit.show>
     </ul>
   </lift:Util.in>

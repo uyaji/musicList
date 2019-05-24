@@ -16,6 +16,6 @@ class UserAttaches extends LongKeyedMapper[UserAttaches] with IdPK {
   }
   def getSingleton = UserAttaches
   
-  object user extends LongMappedMapper(this, User)
-  object attach extends LongMappedMapper(this, Attach)
+  object user extends MappedLongForeignKey(this, User)
+  object attach extends MappedLongForeignKey(this, Attach)
 }

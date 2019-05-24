@@ -71,33 +71,33 @@ class AlbumView extends PaginatorSnippet[Album]{
   override def count = page.size
   override def pageUrl(offset: Long): String = appendParams(super.pageUrl(offset), List("searchAlbumtitle" -> searchAlbumtitle, "searchArtist" -> searchArtist, "searchTrack" -> searchTrack, "searchPlayer" -> searchPlayer, "searchInvalid" -> searchInvalid.toString))
 
+  override def prevXml: NodeSeq = Text(?("<"))
+  override def nextXml: NodeSeq = Text(?(">"))
+  override def firstXml: NodeSeq = Text(?("<<"))
+  override def lastXml: NodeSeq = Text(?(">>"))
+
   def showMode(html: NodeSeq): NodeSeq = {
     val userMode = Util.isSuperUser match {
       case true => "super user"
       case false => "general user"
     }
-    bind ("application", html, AttrBindParam("id", "1", "id"),
-                          "mode" -> <span><span class="lift:Loc.runmode"></span> : {Props.mode}</span>,
-                          "usermode" -> <span> / <span class="lift:Loc.usertype"></span> : {userMode}</span>
-    )
-/*    bind ("application", html, AttrBindParam("id", "1", "id"),
-                          "mode" -> <span>run mode : {Props.mode}</span>,
-                          "usermode" -> <span> / user type : {userMode}</span>
-    )*/
+    val modeBinder = {
+      "#applicationmode" #> <span><span class="lift:Loc.runmode"></span> : {Props.mode}</span> &
+      "#usermode" #> <span> / <span class="lift:Loc.usertype"></span> : {userMode}</span>
+    }
+    modeBinder(html)
   }
 
   def showMessage(html: NodeSeq): NodeSeq = {
     val total = ValueCell(100)
     val messageExist = Message.findAllByPreparedStatement(con => con.connection.prepareStatement("SELECT from_C FROM message WHERE to_c = " + User.currentUser.head.id.get + " GROUP BY from_C"))
     if(messageExist.size > 0) {
-      bind ("twit", html, AttrBindParam("id", "1", "id"),
-                            "user" -> <input type="hidden" id="user" value={User.currentUser.head.id.toString}/>
-      )
+      val userBinder = "#twituser" #> <input type="hidden" id="user" value={User.currentUser.head.id.toString}/>
+      userBinder(html)
     }
     else {
-      bind ("twit", html, AttrBindParam("id", "1", "id"),
-                            "message" -> <span></span>
-      )
+      val messageBinder = "#message" #> <span></span>
+      messageBinder(html)
     }
   }
 
@@ -268,16 +268,17 @@ class AlbumView extends PaginatorSnippet[Album]{
     var seq: Int = offset.toInt
     page.toList.sorted.drop(curPage * itemsPerPage).take(itemsPerPage).flatMap(alb => {
       seq = seq + 1 
-      bind ("album", html, AttrBindParam("id", alb.id.toString, "id"),
-                          "seq" -> <span>{link("/?albumid=" + alb.id.toString + "&searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer) + "&searchInvalid=" + urlEncode(searchInvalid.toString) + "&offset=" + offset, () => (), Text(seq.toString))}</span>,
-                          "albumtitle" -> <span>{link("track?albumid=" + alb.id.toString, () => (), Text(alb.albumtitle.get))}</span>,
-                          "artistname" -> <span>{link("band?bandid="+ alb.getBandSeq().getBand().id.toString, () => (), Text(alb.getBandSeq().getBand().bandname.get))}</span>,
-                          "artistseq" -> <span>{link("member?bandid="+ alb.getBandSeq().getBand().id.toString + "&seq=" + alb.getBandSeq().seq.toString, () => (), Text(alb.getBandSeq().seq.toString))}</span>,
-                          "tracktitle" -> <span>{Text(if(searchTrack.equals("")) "" else alb.tracks.withFilter(trc => (trc.tracktitle.get.toUpperCase indexOf searchTrack.replace("%","").toUpperCase) >= 0).map(trc =>trc).toList.head.tracktitle.get)}</span>,
-                          "tracktitles" -> <span class="tracktitles">{Text(if(searchTrack.equals("")) "" else {if(alb.tracks.withFilter(trc => (trc.tracktitle.get.toUpperCase indexOf searchTrack.replace("%","").toUpperCase) >= 0).map(trc =>trc).toList.size>1) "+" else ""})}</span>,
-                          "player" -> <span>{Text(if(searchPlayer.equals("")) "" else alb.getBandSeq.players.withFilter(pl => (pl.name.get.toUpperCase indexOf searchPlayer.replace("%","").toUpperCase) >= 0).map(pl =>pl).toList.head.name.get)}</span>,
-                          "players" -> <span class="players" width="1">{Text(if(searchPlayer.equals("")) "" else { if(alb.getBandSeq.players.withFilter(pl => (pl.name.get.toUpperCase indexOf searchPlayer.replace("%","").toUpperCase) >= 0).map(pl => pl).toList.size>1) "+" else ""})}</span>
-      )
+      val albumBinder = {
+        "#albumseq" #> <span>{link("/?albumid=" + alb.id.toString + "&searchAlbumtitle=" + urlEncode(searchAlbumtitle) + "&searchArtist=" + urlEncode(searchArtist) + "&searchTrack=" + urlEncode(searchTrack) + "&searchPlayer=" + urlEncode(searchPlayer) + "&searchInvalid=" + urlEncode(searchInvalid.toString) + "&offset=" + offset, () => (), Text(seq.toString))}</span> &
+        "#albumalbumtitle" #> <span>{link("track?albumid=" + alb.id.toString, () => (), Text(alb.albumtitle.get))}</span> &
+        "#albumartistname" #> <span>{link("band?bandid="+ alb.getBandSeq().getBand().id.toString, () => (), Text(alb.getBandSeq().getBand().bandname.get))}</span> &
+        "#albumartistseq" #> <span>{link("member?bandid="+ alb.getBandSeq().getBand().id.toString + "&seq=" + alb.getBandSeq().seq.toString, () => (), Text(alb.getBandSeq().seq.toString))}</span> &
+        "#albumtracktitle" #> <span>{Text(if(searchTrack.equals("")) "" else alb.tracks.withFilter(trc => (trc.tracktitle.get.toUpperCase indexOf searchTrack.replace("%","").toUpperCase) >= 0).map(trc =>trc).toList.head.tracktitle.get)}</span> &
+        "#albumtracktitles" #> <span class="tracktitles">{Text(if(searchTrack.equals("")) "" else {if(alb.tracks.withFilter(trc => (trc.tracktitle.get.toUpperCase indexOf searchTrack.replace("%","").toUpperCase) >= 0).map(trc =>trc).toList.size>1) "+" else ""})}</span> &
+        "#albumplayer" #> <span>{Text(if(searchPlayer.equals("")) "" else alb.getBandSeq.players.withFilter(pl => (pl.name.get.toUpperCase indexOf searchPlayer.replace("%","").toUpperCase) >= 0).map(pl =>pl).toList.head.name.get)}</span> &
+        "#albumplayers" #> <span class="players" width="1">{Text(if(searchPlayer.equals("")) "" else { if(alb.getBandSeq.players.withFilter(pl => (pl.name.get.toUpperCase indexOf searchPlayer.replace("%","").toUpperCase) >= 0).map(pl => pl).toList.size>1) "+" else ""})}</span>
+      }
+      albumBinder(html)
     })
   }          
 

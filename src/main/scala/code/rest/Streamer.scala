@@ -26,25 +26,34 @@ object Streamer extends RestHelper {
       val bais = new ByteArrayInputStream(attach.trackattach.get)
       val size = attach.trackattach.get.length - 1
       val content_type = "Content-Type" -> attach.mimetype.get
-
       val start = 0L
       val end = size
 
       val headers =
-        ("Connection" -> "close") ::
+//        ("Connection" -> "close") ::
       // The under 1 line is a comment out for the heroku.
 //        ("Transfer-Encoding" -> "chunked") ::
         content_type ::
         ("Content-Range" -> ("bytes " + start.toString + "-" + end.toString + "/" + attach.trackattach.get.length.toString)) ::
+        ("Content-Disposition" -> ("inline; filename=\"" + attach.filename + "\"")) ::
         Nil
 
-      () =>  Full(StreamingResponse (
+/*      () =>  Full(StreamingResponse (
         data = bais,
         onEnd = bais.close,
         size,
         headers,
         cookies = Nil,
-        code = 206
+        code = 200
+      ))*/
+
+      () =>  Full(StreamingResponse (
+        bais,
+        () => {},
+        size,
+        headers,
+        cookies = Nil,
+        code = 200
       ))
       }
   }

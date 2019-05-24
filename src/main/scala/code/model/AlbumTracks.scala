@@ -21,8 +21,10 @@ class AlbumTracks extends Relation with LongKeyedMapper[AlbumTracks] with IdPK {
   override def getTarget() = this.track.asInstanceOf[Target]
   override def validates = this.validate
 
-  object album extends LongMappedMapper(this, Album)
-  object track extends LongMappedMapper(this, Track)
+//  object album extends LongMappedMapper(this, Album)
+  object album extends MappedLongForeignKey(this, Album)
+//  object track extends LongMappedMapper(this, Track)
+  object track extends MappedLongForeignKey(this, Track)
   object seq extends MappedLong(this) {
     override def validations = 
       minVal _ :: super.validations
